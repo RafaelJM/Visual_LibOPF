@@ -7,6 +7,7 @@ function App() {
   return (
     <div className="App">
       <MyFirstGrid></MyFirstGrid>
+      <Teste></Teste>
     </div>
   );
 }
@@ -60,6 +61,44 @@ class Grid extends React.Component {
 class ToolBar extends React.Component {
   render() {
     return (<p></p>);
+  }
+}
+
+class Teste extends React.Component {
+  constructor(props) {
+    super(props);
+    this.click = this.click.bind(this);
+  }
+  
+  click() {
+    var fileInput = document.getElementById("dat");
+
+    // files is a FileList object (similar to NodeList)
+    var files = fileInput.files;
+
+    console.log(files);
+  //}
+
+  //opf_read_subGraph() {
+  /*  binFile <- file(file, "rb")
+    nnodes <- readBin(binFile, "int", endian = "little")
+    g <- opf_create_subGraph(nnodes);
+    g$nlabels <- readBin(binFile, "int", endian = "little")
+    g$nfeats <- readBin(binFile, "int", endian = "little")
+    for (i in 1:g$nnodes){
+      g$node[[i]]$position <- readBin(binFile, "int", endian = "little")# + 1
+      g$node[[i]]$truelabel <- readBin(binFile, "int", endian = "little")
+      for (j in 1:g$nfeats){
+        g$node[[i]]$feat[[j]] <- readBin(binFile, "double", size=4, endian = "little")
+      }
+    }
+    close(binFile)
+    return(g)*/
+  }
+
+  render() {
+    return (<div><input type="file" id="dat" multiple></input>
+    <button onClick={this.click} id ="button">arroz</button></div>);
   }
 }
 
