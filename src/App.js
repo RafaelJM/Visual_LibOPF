@@ -73,27 +73,28 @@ class Teste extends React.Component {
   click() {
     var fileInput = document.getElementById("dat");
 
-    // files is a FileList object (similar to NodeList)
     var files = fileInput.files;
+    var reader = new FileReader();
+    reader.readAsArrayBuffer(files[0]);
 
-    console.log(files);
-  //}
-
-  //opf_read_subGraph() {
-  /*  binFile <- file(file, "rb")
-    nnodes <- readBin(binFile, "int", endian = "little")
-    g <- opf_create_subGraph(nnodes);
-    g$nlabels <- readBin(binFile, "int", endian = "little")
-    g$nfeats <- readBin(binFile, "int", endian = "little")
-    for (i in 1:g$nnodes){
-      g$node[[i]]$position <- readBin(binFile, "int", endian = "little")# + 1
-      g$node[[i]]$truelabel <- readBin(binFile, "int", endian = "little")
-      for (j in 1:g$nfeats){
-        g$node[[i]]$feat[[j]] <- readBin(binFile, "double", size=4, endian = "little")
+    reader.onload = function() {
+      var dv = new DataView(reader.result);
+      console.log(dv);
+      var cont = 0;
+      var nnodes = dv.getInt32(0,true);//nnodes
+      dv.getInt32(cont=cont+4,true);//nlabels
+      var nfeats = dv.getInt32(cont=cont+4,true);//nfeats
+      for(var i = 0; i < nnodes; i++){
+        dv.getInt32(cont=cont+4,true);//position
+        dv.getInt32(cont=cont+4,true);//truelabel
+        for(var j = 0; j < nfeats; j++){
+          dv.getFloat32(cont=cont+4,true);//feat
+        }
       }
-    }
-    close(binFile)
-    return(g)*/
+    };
+    reader.onerror = function() {
+      console.log(reader.error);
+    };
   }
 
   render() {
