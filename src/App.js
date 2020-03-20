@@ -8,7 +8,7 @@ import {Sigma, RandomizeNodePositions, RelativeSize, NodeShapes } from 'react-si
 function App() {
   return (
     <div className="App">
-      <MyFirstGrid></MyFirstGrid>
+      <MyFirstGrid/>
     </div>
   );
 }
@@ -18,7 +18,8 @@ class MyFirstGrid extends React.Component {
     super(props);
     this.click = this.click.bind(this);
     this.state = {
-        data: {nodes:[{id:"n1", x: 0.399, y: 0.399}, {id:"n2", x: 0.4, y: 0.4}], edges:[]},
+        data: {nodes:[], edges:[]},
+        CSigma: React.createRef(),
     };
   }
 
@@ -43,7 +44,7 @@ class MyFirstGrid extends React.Component {
       for(var i = 0; i < nnodes; i++){
         subGraph.nodes[i] = {id: dv.getInt32(cont=cont+4,true),//position
         truelabel: dv.getInt32(cont=cont+4,true),//truelabel
-        feats: [  ], x:0, y:0};
+        feats: [  ], x:0, y:0, size:0.5};
         for(var j = 0; j < nfeats; j++){
           subGraph.nodes[i].feats[j] = dv.getFloat32(cont=cont+4,true);//feat
         }
@@ -51,7 +52,7 @@ class MyFirstGrid extends React.Component {
         subGraph.nodes[i].y = subGraph.nodes[i].feats[1];
       }
       scope.setState({ data:subGraph });
-      console.log(scope.state);
+      scope.state.CSigma.current.loadSugGraph(subGraph);
     };
   }
 
@@ -70,7 +71,12 @@ class MyFirstGrid extends React.Component {
           <div key="ToolBar">a</div>
           <div key="Info">b</div>
           <div key="Objects">c</div>
-          <div key="Grid"><Graph data={this.state.data}/></div>
+          <div key="Grid">
+            <Sigma settings={{drawEdges:true}}>
+              <CustomSigma ref={this.state.CSigma}/>
+              <RelativeSize initialSize={15}/>
+            </Sigma>
+          </div>
           <div key="Functions">d</div>
         </GridLayout>
         <div>
@@ -82,24 +88,30 @@ class MyFirstGrid extends React.Component {
   }
 }
 
-class Graph extends React.Component {
-  constructor(props) {
-    super(props);
-    this.click = this.click.bind(this);
+class CustomSigma extends React.Component {
+	constructor(props) {
+    super(props)
+    props.sigma.graph.addNode({id:"n3",x:3,y:3})
+  }
+  
+  someMethod() {
+    return 'bar';
   }
 
-  click() {console.log(this.props.data);}
+  loadSugGraph(SubGraph){
+    console.log(SubGraph)
+    this.props.sigma.graph.clear();
+    this.props.sigma.graph.read(SubGraph);
+    console.log(
+      this.props.sigma.graph.nodes(),
+      this.props.sigma.graph.edges()
+    ); // outputs 2 1
+    this.props.sigma.refresh();
+  }
 
-  render() {
-    return(<div><button onClick={this.click} id ="button">show</button>
-
-    <Sigma graph={this.props.data} settings={{drawEdges:true}}>
-      <RelativeSize initialSize={15}/>
-    </Sigma>
-  
-  </div>)
+  render(){
+    return(<div/>)
   }
 }
-
 
 export default App;
