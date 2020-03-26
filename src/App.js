@@ -2,8 +2,9 @@ import React from 'react';
 import logo from './logo.svg';
 import GridLayout from 'react-grid-layout';
 import './App.css';
-import * as d3 from 'd3';
 import {Sigma, RandomizeNodePositions, RelativeSize, NodeShapes } from 'react-sigma';
+import dat from './boat.dat';
+import Wasm from "react-wasm";
 
 function App() {
   return (
@@ -21,15 +22,36 @@ class MyFirstGrid extends React.Component {
         data: {nodes:[], edges:[]},
         CSigma: React.createRef(),
     };
+    
+
+    async function fetchAndInstantiate() {
+      const response = await fetch("./test.wasm");
+      const buffer = await response.arrayBuffer();  
+      const obj = await WebAssembly.instantiate(buffer);
+      console.log(obj.instance.exports);
+      obj.instance.exports.file();  // "3"
+    }
+
+    async function fetchAndInstantiateadd() {
+      const response = await fetch("./add.wasm");
+      const buffer = await response.arrayBuffer();  
+      const obj = await WebAssembly.instantiate(buffer);
+      console.log(obj.instance.exports,obj.instance.exports.add(1,2));
+    }
+
+    fetchAndInstantiate()
+    fetchAndInstantiateadd()
   }
 
   click() {
-    var fileInput = document.getElementById("dat");
-    var files = fileInput.files;
+    console.log(dat)
+
+    //var fileInput = document.getElementById("dat");
+    //var files = fileInput.files;
     var reader = new FileReader();
     const scope = this;
 
-    reader.readAsArrayBuffer(files[0]);
+    reader.readAsArrayBuffer();//files[0]);
 
     reader.onload = function() {
       var subGraph= {
@@ -64,7 +86,7 @@ class MyFirstGrid extends React.Component {
       {i: 'Grid', x: 0, y: 0, w: 10, h: 10, static: true},
       {i: 'Functions', x: 4, y: 0, w: 1, h: 2}
     ];
-
+    
     return (
       <div>
         <GridLayout className="layout" layout={layout} cols={12} rowHeight={30} width={1200}>
