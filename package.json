@@ -6,6 +6,9 @@
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.4.1",
     "@testing-library/user-event": "^7.2.1",
+    "@wasmer/wasi": "^0.10.2",
+    "@wasmer/wasmfs": "^0.10.2",
+    "fs-react": "0.0.4",
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
     "react-graph-vis": "^1.0.5",
@@ -34,5 +37,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@babel/plugin-syntax-import-meta": "^7.8.3"
   }
 }

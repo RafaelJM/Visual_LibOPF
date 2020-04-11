@@ -4,7 +4,19 @@ import GridLayout from 'react-grid-layout';
 import './App.css';
 import {Sigma, RandomizeNodePositions, RelativeSize, NodeShapes } from 'react-sigma';
 import dat from './boat.dat';
-import Wasm from "react-wasm";
+
+import { WASI } from "@wasmer/wasi";
+import wasiBindings from "@wasmer/wasi/lib/bindings/node";
+// Use this on the browser
+// import wasiBindings from "@wasmer/wasi/lib/bindings/browser";
+ 
+import { WasmFs } from "@wasmer/wasmfs";
+ 
+// Instantiate a new WASI Instance
+
+
+let Module = require('./ping.js')(); // Your Emscripten JS output file
+let FS = Module.FS;
 
 function App() {
   return (
@@ -22,26 +34,59 @@ class MyFirstGrid extends React.Component {
         data: {nodes:[], edges:[]},
         CSigma: React.createRef(),
     };
-    
 
-    async function fetchAndInstantiate() {
-      const response = await fetch("./test.wasm");
-      const buffer = await response.arrayBuffer();  
-      const obj = await WebAssembly.instantiate(buffer);
-      console.log(obj.instance.exports);
-      obj.instance.exports.file();  // "3"
+   
+
+    Module['onRuntimeInitialized'] = onRuntimeInitialized;
+    const file = Module.cwrap('file');
+
+    function onRuntimeInitialized() {
+        console.log(file());
+        console.log(FS.readFile('offline/any_file.txt', { encoding: 'utf8' }));
     }
 
+    console.log(Module);
+    /*
     async function fetchAndInstantiateadd() {
-      const response = await fetch("./add.wasm");
+      const response = await fetch("/ping.wasm");
       const buffer = await response.arrayBuffer();  
       const obj = await WebAssembly.instantiate(buffer);
-      console.log(obj.instance.exports,obj.instance.exports.add(1,2));
+      console.log("1:::", obj);
     }
 
-    fetchAndInstantiate()
     fetchAndInstantiateadd()
+    
+    //emcc -O1 ping.c -o ping.wasm -s WASM=1
+    //emcc ping.c -o ping.js -s TOTAL_MEMORY=33554432 -s WASM=1 --bind -s MODULARIZE=1 -s EXPORT_ES6=1 -s ENVIRONMENT=web -s USE_PTHREADS=0
+    //emcc ping.c -o ping.js -s TOTAL_MEMORY=33554432 -s WASM=1 --bind -s MODULARIZE=1 -s ENVIRONMENT=web -s USE_PTHREADS=0 -s "EXTRA_EXPORTED_RUNTIME_METHODS=['cwrap', 'FS']" -lidbfs.js
+    WebAssembly.compileStreaming(fetch('/ping.wasm'))
+    .then(mod => {
+      /*
+      let importObject = {wasi_snapshot_preview1: wasi.wasiImport};
+      for (let imp of WebAssembly.Module.imports(mod)) {
+          if (typeof importObject[imp.module] === "undefined")
+              importObject[imp.module] = {};
+          switch (imp.kind) {
+          //case "function": importObject[imp.module][imp.name] = () => {}; break;
+          case "table": importObject[imp.module][imp.name] = new WebAssembly.Table({ initial: 1, maximum: 10000, element: "anyfunc" }); break;
+          case "memory": importObject[imp.module][imp.name] = new WebAssembly.Memory({ initial: 1 }); break;
+          case "global": importObject[imp.module][imp.name] = 0; break;
+          }
+      }
+      console.log(importObject);
+      console.log(WebAssembly.Module.exports(mod));
+      console.log(WebAssembly.Module.imports(mod));
+      WebAssembly.instantiate(mod, {wasi_snapshot_preview1: wasi.wasiImport})
+      .then(result => {
+        console.log(result.exports);
+        console.log(result.exports.pingIt());
+        //fetch('/testfile.txt')
+        //.then(response => {console.log(response)});
+      })
+    });*/
   }
+
+
 
   click() {
     console.log(dat)
