@@ -42,7 +42,7 @@ class MyFirstGrid extends React.Component {
 
     function onRuntimeInitialized() {
         console.log(file());
-        console.log(FS.readFile('offline/any_file.txt', { encoding: 'utf8' }));
+        console.log(FS.readFile('files/auxone.dat', { encoding: 'utf8' }));
     }
 
     console.log(Module);
@@ -58,7 +58,7 @@ class MyFirstGrid extends React.Component {
     
     //emcc -O1 ping.c -o ping.wasm -s WASM=1
     //emcc ping.c -o ping.js -s TOTAL_MEMORY=33554432 -s WASM=1 --bind -s MODULARIZE=1 -s EXPORT_ES6=1 -s ENVIRONMENT=web -s USE_PTHREADS=0
-    //emcc ping.c -o ping.js -s TOTAL_MEMORY=33554432 -s WASM=1 --bind -s MODULARIZE=1 -s ENVIRONMENT=web -s USE_PTHREADS=0 -s "EXTRA_EXPORTED_RUNTIME_METHODS=['cwrap', 'FS']" -lidbfs.js
+    //emcc ping.c -o ping.js -s TOTAL_MEMORY=33554432 -s WASM=1 --bind -s MODULARIZE=1 -s ENVIRONMENT=web -s USE_PTHREADS=0 -s "EXTRA_EXPORTED_RUNTIME_METHODS=['cwrap', 'FS']" -lidbfs.js --preload-file files/auxone.dat
     WebAssembly.compileStreaming(fetch('/ping.wasm'))
     .then(mod => {
       /*
