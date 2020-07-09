@@ -5,7 +5,7 @@ import './App.css';
 import {Sigma, RandomizeNodePositions, RelativeSize, NodeShapes } from 'react-sigma';
 import dat from './boat.dat';
 
-import { Accordion , Card , Button , useAccordionToggle } from 'react-bootstrap';
+import { Accordion , Card , Button , useAccordionToggle , ListGroup, InputGroup, FormControl} from 'react-bootstrap';
 
 import { WASI } from "@wasmer/wasi";
 import wasiBindings from "@wasmer/wasi/lib/bindings/node";
@@ -28,81 +28,50 @@ function App() {
   );
 }
 
-class MyFirstGrid extends React.Component {
-  constructor(props) {
-    super(props);
-    this.click = this.click.bind(this);
-    this.clickSaveFunc = this.clickSaveFunc.bind(this);
-    this.state = {
-        data: {nodes:[], edges:[]},
-        CSigma: React.createRef(),
-    };
-
-    console.log(Module);
-  }
-
-  readGraph(dv){
-    var subGraph= {
-      nnodes: -1, nlabels: -1, nfeats: -1,
-      nodes: [],
-      edges:[],
-    };
-    
-    var cont = 0;
-    subGraph.nnodes = dv.getInt32(cont,true);//nnodes
-    subGraph.nlabels = dv.getInt32(cont=cont+4,true);//nlabels
-    subGraph.nfeats = dv.getInt32(cont=cont+4,true);//nfeats
-    for(var i = 0; i < subGraph.nnodes; i++){
-      subGraph.nodes[i] = {id: dv.getInt32(cont=cont+4,true),//position
-      truelabel: dv.getInt32(cont=cont+4,true),//truelabel
-      feats: [  ], x:0, y:0, size:0.5};
-      for(var j = 0; j < subGraph.nfeats; j++){
-        subGraph.nodes[i].feats[j] = dv.getFloat32(cont=cont+4,true);//feat
-      }
-      subGraph.nodes[i].x = subGraph.nodes[i].feats[0];
-      subGraph.nodes[i].y = subGraph.nodes[i].feats[1];
+function readGraph(dv){
+  var subGraph= {
+    nnodes: -1, nlabels: -1, nfeats: -1,
+    nodes: [],
+    edges:[],
+  };
+  
+  var cont = 0;
+  subGraph.nnodes = dv.getInt32(cont,true);//nnodes
+  subGraph.nlabels = dv.getInt32(cont=cont+4,true);//nlabels
+  subGraph.nfeats = dv.getInt32(cont=cont+4,true);//nfeats
+  for(var i = 0; i < subGraph.nnodes; i++){
+    subGraph.nodes[i] = {id: dv.getInt32(cont=cont+4,true),//position
+    truelabel: dv.getInt32(cont=cont+4,true),//truelabel
+    feats: [  ], x:0, y:0, size:0.5};
+    for(var j = 0; j < subGraph.nfeats; j++){
+      subGraph.nodes[i].feats[j] = dv.getFloat32(cont=cont+4,true);//feat
     }
-    return(subGraph);
+    subGraph.nodes[i].x = subGraph.nodes[i].feats[0];
+    subGraph.nodes[i].y = subGraph.nodes[i].feats[1];
   }
+  return(subGraph);
+}
 
-  writeGraph(subGraph, file){
-    const buf = Buffer.allocUnsafe((3 + subGraph.nnodes*(2+subGraph.nfeats))*4);
-    
-    var cont = 0;
-    buf.writeInt32LE(subGraph.nnodes,cont);
-    buf.writeInt32LE(subGraph.nlabels,cont=cont+4);
-    buf.writeInt32LE(subGraph.nfeats,cont=cont+4);
-    for(var i = 0; i < subGraph.nnodes; i++){
-      buf.writeInt32LE(subGraph.nodes[i].id,cont=cont+4);
-      buf.writeInt32LE(subGraph.nodes[i].truelabel,cont=cont+4);
-      for(var j = 0; j < subGraph.nfeats; j++){
-        buf.writeFloatLE(subGraph.nodes[i].feats[j],cont=cont+4);
-      }
+function writeGraph(subGraph, file){
+  const buf = Buffer.allocUnsafe((3 + subGraph.nnodes*(2+subGraph.nfeats))*4);
+  
+  var cont = 0;
+  buf.writeInt32LE(subGraph.nnodes,cont);
+  buf.writeInt32LE(subGraph.nlabels,cont=cont+4);
+  buf.writeInt32LE(subGraph.nfeats,cont=cont+4);
+  for(var i = 0; i < subGraph.nnodes; i++){
+    buf.writeInt32LE(subGraph.nodes[i].id,cont=cont+4);
+    buf.writeInt32LE(subGraph.nodes[i].truelabel,cont=cont+4);
+    for(var j = 0; j < subGraph.nfeats; j++){
+      buf.writeFloatLE(subGraph.nodes[i].feats[j],cont=cont+4);
     }
-
-    FS.writeFile(file,Buffer.from(buf));
   }
+  
+  FS.writeFile(file,Buffer.from(buf));
+}
 
-  click() {
-    var fileInput = document.getElementById("dat");
-    var files = fileInput.files;
-    var reader = new FileReader();
-    const scope = this;
-    
-    reader.readAsArrayBuffer(files[0]);
-
-    reader.onload = function() {          
-      var subGraph = scope.readGraph(new DataView(reader.result));
-      scope.setState({ data:subGraph });
-      scope.state.CSigma.current.loadSugGraph(subGraph);
-    };
-  }
-
-  clickSaveFunc() {
-    this.writeGraph(this.state.data,"files/auxone.dat");
-    var ab = FS.readFile("files/auxone.dat", null).buffer;
-
-    const opf_split = Module.cwrap('c_opf_split',null,['number', 'number']);
+function opf_split(){
+  const opf_split = Module.cwrap('c_opf_split',null,['number', 'number']);
 
     var strArr = ["","files/auxone.dat","0.5","0","0.5","0"];
     var ptrArr = Module._malloc(strArr.length * 4);
@@ -114,53 +83,176 @@ class MyFirstGrid extends React.Component {
     }
 
     var num = Module._malloc(4);
-    Module.setValue(num, 6, 'i32')
-    console.log("file1:", opf_split(num,ptrArr));
+    Module.setValue(num, 6, 'i32');
 
-    var train = this.readGraph(new DataView(FS.readFile("files/auxone.dat.training.dat", null).buffer));
-    console.log("read",train);
+    opf_split(num,ptrArr);
+}
+
+class MyFirstGrid extends React.Component {
+  constructor(props) {
+    super(props);
+    this.click = this.click.bind(this);
+    this.clickSaveFunc = this.clickSaveFunc.bind(this);
+    this.state = {
+        data: [],
+        CSigma: React.createRef(),
+        lists: [],
+        details: [],
+        functions: this.loadFunctions(),
+    };
+
+    console.log(Module);
+  }
+
+  click() {
+    var fileInput = document.getElementById("dat");
+    var files = fileInput.files;
+    var reader = new FileReader();
+    const scope = this;
+    
+    reader.readAsArrayBuffer(files[0]);
+
+    reader.onload = function() {          
+      var subGraph = readGraph(new DataView(reader.result));
+      var aux = scope.state.data.concat(subGraph);
+      scope.setState({ data:aux });
+
+      console.log("data",scope.state.data);
+
+      scope.state.CSigma.current.loadSugGraph(subGraph);
+      var aux = scope.state.lists.concat(scope.addList(subGraph,scope.state.lists.length));
+      scope.setState({ lists:aux });
+    };
+  }
+
+  clickSaveFunc() {
+    writeGraph(this.state.data[this.state.data.length-1],"files/auxone.dat");
+
+    opf_split();
+    var train = readGraph(new DataView(FS.readFile("files/auxone.dat.training.dat", null).buffer));
     this.state.CSigma.current.loadSugGraph(train);
   }
 
-  
-  render() {   
+  alertClicked(node,subGraphID) {
+    this.setState({ details:[this.loadNodeDetails(this.state.data[subGraphID].nodes[node],subGraphID)] });
+    console.log(node,subGraphID);
+  }
+
+  addList(Subgraph,eventK){
+    return (
+      <Card>
+        <Accordion.Toggle as={Card.Header} eventKey={eventK}>
+          Click me!
+        </Accordion.Toggle>
+        <Accordion.Collapse eventKey={eventK}>
+          <Card.Body>
+            <ListGroup>
+              {Subgraph.nodes.map((node, index) => (
+                <ListGroup.Item> 
+                  <button onClick={() => this.alertClicked(index,eventK)}>Node {node.id}</button>
+                </ListGroup.Item>
+              ))}
+            </ListGroup>
+          </Card.Body>
+        </Accordion.Collapse>
+      </Card>
+    );
+  }
+
+  loadNodeDetails(node,subGraphID){
+    return (
+      <InputGroup className="mb-3">
+        <InputGroup.Prepend>
+          <InputGroup.Text id="SubGraph">SubGraph</InputGroup.Text>
+        </InputGroup.Prepend>
+        <FormControl value={subGraphID} placeholder="ID" aria-label="ID" aria-describedby="basic-addon1"/>
+
+        <InputGroup.Prepend>
+          <InputGroup.Text id="ID">ID</InputGroup.Text>
+        </InputGroup.Prepend>
+        <FormControl value={node.id} placeholder="ID" aria-label="ID" aria-describedby="basic-addon1"/>
+
+        <InputGroup.Prepend>
+          <InputGroup.Text id="TrueLabel">TrueLabel</InputGroup.Text>
+        </InputGroup.Prepend>
+        <FormControl value={node.truelabel} placeholder="ID" aria-label="ID" aria-describedby="basic-addon1"/>
+
+
+        {node.feats.map((feat, index) => (
+          <div>
+            <InputGroup.Prepend>
+              <InputGroup.Text id={"feat"+index}>Feat {index}</InputGroup.Text>
+            </InputGroup.Prepend>
+            <FormControl value={feat} placeholder="Feats" aria-label="Feats" aria-describedby="basic-addon1"/>
+          </div>
+        ))}
+      </InputGroup>
+    )
+  }
+
+  loadFunctions(){
     return (
       <div>
+        <button onClick={() => this.insertopf_accuracy()}>opf_accuracy</button>
+        <button onClick={() => this.insertopf_accuracy4label()}>opf_accuracy4label</button>
+        <button onClick={() => this.insertopf_classify()}>opf_classify</button>
+        <button onClick={() => this.insertopf_cluster()}>opf_cluster</button>
+        <button onClick={() => this.insertopf_distance()}>opf_distance</button>
+        <button onClick={() => this.insertopf_fold()}>opf_fold</button>
+        <button onClick={() => this.insertopf_info()}>opf_info</button>
+        <button onClick={() => this.insertopf_learn()}>opf_learn</button>
+        <button onClick={() => this.insertopf_merge()}>opf_merge</button>
+        <button onClick={() => this.insertopf_normalize()}>opf_normalize</button>
+        <button onClick={() => this.insertopf_pruning()}>opf_pruning</button>
+        <button onClick={() => this.insertopf_semi()}>opf_semi</button>
+        <button onClick={() => this.insertopf_split()}>opf_split</button>
+        <button onClick={() => this.insertopf_train()}>opf_train</button>
+        <button onClick={() => this.insertopfknn_classify()}>opfknn_classify</button>
+        <button onClick={() => this.insertopfknn_train()}>opfknn_train</button>
+      </div>
+    )
+  }
+
+  insertOpf_Split(){
+    return (
+      <div>
+        adsada
+      </div>
+    )
+  }
+
+  render() {   
+    return (
+
+      <div>
+        <input type="file" id="dat" multiple></input>
+        <button onClick={this.click}>load</button>
+        <button onClick={this.clickSaveFunc}>save</button>
+
+
+        <Sigma settings={{drawEdges:true}}>
+          <CustomSigma ref={this.state.CSigma}/>
+          <RelativeSize initialSize={15}/>
+        </Sigma>
+
         <PanelGroup direction="row" borderColor="grey">
           <PanelGroup direction="column" borderColor="grey">
-            <Sigma settings={{drawEdges:true}}>
-                <CustomSigma ref={this.state.CSigma}/>
-                <RelativeSize initialSize={15}/>
-            </Sigma>
             <div>
-              <input type="file" id="dat" multiple></input>
-              <button onClick={this.click} id ="button">load</button>
-              <button onClick={this.clickSaveFunc} id ="button">save</button>
+
+            </div>
+            <div>
+              {this.state.functions}
             </div>
           </PanelGroup>
           <PanelGroup direction="column" borderColor="grey">
             <div>
             <Accordion defaultActiveKey="0">
-              <Card>
-                <Accordion.Toggle as={Card.Header} eventKey="0">
-                  Click me!
-                </Accordion.Toggle>
-                <Accordion.Collapse eventKey="0">
-                  <Card.Body>Hello! I'm the body</Card.Body>
-                </Accordion.Collapse>
-              </Card>
-              <Card>
-                <Accordion.Toggle as={Card.Header} eventKey="1">
-                  Click me!
-                </Accordion.Toggle>
-                <Accordion.Collapse eventKey="1">
-                  <Card.Body>Hello! I'm another body</Card.Body>
-                </Accordion.Collapse>
-              </Card>
+              {this.state.lists}
             </Accordion>
-
             </div>
-            <div>panel 6</div>
+            <div>
+              {this.state.details}
+            </div>
           </PanelGroup>
         </PanelGroup>
       </div>
@@ -171,7 +263,6 @@ class MyFirstGrid extends React.Component {
 class CustomSigma extends React.Component {
 	constructor(props) {
     super(props)
-    props.sigma.graph.addNode({id:"n3",x:3,y:3})
   }
   
   someMethod() {

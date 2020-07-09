@@ -28,6 +28,13 @@
   color: #61dafb;
 }
 
+.list-group{
+  max-height: 300px;
+  margin-bottom: 10px;
+  overflow:scroll;
+  -webkit-overflow-scrolling: touch;
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
