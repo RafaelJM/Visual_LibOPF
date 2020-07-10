@@ -1,16 +1,25 @@
 #include "OPF.h"
+#include <emscripten.h>
 
+
+EMSCRIPTEN_KEEPALIVE
 void c_opf_pruning(int *argc, char **argv)
 {
+	EM_ASM(
+        FS.syncfs(true, function (err) {
+            // Error
+        });
+    );
+
 	errorOccurred = 0;	
 	opf_PrecomputedDistance = 0;
 	if ((*argc != 5) && (*argc != 4))
 	{
-		REprintf("\nusage opf_pruning <P1> <P2> <P3> <P4>");
-		REprintf("\nP1: training set in the OPF file format");
-		REprintf("\nP2: evaluating set in the OPF file format");
-		REprintf("\nP3: percentage of accuracy [0,1]");
-		REprintf("\nP4: precomputed distance file (leave it in blank if you are not using this resource\n");
+		fprintf(stderr, "\nusage opf_pruning <P1> <P2> <P3> <P4>");
+		fprintf(stderr, "\nP1: training set in the OPF file format");
+		fprintf(stderr, "\nP2: evaluating set in the OPF file format");
+		fprintf(stderr, "\nP3: percentage of accuracy [0,1]");
+		fprintf(stderr, "\nP4: precomputed distance file (leave it in blank if you are not using this resource\n");
 		return;
 	}
 
@@ -22,10 +31,10 @@ void c_opf_pruning(int *argc, char **argv)
 
 	if (*argc == 5)
 		opf_PrecomputedDistance = 1;
-	Rprintf("\nReading data files ...");
+	fprintf(stdout, "\nReading data files ...");
 	
 	Subgraph *gTrain = ReadSubgraph(argv[1]), *gEval = ReadSubgraph(argv[2]); if(errorOccurred) return;
-	Rprintf(" OK");
+	fprintf(stdout, " OK");
 	
 
 	if (opf_PrecomputedDistance){
@@ -33,26 +42,26 @@ void c_opf_pruning(int *argc, char **argv)
 	}
 
 	isize = gTrain->nnodes;
-	Rprintf("\nPruning training set ...");
+	fprintf(stdout, "\nPruning training set ...");
 	
 	gettimeofday(&tic, NULL);
 	opf_OPFPruning(&gTrain, &gEval, desiredAcc); if(errorOccurred) return;
 	gettimeofday(&toc, NULL);
-	Rprintf(" OK");
+	fprintf(stdout, " OK");
 	
 	fsize = gTrain->nnodes;
 
 	prate = (1 - fsize / (float)isize) * 100;
-	Rprintf("\nFinal pruning rate: %.2f%%", prate);
+	fprintf(stdout, "\nFinal pruning rate: %.2f%%", prate);
 	
 
-	Rprintf("\n\nWriting classifier's model file ...");
+	fprintf(stdout, "\n\nWriting classifier's model file ...");
 	
 	sprintf(fileName, "%s.classifier.opf", argv[1]);
 	opf_WriteModelFile(gTrain, fileName);
-	Rprintf(" OK");
+	fprintf(stdout, " OK");
 	
-	Rprintf(" OK");
+	fprintf(stdout, " OK");
 	
 	sprintf(fileName, "%s.prate.pr", argv[1]);
 	f = fopen(fileName, "a");
@@ -60,14 +69,14 @@ void c_opf_pruning(int *argc, char **argv)
 	fclose(f);
 
 	time = ((toc.tv_sec - tic.tv_sec) * 1000.0 + (toc.tv_usec - tic.tv_usec) * 0.001) / 1000.0;
-	Rprintf("\nPruning time: %f seconds\n", time);
+	fprintf(stdout, "\nPruning time: %f seconds\n", time);
 	
 	sprintf(fileName, "%s.time", argv[1]);
 	f = fopen(fileName, "a");
 	fprintf(f, "%f\n", time);
 	fclose(f);
 
-	Rprintf("\nDeallocating memory ...");
+	fprintf(stdout, "\nDeallocating memory ...");
 	DestroySubgraph(&gTrain);
 	DestroySubgraph(&gEval);
 	if (opf_PrecomputedDistance)
@@ -76,5 +85,11 @@ void c_opf_pruning(int *argc, char **argv)
 			free(opf_DistanceValue[i]);
 		free(opf_DistanceValue);
 	}
-	Rprintf(" OK\n");
+	fprintf(stdout, " OK\n");
+	
+	EM_ASM(
+        FS.syncfs(function (err) {
+            // Error
+        });
+    );
 }

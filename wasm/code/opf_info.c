@@ -1,15 +1,24 @@
 #include "OPF.h"
 #include <stdio.h>
 #include <time.h>
+#include <emscripten.h>
 
+
+EMSCRIPTEN_KEEPALIVE
 void c_opf_info(int *argc, char **argv)
 {
+	EM_ASM(
+        FS.syncfs(true, function (err) {
+            // Error
+        });
+    );
+	
 	errorOccurred = 0;	
 
 	if (*argc != 2)
 	{
-		REprintf("\nusage opf_info <P1>");
-		REprintf("\nP1: OPF file\n");
+		fprintf(stderr, "\nusage opf_info <P1>");
+		fprintf(stderr, "\nP1: OPF file\n");
 		return;
 	}
 
@@ -26,27 +35,33 @@ void c_opf_info(int *argc, char **argv)
 
 	if (fread(&ndata, sizeof(int), 1, fp) != 1)
 	{
-		REprintf("\n Could not read number of samples");
+		fprintf(stderr, "\n Could not read number of samples");
 		return;
 	}
 	if (fread(&nlabels, sizeof(int), 1, fp) != 1)
 	{
-		REprintf("\n Could not read number of labels");
+		fprintf(stderr, "\n Could not read number of labels");
 		return;
 	}
 
 	if (fread(&nfeats, sizeof(int), 1, fp) != 1)
 	{
-		REprintf("\n Could not read number of features");
+		fprintf(stderr, "\n Could not read number of features");
 		return;
 	}
 
-	Rprintf("\nInformations about %s file\n --------------------------------", argv[1]);
-	Rprintf("\nData size: %d", ndata);
-	Rprintf("\nFeatures size: %d", nfeats);
-	Rprintf("\nLabels number: %d", nlabels);
-	Rprintf("\n--------------------------------\n");
+	fprintf(stdout, "\nInformations about %s file\n --------------------------------", argv[1]);
+	fprintf(stdout, "\nData size: %d", ndata);
+	fprintf(stdout, "\nFeatures size: %d", nfeats);
+	fprintf(stdout, "\nLabels number: %d", nlabels);
+	fprintf(stdout, "\n--------------------------------\n");
 
 	DestroySubgraph(&g);
 	fclose(fp);
+	
+	EM_ASM(
+        FS.syncfs(function (err) {
+            // Error
+        });
+    );
 }

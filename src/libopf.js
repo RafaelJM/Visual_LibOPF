@@ -48,8 +48,8 @@ var Module = typeof Module !== 'undefined' ? Module : {};
       } else {
         throw 'using preloaded data can only be done on a web page or in a web worker';
       }
-      var PACKAGE_NAME = 'ping.data';
-      var REMOTE_PACKAGE_BASE = 'ping.data';
+      var PACKAGE_NAME = 'libopf.data';
+      var REMOTE_PACKAGE_BASE = 'libopf.data';
       if (typeof Module['locateFilePackage'] === 'function' && !Module['locateFile']) {
         Module['locateFile'] = Module['locateFilePackage'];
         err('warning: you defined Module.locateFilePackage, that has been renamed to Module.locateFile (using your locateFilePackage for now)');
@@ -180,10 +180,10 @@ var Module = typeof Module !== 'undefined' ? Module : {};
             for (var i = 0; i < files.length; ++i) {
               DataRequest.prototype.requests[files[i].filename].onload();
             }
-                Module['removeRunDependency']('datafile_ping.data');
+                Module['removeRunDependency']('datafile_libopf.data');
 
       };
-      Module['addRunDependency']('datafile_ping.data');
+      Module['addRunDependency']('datafile_libopf.data');
     
       if (!Module.preloadResults) Module.preloadResults = {};
     
@@ -204,7 +204,7 @@ var Module = typeof Module !== 'undefined' ? Module : {};
     }
   
    }
-   loadPackage({"files": [{"filename": "/files/auxone.dat", "start": 0, "end": 0, "audio": 0}], "remote_package_size": 0, "package_uuid": "b113fb69-c619-4209-b263-5c0aa8f0f3ed"});
+   loadPackage({"files": [{"filename": "/files/auxone.dat", "start": 0, "end": 0, "audio": 0}], "remote_package_size": 0, "package_uuid": "8d5005a2-fb46-4480-8142-5469eee8805d"});
   
   })();
   
@@ -752,8 +752,8 @@ var wasmMemory;
 // In the wasm backend, we polyfill the WebAssembly object,
 // so this creates a (non-native-wasm) table for us.
 var wasmTable = new WebAssembly.Table({
-  'initial': 29,
-  'maximum': 29 + 0,
+  'initial': 30,
+  'maximum': 30 + 0,
   'element': 'anyfunc'
 });
 
@@ -1361,11 +1361,11 @@ function updateGlobalBufferAndViews(buf) {
 }
 
 var STATIC_BASE = 1024,
-    STACK_BASE = 5250608,
+    STACK_BASE = 5259184,
     STACKTOP = STACK_BASE,
-    STACK_MAX = 7728,
-    DYNAMIC_BASE = 5250608,
-    DYNAMICTOP_PTR = 7568;
+    STACK_MAX = 16304,
+    DYNAMIC_BASE = 5259184,
+    DYNAMICTOP_PTR = 16144;
 
 assert(STACK_BASE % 16 === 0, 'stack must start aligned');
 assert(DYNAMIC_BASE % 16 === 0, 'heap must start aligned');
@@ -1755,7 +1755,7 @@ function isDataURI(filename) {
 
 
 
-var wasmBinaryFile = '/ping.wasm';
+var wasmBinaryFile = 'libopf.wasm';
 if (!isDataURI(wasmBinaryFile)) {
   // wasmBinaryFile = locateFile(wasmBinaryFile);
 }
@@ -1888,8 +1888,38 @@ var tempI64;
 // === Body ===
 
 var ASM_CONSTS = {
-  1213: function() {FS.syncfs(true, function (err) { });},  
- 1712: function() {FS.syncfs(function (err) { });}
+  1024: function() {FS.syncfs(true, function (err) { });},  
+ 1373: function() {FS.syncfs(function (err) { });},  
+ 1404: function() {FS.syncfs(true, function (err) { });},  
+ 1761: function() {FS.syncfs(function (err) { });},  
+ 1792: function() {FS.syncfs(true, function (err) { });},  
+ 2157: function() {FS.syncfs(function (err) { });},  
+ 2188: function() {FS.syncfs(true, function (err) { });},  
+ 2824: function() {FS.syncfs(function (err) { });},  
+ 2855: function() {FS.syncfs(true, function (err) { });},  
+ 3523: function() {FS.syncfs(function (err) { });},  
+ 3554: function() {FS.syncfs(true, function (err) { });},  
+ 3819: function() {FS.syncfs(function (err) { });},  
+ 3850: function() {FS.syncfs(true, function (err) { });},  
+ 4216: function() {FS.syncfs(function (err) { });},  
+ 4247: function() {FS.syncfs(true, function (err) { });},  
+ 4758: function() {FS.syncfs(function (err) { });},  
+ 4789: function() {FS.syncfs(true, function (err) { });},  
+ 5096: function() {FS.syncfs(function (err) { });},  
+ 5127: function() {FS.syncfs(true, function (err) { });},  
+ 5415: function() {FS.syncfs(function (err) { });},  
+ 5446: function() {FS.syncfs(true, function (err) { });},  
+ 5947: function() {FS.syncfs(function (err) { });},  
+ 5978: function() {FS.syncfs(true, function (err) { });},  
+ 6570: function() {FS.syncfs(function (err) { });},  
+ 6790: function() {FS.syncfs(true, function (err) { });},  
+ 7289: function() {FS.syncfs(function (err) { });},  
+ 7320: function() {FS.syncfs(true, function (err) { });},  
+ 7727: function() {FS.syncfs(function (err) { });},  
+ 7758: function() {FS.syncfs(true, function (err) { });},  
+ 8126: function() {FS.syncfs(function (err) { });},  
+ 8157: function() {FS.syncfs(true, function (err) { });},  
+ 8635: function() {FS.syncfs(function (err) { });}
 };
 
 function _emscripten_asm_const_iii(code, sigPtr, argbuf) {
@@ -1899,7 +1929,7 @@ function _emscripten_asm_const_iii(code, sigPtr, argbuf) {
 
 
 
-// STATICTOP = STATIC_BASE + 6704;
+// STATICTOP = STATIC_BASE + 15280;
 /* global initializers */  __ATINIT__.push({ func: function() { ___wasm_call_ctors() } });
 
 
@@ -5318,7 +5348,7 @@ function _emscripten_asm_const_iii(code, sigPtr, argbuf) {
     }
 
   function _emscripten_get_sbrk_ptr() {
-      return 7568;
+      return 16144;
     }
 
   function _emscripten_memcpy_big(dest, src, num) {
@@ -5393,6 +5423,13 @@ function _emscripten_asm_const_iii(code, sigPtr, argbuf) {
     return e.errno;
   }
   }
+
+  function _gettimeofday(ptr) {
+      var now = Date.now();
+      HEAP32[((ptr)>>2)]=(now/1000)|0; // seconds
+      HEAP32[(((ptr)+(4))>>2)]=((now % 1000)*1000)|0; // microseconds
+      return 0;
+    }
 
   function _setTempRet0($i) {
       setTempRet0(($i) | 0);
@@ -5513,7 +5550,7 @@ function intArrayToString(array) {
 
 
 var asmGlobalArg = {};
-var asmLibraryArg = { "__handle_stack_overflow": ___handle_stack_overflow, "__syscall221": ___syscall221, "__syscall5": ___syscall5, "__syscall54": ___syscall54, "_embind_register_bool": __embind_register_bool, "_embind_register_emval": __embind_register_emval, "_embind_register_float": __embind_register_float, "_embind_register_integer": __embind_register_integer, "_embind_register_memory_view": __embind_register_memory_view, "_embind_register_std_string": __embind_register_std_string, "_embind_register_std_wstring": __embind_register_std_wstring, "_embind_register_void": __embind_register_void, "emscripten_asm_const_iii": _emscripten_asm_const_iii, "emscripten_get_sbrk_ptr": _emscripten_get_sbrk_ptr, "emscripten_memcpy_big": _emscripten_memcpy_big, "emscripten_resize_heap": _emscripten_resize_heap, "fd_close": _fd_close, "fd_read": _fd_read, "fd_seek": _fd_seek, "fd_write": _fd_write, "memory": wasmMemory, "setTempRet0": _setTempRet0, "table": wasmTable, "time": _time };
+var asmLibraryArg = { "__handle_stack_overflow": ___handle_stack_overflow, "__syscall221": ___syscall221, "__syscall5": ___syscall5, "__syscall54": ___syscall54, "_embind_register_bool": __embind_register_bool, "_embind_register_emval": __embind_register_emval, "_embind_register_float": __embind_register_float, "_embind_register_integer": __embind_register_integer, "_embind_register_memory_view": __embind_register_memory_view, "_embind_register_std_string": __embind_register_std_string, "_embind_register_std_wstring": __embind_register_std_wstring, "_embind_register_void": __embind_register_void, "emscripten_asm_const_iii": _emscripten_asm_const_iii, "emscripten_get_sbrk_ptr": _emscripten_get_sbrk_ptr, "emscripten_memcpy_big": _emscripten_memcpy_big, "emscripten_resize_heap": _emscripten_resize_heap, "fd_close": _fd_close, "fd_read": _fd_read, "fd_seek": _fd_seek, "fd_write": _fd_write, "gettimeofday": _gettimeofday, "memory": wasmMemory, "setTempRet0": _setTempRet0, "table": wasmTable, "time": _time };
 var asm = createWasm();
 Module["asm"] = asm;
 /** @type {function(...*):?} */
@@ -5524,10 +5561,10 @@ var ___wasm_call_ctors = Module["___wasm_call_ctors"] = function() {
 };
 
 /** @type {function(...*):?} */
-var _c_opf_split = Module["_c_opf_split"] = function() {
+var _c_opf_accuracy = Module["_c_opf_accuracy"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
-  return Module["asm"]["c_opf_split"].apply(null, arguments)
+  return Module["asm"]["c_opf_accuracy"].apply(null, arguments)
 };
 
 /** @type {function(...*):?} */
@@ -5538,10 +5575,115 @@ var _free = Module["_free"] = function() {
 };
 
 /** @type {function(...*):?} */
+var _c_opf_accuracy4label = Module["_c_opf_accuracy4label"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["c_opf_accuracy4label"].apply(null, arguments)
+};
+
+/** @type {function(...*):?} */
+var _c_opf_classify = Module["_c_opf_classify"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["c_opf_classify"].apply(null, arguments)
+};
+
+/** @type {function(...*):?} */
+var _c_opf_cluster = Module["_c_opf_cluster"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["c_opf_cluster"].apply(null, arguments)
+};
+
+/** @type {function(...*):?} */
+var _c_opf_distance = Module["_c_opf_distance"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["c_opf_distance"].apply(null, arguments)
+};
+
+/** @type {function(...*):?} */
 var _malloc = Module["_malloc"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
   return Module["asm"]["malloc"].apply(null, arguments)
+};
+
+/** @type {function(...*):?} */
+var _c_opf_fold = Module["_c_opf_fold"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["c_opf_fold"].apply(null, arguments)
+};
+
+/** @type {function(...*):?} */
+var _c_opf_info = Module["_c_opf_info"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["c_opf_info"].apply(null, arguments)
+};
+
+/** @type {function(...*):?} */
+var _c_opf_learn = Module["_c_opf_learn"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["c_opf_learn"].apply(null, arguments)
+};
+
+/** @type {function(...*):?} */
+var _c_opf_merge = Module["_c_opf_merge"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["c_opf_merge"].apply(null, arguments)
+};
+
+/** @type {function(...*):?} */
+var _c_opf_normalize = Module["_c_opf_normalize"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["c_opf_normalize"].apply(null, arguments)
+};
+
+/** @type {function(...*):?} */
+var _c_opf_pruning = Module["_c_opf_pruning"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["c_opf_pruning"].apply(null, arguments)
+};
+
+/** @type {function(...*):?} */
+var _c_opf_semi = Module["_c_opf_semi"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["c_opf_semi"].apply(null, arguments)
+};
+
+/** @type {function(...*):?} */
+var _c_opf_split = Module["_c_opf_split"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["c_opf_split"].apply(null, arguments)
+};
+
+/** @type {function(...*):?} */
+var _c_opf_train = Module["_c_opf_train"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["c_opf_train"].apply(null, arguments)
+};
+
+/** @type {function(...*):?} */
+var _c_opfknn_classify = Module["_c_opfknn_classify"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["c_opfknn_classify"].apply(null, arguments)
+};
+
+/** @type {function(...*):?} */
+var _c_opfknn_train = Module["_c_opfknn_train"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["c_opfknn_train"].apply(null, arguments)
 };
 
 /** @type {function(...*):?} */
@@ -5605,6 +5747,13 @@ var __growWasmMemory = Module["__growWasmMemory"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
   return Module["asm"]["__growWasmMemory"].apply(null, arguments)
+};
+
+/** @type {function(...*):?} */
+var dynCall_fiii = Module["dynCall_fiii"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["dynCall_fiii"].apply(null, arguments)
 };
 
 /** @type {function(...*):?} */

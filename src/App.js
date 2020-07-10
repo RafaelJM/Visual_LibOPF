@@ -17,7 +17,7 @@ import { WasmFs } from "@wasmer/wasmfs";
 // Instantiate a new WASI Instance
 
 
-let Module = require('./ping.js')(); // Your Emscripten JS output file
+let Module = require('./libopf.js')(); // Your Emscripten JS output file
 let FS = Module.FS;
 
 function App() {
@@ -27,6 +27,8 @@ function App() {
     </div>
   );
 }
+
+//-------------------------------------------------
 
 function readGraph(dv){
   var subGraph= {
@@ -70,23 +72,32 @@ function writeGraph(subGraph, file){
   FS.writeFile(file,Buffer.from(buf));
 }
 
-function opf_split(){
-  const opf_split = Module.cwrap('c_opf_split',null,['number', 'number']);
+//-------------------------------------------------
 
-    var strArr = ["","files/auxone.dat","0.5","0","0.5","0"];
-    var ptrArr = Module._malloc(strArr.length * 4);
-    for (var i = 0; i < strArr.length; i++) {
-        var len = strArr[i].length + 1;
-        var ptr = Module._malloc(len);
-        Module.stringToUTF8(strArr[i], ptr, len);
-        Module.setValue(ptrArr + i * 4, ptr, "i32");
-    }
+function runOPFFunction(opfFunction, variables){
+  const cwrap = Module.cwrap("c_"+opfFunction,null,['number', 'number']);
 
-    var num = Module._malloc(4);
-    Module.setValue(num, 6, 'i32');
+  variables = [""].concat(variables);  //  ["","files/auxone.dat","0.5","0","0.5","0"];
 
-    opf_split(num,ptrArr);
+  var ptrArr = Module._malloc(variables.length * 4);
+  var ptrAux = []
+  for (var i = 0; i < variables.length; i++) {
+      var len = variables[i].length + 1;
+      var ptr = Module._malloc(len);
+      ptrAux = ptrAux.concat(ptr);
+      Module.stringToUTF8(variables[i].toString(), ptr, len);
+
+      Module.setValue(ptrArr + i * 4, ptr, "i32");      
+  }
+
+  var ptrNum = Module._malloc(4);
+  Module.setValue(ptrNum, variables.length, 'i32');
+
+  cwrap(ptrNum,ptrArr);  
+
 }
+
+//-------------------------------------------------
 
 class MyFirstGrid extends React.Component {
   constructor(props) {
@@ -128,14 +139,9 @@ class MyFirstGrid extends React.Component {
   clickSaveFunc() {
     writeGraph(this.state.data[this.state.data.length-1],"files/auxone.dat");
 
-    opf_split();
-    var train = readGraph(new DataView(FS.readFile("files/auxone.dat.training.dat", null).buffer));
-    this.state.CSigma.current.loadSugGraph(train);
-  }
-
-  alertClicked(node,subGraphID) {
-    this.setState({ details:[this.loadNodeDetails(this.state.data[subGraphID].nodes[node],subGraphID)] });
-    console.log(node,subGraphID);
+    //runOPFFunction("opf_split",["files/auxone.dat","0.5","0","0.5","0"]);
+    //var train = readGraph(new DataView(FS.readFile("files/auxone.dat.training.dat", null).buffer));
+    //this.state.CSigma.current.loadSugGraph(train);
   }
 
   addList(Subgraph,eventK){
@@ -149,7 +155,7 @@ class MyFirstGrid extends React.Component {
             <ListGroup>
               {Subgraph.nodes.map((node, index) => (
                 <ListGroup.Item> 
-                  <button onClick={() => this.alertClicked(index,eventK)}>Node {node.id}</button>
+                  <button onClick={() => this.loadNodeDetails(index,eventK)}>Node {node.id}</button>
                 </ListGroup.Item>
               ))}
             </ListGroup>
@@ -159,26 +165,26 @@ class MyFirstGrid extends React.Component {
     );
   }
 
-  loadNodeDetails(node,subGraphID){
-    return (
+  loadNodeDetails(index,subGraphIndex){
+    this.setState({ details:[
       <InputGroup className="mb-3">
         <InputGroup.Prepend>
           <InputGroup.Text id="SubGraph">SubGraph</InputGroup.Text>
         </InputGroup.Prepend>
-        <FormControl value={subGraphID} placeholder="ID" aria-label="ID" aria-describedby="basic-addon1"/>
+        <FormControl value={subGraphIndex} placeholder="ID" aria-label="ID" aria-describedby="basic-addon1"/>
 
         <InputGroup.Prepend>
           <InputGroup.Text id="ID">ID</InputGroup.Text>
         </InputGroup.Prepend>
-        <FormControl value={node.id} placeholder="ID" aria-label="ID" aria-describedby="basic-addon1"/>
+        <FormControl value={this.state.data[subGraphIndex].nodes[index].id} placeholder="ID" aria-label="ID" aria-describedby="basic-addon1"/>
 
         <InputGroup.Prepend>
           <InputGroup.Text id="TrueLabel">TrueLabel</InputGroup.Text>
         </InputGroup.Prepend>
-        <FormControl value={node.truelabel} placeholder="ID" aria-label="ID" aria-describedby="basic-addon1"/>
+        <FormControl value={this.state.data[subGraphIndex].nodes[index].truelabel} placeholder="ID" aria-label="ID" aria-describedby="basic-addon1"/>
 
 
-        {node.feats.map((feat, index) => (
+        {this.state.data[subGraphIndex].nodes[index].feats.map((feat, index) => (
           <div>
             <InputGroup.Prepend>
               <InputGroup.Text id={"feat"+index}>Feat {index}</InputGroup.Text>
@@ -187,7 +193,7 @@ class MyFirstGrid extends React.Component {
           </div>
         ))}
       </InputGroup>
-    )
+    ]});
   }
 
   loadFunctions(){
@@ -209,14 +215,6 @@ class MyFirstGrid extends React.Component {
         <button onClick={() => this.insertopf_train()}>opf_train</button>
         <button onClick={() => this.insertopfknn_classify()}>opfknn_classify</button>
         <button onClick={() => this.insertopfknn_train()}>opfknn_train</button>
-      </div>
-    )
-  }
-
-  insertOpf_Split(){
-    return (
-      <div>
-        adsada
       </div>
     )
   }

@@ -1,13 +1,21 @@
 #include "OPF.h"
+#include <emscripten.h>
 
+EMSCRIPTEN_KEEPALIVE
 void c_opf_accuracy4label(int *argc, char **argv)
 {
+	EM_ASM(
+        FS.syncfs(true, function (err) {
+            // Error
+        });
+    );
+	
 	errorOccurred = 0;	
 
 	if (*argc != 2)
 	{
-		REprintf("\nusage opf_accuracyforlabel <P1>");
-		REprintf("\nP1: data set in the OPF file format\n");
+		fprintf(stderr, "\nusage opf_accuracyforlabel <P1>");
+		fprintf(stderr, "\nP1: data set in the OPF file format\n");
 		return;
 	}
 
@@ -16,19 +24,19 @@ void c_opf_accuracy4label(int *argc, char **argv)
 	FILE *f = NULL;
 	char fileName[256];
 
-	Rprintf("\nReading data file ...");
+	fprintf(stdout, "\nReading data file ...");
 	
 	Subgraph *g = ReadSubgraph(argv[1]); if(errorOccurred) return;
-	Rprintf(" OK");
+	fprintf(stdout, " OK");
 	
 
-	Rprintf("\nReading output file ...");
+	fprintf(stdout, "\nReading output file ...");
 	
 	sprintf(fileName, "%s.out", argv[1]);
 	f = fopen(fileName, "r");
 	if (!f)
 	{
-		REprintf("\nunable to open file %s", argv[2]);
+		fprintf(stderr, "\nunable to open file %s", argv[2]);
 		return;
 	}
 
@@ -40,17 +48,17 @@ void c_opf_accuracy4label(int *argc, char **argv)
 		}
 	}
 	fclose(f);
-	Rprintf(" OK");
+	fprintf(stdout, " OK");
 	
 
-	Rprintf("\nComputing accuracy ...");
+	fprintf(stdout, "\nComputing accuracy ...");
 	
 	Acc = opf_Accuracy4Label(g); if(errorOccurred) return;
 	for (i = 1; i <= g->nlabels; i++)
-		Rprintf("\nClass %d: %.2f%%", i, Acc[i] * 100);
+		fprintf(stdout, "\nClass %d: %.2f%%", i, Acc[i] * 100);
 	
 
-	Rprintf("\nWriting accuracy in output file ...");
+	fprintf(stdout, "\nWriting accuracy in output file ...");
 	
 	sprintf(fileName, "%s.acc", argv[1]);
 	f = fopen(fileName, "a");
@@ -61,13 +69,19 @@ void c_opf_accuracy4label(int *argc, char **argv)
 	}
 	fprintf(f, "\n");
 	fclose(f);
-	Rprintf(" OK");
+	fprintf(stdout, " OK");
 	
 
-	Rprintf("\nDeallocating memory ...");
+	fprintf(stdout, "\nDeallocating memory ...");
 	
 	DestroySubgraph(&g);
-	Rprintf(" OK\n");
+	fprintf(stdout, " OK\n");
 
 	free(Acc);
+	
+	EM_ASM(
+        FS.syncfs(function (err) {
+            // Error
+        });
+    );
 }

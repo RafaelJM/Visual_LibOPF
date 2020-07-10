@@ -1,14 +1,23 @@
 #include "OPF.h"
+#include <emscripten.h>
 
+
+EMSCRIPTEN_KEEPALIVE
 void c_opfknn_classify(int *argc, char **argv)
 {
+	EM_ASM(
+        FS.syncfs(true, function (err) {
+            // Error
+        });
+    );
+
 	errorOccurred = 0;
 	opf_PrecomputedDistance = 0;
 	if ((*argc != 3) && (*argc != 2))
 	{
-		REprintf("\nusage opfknn_classify <P1> <P2>");
-		REprintf("\nP1: test set in the OPF file format");
-		REprintf("\nP2: precomputed distance file (leave it in blank if you are not using this resource\n");
+		fprintf(stderr, "\nusage opfknn_classify <P1> <P2>");
+		fprintf(stderr, "\nP1: test set in the OPF file format");
+		fprintf(stderr, "\nP2: precomputed distance file (leave it in blank if you are not using this resource\n");
 		return;
 	}
 
@@ -20,33 +29,33 @@ void c_opfknn_classify(int *argc, char **argv)
 
 	if (*argc == 3)
 		opf_PrecomputedDistance = 1;
-	Rprintf("\nReading data files ...");
+	fprintf(stdout, "\nReading data files ...");
 	
 	sprintf(fileName, "%s.classifier.opf", argv[1]);
 	Subgraph *gTest = ReadSubgraph(argv[1]), *gTrain = opf_ReadModelFile(fileName); if(errorOccurred) return;
-	Rprintf(" OK");
+	fprintf(stdout, " OK");
 	
 
 	if (opf_PrecomputedDistance){
 		opf_DistanceValue = opf_ReadDistances(argv[2], &n); if(errorOccurred) return;
 	}
 
-	Rprintf("\nClassifying test set ...");
+	fprintf(stdout, "\nClassifying test set ...");
 	
 	gettimeofday(&tic, NULL);
 	opf_OPFknnClassify(gTrain, gTest); if(errorOccurred) return;
 	gettimeofday(&toc, NULL);
-	Rprintf(" OK");
+	fprintf(stdout, " OK");
 	
 
-	Rprintf("\nWriting output file ...");
+	fprintf(stdout, "\nWriting output file ...");
 	
 	sprintf(fileName, "%s.out", argv[1]);
 	opf_WriteOutputFile(gTest, fileName);
-	Rprintf(" OK");
+	fprintf(stdout, " OK");
 	
 
-	Rprintf("\nDeallocating memory ...");
+	fprintf(stdout, "\nDeallocating memory ...");
 	DestroySubgraph(&gTrain);
 	DestroySubgraph(&gTest);
 	if (opf_PrecomputedDistance)
@@ -55,14 +64,20 @@ void c_opfknn_classify(int *argc, char **argv)
 			free(opf_DistanceValue[i]);
 		free(opf_DistanceValue);
 	}
-	Rprintf(" OK\n");
+	fprintf(stdout, " OK\n");
 
 	time = ((toc.tv_sec - tic.tv_sec) * 1000.0 + (toc.tv_usec - tic.tv_usec) * 0.001) / 1000.0;
-	Rprintf("\nTesting time: %f seconds\n", time);
+	fprintf(stdout, "\nTesting time: %f seconds\n", time);
 	
 
 	sprintf(fileName, "%s.time", argv[1]);
 	f = fopen(fileName, "a");
 	fprintf(f, "%f\n", time);
 	fclose(f);
+	
+	EM_ASM(
+        FS.syncfs(function (err) {
+            // Error
+        });
+    );
 }
