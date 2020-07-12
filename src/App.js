@@ -5,7 +5,7 @@ import './App.css';
 import {Sigma, RandomizeNodePositions, RelativeSize, NodeShapes } from 'react-sigma';
 import dat from './boat.dat';
 
-import { Accordion , Card , Button , useAccordionToggle , ListGroup, InputGroup, FormControl} from 'react-bootstrap';
+import { Accordion , Card , Button , useAccordionToggle , ListGroup, InputGroup, FormControl, Form} from 'react-bootstrap';
 
 import { WASI } from "@wasmer/wasi";
 import wasiBindings from "@wasmer/wasi/lib/bindings/node";
@@ -93,8 +93,7 @@ function runOPFFunction(opfFunction, variables){
   var ptrNum = Module._malloc(4);
   Module.setValue(ptrNum, variables.length, 'i32');
 
-  cwrap(ptrNum,ptrArr);  
-
+  cwrap(ptrNum,ptrArr);
 }
 
 //-------------------------------------------------
@@ -171,17 +170,17 @@ class MyFirstGrid extends React.Component {
         <InputGroup.Prepend>
           <InputGroup.Text id="SubGraph">SubGraph</InputGroup.Text>
         </InputGroup.Prepend>
-        <FormControl value={subGraphIndex} placeholder="ID" aria-label="ID" aria-describedby="basic-addon1"/>
+        <FormControl defaultValue={subGraphIndex} placeholder="ID" aria-label="ID" aria-describedby="basic-addon1"/>
 
         <InputGroup.Prepend>
           <InputGroup.Text id="ID">ID</InputGroup.Text>
         </InputGroup.Prepend>
-        <FormControl value={this.state.data[subGraphIndex].nodes[index].id} placeholder="ID" aria-label="ID" aria-describedby="basic-addon1"/>
+        <FormControl defaultValue={this.state.data[subGraphIndex].nodes[index].id} placeholder="ID" aria-label="ID" aria-describedby="basic-addon1"/>
 
         <InputGroup.Prepend>
           <InputGroup.Text id="TrueLabel">TrueLabel</InputGroup.Text>
         </InputGroup.Prepend>
-        <FormControl value={this.state.data[subGraphIndex].nodes[index].truelabel} placeholder="ID" aria-label="ID" aria-describedby="basic-addon1"/>
+        <FormControl defaultValue={this.state.data[subGraphIndex].nodes[index].truelabel} placeholder="ID" aria-label="ID" aria-describedby="basic-addon1"/>
 
 
         {this.state.data[subGraphIndex].nodes[index].feats.map((feat, index) => (
@@ -189,7 +188,7 @@ class MyFirstGrid extends React.Component {
             <InputGroup.Prepend>
               <InputGroup.Text id={"feat"+index}>Feat {index}</InputGroup.Text>
             </InputGroup.Prepend>
-            <FormControl value={feat} placeholder="Feats" aria-label="Feats" aria-describedby="basic-addon1"/>
+            <FormControl defaultValue={feat} placeholder="Feats" aria-label="Feats" aria-describedby="basic-addon1"/>
           </div>
         ))}
       </InputGroup>
@@ -199,24 +198,80 @@ class MyFirstGrid extends React.Component {
   loadFunctions(){
     return (
       <div>
-        <button onClick={() => this.insertopf_accuracy()}>opf_accuracy</button>
-        <button onClick={() => this.insertopf_accuracy4label()}>opf_accuracy4label</button>
-        <button onClick={() => this.insertopf_classify()}>opf_classify</button>
-        <button onClick={() => this.insertopf_cluster()}>opf_cluster</button>
-        <button onClick={() => this.insertopf_distance()}>opf_distance</button>
-        <button onClick={() => this.insertopf_fold()}>opf_fold</button>
-        <button onClick={() => this.insertopf_info()}>opf_info</button>
-        <button onClick={() => this.insertopf_learn()}>opf_learn</button>
-        <button onClick={() => this.insertopf_merge()}>opf_merge</button>
-        <button onClick={() => this.insertopf_normalize()}>opf_normalize</button>
-        <button onClick={() => this.insertopf_pruning()}>opf_pruning</button>
-        <button onClick={() => this.insertopf_semi()}>opf_semi</button>
-        <button onClick={() => this.insertopf_split()}>opf_split</button>
-        <button onClick={() => this.insertopf_train()}>opf_train</button>
-        <button onClick={() => this.insertopfknn_classify()}>opfknn_classify</button>
-        <button onClick={() => this.insertopfknn_train()}>opfknn_train</button>
+        <button onClick={() => this.loadFunctionEntrance("opf_accuracy",[this.entrace_SubGraph(0,"test subgraph"),this.entrace_Number("real","ola","ola","ola")])}>opf_accuracy</button>
+        <button onClick={() => this.loadFunctionEntrance("opf_accuracy4label")}>opf_accuracy4label</button>
+        <button onClick={() => this.loadFunctionEntrance("opf_classify")}>opf_classify</button>
+        <button onClick={() => this.loadFunctionEntrance("opf_cluster")}>opf_cluster</button>
+        <button onClick={() => this.loadFunctionEntrance("opf_distance")}>opf_distance</button>
+        <button onClick={() => this.loadFunctionEntrance("opf_fold")}>opf_fold</button>
+        <button onClick={() => this.loadFunctionEntrance("opf_info")}>opf_info</button>
+        <button onClick={() => this.loadFunctionEntrance("opf_learn")}>opf_learn</button>
+        <button onClick={() => this.loadFunctionEntrance("opf_merge")}>opf_merge</button>
+        <button onClick={() => this.loadFunctionEntrance("opf_normalize")}>opf_normalize</button>
+        <button onClick={() => this.loadFunctionEntrance("opf_pruning")}>opf_pruning</button>
+        <button onClick={() => this.loadFunctionEntrance("opf_semi")}>opf_semi</button>
+        <button onClick={() => this.loadFunctionEntrance("opf_split",[this.entrace_SubGraph(0,"subgraph"),this.entrace_Number("real","","training_p",""),this.entrace_Number("real","","evaluating_p",""),this.entrace_Number("real","","testing_p",""),this.entrace_Number("real","","normalize","")])}>opf_split</button>
+        <button onClick={() => this.loadFunctionEntrance("opf_train")}>opf_train</button>
+        <button onClick={() => this.loadFunctionEntrance("opfknn_classify")}>opfknn_classify</button>
+        <button onClick={() => this.loadFunctionEntrance("opfknn_train")}>opfknn_train</button>
       </div>
     )
+  }
+  
+  loadFunctionEntrance(OPFFunction, entrances){
+    var refs = [];
+    for(var i in entrances){
+      var aux = React.createRef();
+      entrances[i] = React.cloneElement(entrances[i], { ref: aux });
+      refs = refs.concat(aux);
+    }
+    this.setState({ functions:[
+      <div>
+        <InputGroup className="functions">
+          {OPFFunction}(
+          {entrances.map((entrace, index) => (
+            [<b>{((index != 0) ? (" , ") : (""))}</b>,entrace]
+          ))}
+          )
+        </InputGroup>
+        <button class="functions" onClick={() => {
+            var values = [];
+            var fileUsed = 0;
+            for(var i in refs){
+              if(refs[i].current.className.includes("graphInput")){
+                writeGraph(this.state.data[refs[i].current.value], "files/aux"+fileUsed+".dat");
+                values = values.concat("files/aux"+fileUsed+".dat");
+              }
+              else{
+                values = values.concat(refs[i].current.value);
+              }
+            }
+            runOPFFunction(OPFFunction,values);
+          }}>Run</button>
+        <button onClick={() => (this.setState({ functions:[this.loadFunctions()]}))}>Back</button>
+      </div>
+    ]});
+  }
+
+  entrace_SubGraph(type, title){ // 0 - todos / 1 - treinado apenas 
+    return (
+      <Form.Control
+        as="select"
+        className="graphInput"
+        id="inlineFormCustomSelect"
+        custom
+      >
+        {this.state.data.map((subGraph, index) => (
+          <option value={index}>SubGraph {index}</option>
+        ))}
+      </Form.Control>
+    )
+  }
+
+  entrace_Number(type, value, discribe, rules){
+    return (
+      <FormControl className="numbersInput" defaultValue={value} placeholder={discribe} aria-label={discribe} aria-describedby="basic-addon1"/>
+      )
   }
 
   render() {   
