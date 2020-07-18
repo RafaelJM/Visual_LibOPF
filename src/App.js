@@ -30,9 +30,9 @@ function App() {
 
 //-------------------------------------------------
 
-function readGraph(dv){
+function readGraph(dv, name){
   var subGraph= {
-    nnodes: -1, nlabels: -1, nfeats: -1,
+    nnodes: -1, nlabels: -1, nfeats: -1, name: name,
     nodes: [],
     edges:[],
   };
@@ -42,14 +42,16 @@ function readGraph(dv){
   subGraph.nlabels = dv.getInt32(cont=cont+4,true);//nlabels
   subGraph.nfeats = dv.getInt32(cont=cont+4,true);//nfeats
   for(var i = 0; i < subGraph.nnodes; i++){
-    subGraph.nodes[i] = {id: dv.getInt32(cont=cont+4,true),//position
+    subGraph.nodes[i] = {
+    feat: [  ],
+    id: dv.getInt32(cont=cont+4,true),//position
     truelabel: dv.getInt32(cont=cont+4,true),//truelabel
-    feats: [  ], x:0, y:0, size:0.5};
+    x:0, y:0, size:0.5};
     for(var j = 0; j < subGraph.nfeats; j++){
-      subGraph.nodes[i].feats[j] = dv.getFloat32(cont=cont+4,true);//feat
+      subGraph.nodes[i].feat[j] = dv.getFloat32(cont=cont+4,true);//feat
     }
-    subGraph.nodes[i].x = subGraph.nodes[i].feats[0];
-    subGraph.nodes[i].y = subGraph.nodes[i].feats[1];
+    subGraph.nodes[i].x = subGraph.nodes[i].feat[0];
+    subGraph.nodes[i].y = subGraph.nodes[i].feat[1];
   }
   return(subGraph);
 }
@@ -65,36 +67,114 @@ function writeGraph(subGraph, file){
     buf.writeInt32LE(subGraph.nodes[i].id,cont=cont+4);
     buf.writeInt32LE(subGraph.nodes[i].truelabel,cont=cont+4);
     for(var j = 0; j < subGraph.nfeats; j++){
-      buf.writeFloatLE(subGraph.nodes[i].feats[j],cont=cont+4);
+      buf.writeFloatLE(subGraph.nodes[i].feat[j],cont=cont+4);
     }
   }
   
   FS.writeFile(file,Buffer.from(buf));
 }
 
-//-------------------------------------------------
+function readModelFile(dv, name){
+  var subGraph= {
+    nnodes: -1, nlabels: -1, nfeats: -1, df: -1, bestk: -1, K: -1, mindens: -1, maxdens: -1, name: name,
+    nodes: [],
+    edges:[],
+  };
+  
+  var cont = 0;
+  subGraph.nnodes = dv.getInt32(cont,true);
+  subGraph.nlabels = dv.getInt32(cont=cont+4,true);
+  subGraph.nfeats = dv.getInt32(cont=cont+4,true);
+  subGraph.df = dv.getFloat32(cont=cont+4,true);
+  subGraph.bestk = dv.getInt32(cont=cont+4,true);
+  subGraph.K = dv.getFloat32(cont=cont+4,true);
+  subGraph.mindens = dv.getFloat32(cont=cont+4,true);
+  subGraph.maxdens = dv.getFloat32(cont=cont+4,true);
+  for(var i = 0; i < subGraph.nnodes; i++){
+    subGraph.nodes[i] = {
+    feat: [  ],
+    id: dv.getInt32(cont=cont+4,true),//position
+    truelabel: dv.getInt32(cont=cont+4,true),
+    pred: dv.getInt32(cont=cont+4,true),
+    label: dv.getInt32(cont=cont+4,true),
+    pathval: dv.getFloat32(cont=cont+4,true),
+    radius: dv.getFloat32(cont=cont+4,true),
+    dens: dv.getFloat32(cont=cont+4,true),
+    x:0, y:0, size:0.5};
+    for(var j = 0; j < subGraph.nfeats; j++){
+      subGraph.nodes[i].feat[j] = dv.getFloat32(cont=cont+4,true);//feat
+    }
+    subGraph.nodes[i].x = subGraph.nodes[i].feat[0];
+    subGraph.nodes[i].y = subGraph.nodes[i].feat[1];
+  }
+  return(subGraph);
+}
 
-function runOPFFunction(opfFunction, variables){
-  const cwrap = Module.cwrap("c_"+opfFunction,null,['number', 'number']);
+function writeModelFile(subGraph, file){
+  const buf = Buffer.allocUnsafe((8 + subGraph.nnodes*(7+subGraph.nfeats))*4);
+  
+  var cont = 0;
+  buf.writeInt32LE(subGraph.nnodes,cont);
+  buf.writeInt32LE(subGraph.nlabels,cont=cont+4);
+  buf.writeInt32LE(subGraph.nfeats,cont=cont+4);
+  buf.writeFloatLE(subGraph.df,cont=cont+4);
+  buf.writeInt32LE(subGraph.bestk,cont=cont+4);
+  buf.writeFloatLE(subGraph.K,cont=cont+4);
+  buf.writeFloatLE(subGraph.mindens,cont=cont+4);
+  buf.writeFloatLE(subGraph.maxdens,cont=cont+4);
+  for(var i = 0; i < subGraph.nnodes; i++){
+    buf.writeInt32LE(subGraph.nodes[i].id,cont=cont+4);//position
+    buf.writeInt32LE(subGraph.nodes[i].truelabel,cont=cont+4);
+    buf.writeInt32LE(subGraph.nodes[i].pred,cont=cont+4);
+    buf.writeInt32LE(subGraph.nodes[i].label,cont=cont+4);
+    buf.writeFloatLE(subGraph.nodes[i].pathval,cont=cont+4);
+    buf.writeFloatLE(subGraph.nodes[i].radius,cont=cont+4);
+    buf.writeFloatLE(subGraph.nodes[i].dens,cont=cont+4);
+    for(var j = 0; j < subGraph.nfeats; j++){
+      buf.writeFloatLE(subGraph.nodes[i].feat[j],cont=cont+4);
+    }
+  }
+  
+  FS.writeFile(file,Buffer.from(buf));
+}
 
-  variables = [""].concat(variables);  //  ["","files/auxone.dat","0.5","0","0.5","0"];
+function readClassification(){
 
-  var ptrArr = Module._malloc(variables.length * 4);
-  var ptrAux = []
-  for (var i = 0; i < variables.length; i++) {
-      var len = variables[i].length + 1;
-      var ptr = Module._malloc(len);
-      ptrAux = ptrAux.concat(ptr);
-      Module.stringToUTF8(variables[i].toString(), ptr, len);
+}
 
-      Module.setValue(ptrArr + i * 4, ptr, "i32");      
+function writeClassification(){
+
+}
+
+function readDistances(dv){
+  var cont = 0;
+  var nsamples = dv.getInt32(cont,true);
+  var distances = new Array(nsamples);
+  for(var i=0; i<nsamples; i++) {
+    distances[i] = new Array(nsamples);
+    for(var j=0; j<nsamples; j++) {
+      distances[i][j] = dv.getFloat32(cont=cont+4,true);
+    }
   }
 
-  var ptrNum = Module._malloc(4);
-  Module.setValue(ptrNum, variables.length, 'i32');
-
-  cwrap(ptrNum,ptrArr);
+  return(distances);
 }
+
+function writeDistances(distances, file){
+  const buf = Buffer.allocUnsafe((1 + (distances.length^2))*4);
+
+  var cont = 0;
+  buf.writeInt32LE(distances.length,cont);
+
+  for(var i=0; i<distances.length; i++) {
+    for(var j=0; j<distances.length; j++) {
+      buf.writeFloatLE(distances[i][j],cont=cont+4);
+    }
+  }
+  
+  FS.writeFile(file,Buffer.from(buf));
+}
+
 
 //-------------------------------------------------
 
@@ -104,14 +184,81 @@ class MyFirstGrid extends React.Component {
     this.click = this.click.bind(this);
     this.clickSaveFunc = this.clickSaveFunc.bind(this);
     this.state = {
-        data: [],
+        subGraphs: [],
+        modelFiles: [],
+        distances: [],
+        classifications: [],
         CSigma: React.createRef(),
         lists: [],
         details: [],
+        visualizer: [],
         functions: this.loadFunctions(),
     };
 
     console.log(Module);
+  }
+
+  runOPFFunction(opfFunction, variables, ){
+    const cwrap = Module.cwrap("c_"+opfFunction,null,['number', 'number']);
+  
+    variables = [""].concat(variables);  //  ["","files/auxone.dat","0.5","0","0.5","0"];
+  
+    var ptrArr = Module._malloc(variables.length * 4);
+    var ptrAux = []
+    for (var i = 0; i < variables.length; i++) {
+        var len = variables[i].length + 1;
+        var ptr = Module._malloc(len);
+        ptrAux = ptrAux.concat(ptr);
+        Module.stringToUTF8(variables[i].toString(), ptr, len);
+  
+        Module.setValue(ptrArr + i * 4, ptr, "i32");      
+    }
+  
+    var ptrNum = Module._malloc(4);
+    Module.setValue(ptrNum, variables.length, 'i32');
+  
+    cwrap(ptrNum,ptrArr);
+  
+    var dir = FS.readdir("files/");
+    console.log(dir);
+    for(var i in dir){
+      if(dir[i].includes(".time")){ //execucion time
+        var array = FS.readFile(dir[i]).toString().split("\n");
+        console.log(array);
+        FS.unlink("files/"+dir[i]);
+      }else{
+      if(dir[i].includes(".dat")){ //subGraph
+        var aux = this.state.subGraphs.concat(readGraph(new DataView(FS.readFile("files/"+dir[i], null).buffer),dir[i].replace(".dat",""))); //arrumar name
+        this.setState({ subGraphs:aux });
+        console.log("a",aux,this.state.subGraphs);
+        FS.unlink("files/"+dir[i]);
+      }else{
+      if(dir[i].includes("classifier")){ //modelFile
+        var aux = this.state.subGraphs.concat(readModelFile(new DataView(FS.readFile("files/"+dir[i], null).buffer),dir[i].replace(".opf",""))); //arrumar name
+        this.setState({ subGraphs:aux });
+        FS.unlink("files/"+dir[i]);
+      }else{
+      if(dir[i].includes(".out")){ //classification
+        var array = FS.readFile(dir[i]).toString().split("\n");
+        console.log(array);
+        FS.unlink("files/"+dir[i]);
+      }else{
+      if(dir[i].includes(".acc")){ //acuracy
+        var array = FS.readFile(dir[i]).toString().split("\n");
+        console.log(array);
+        FS.unlink("files/"+dir[i]);
+      }else{
+      if(dir[i].includes("distances")){ //distances
+        var dist = readDistances(new DataView(FS.readFile("files/"+dir[i], null).buffer))
+        console.log(dist);
+        FS.unlink("files/"+dir[i]);
+      }else{
+      if(dir[i].includes("prate")){ //pruning rate
+        var array = FS.readFile(dir[i]).toString().split("\n");
+        console.log(array);
+        FS.unlink("files/"+dir[i]);
+      }}}}}}}
+    }
   }
 
   click() {
@@ -123,11 +270,9 @@ class MyFirstGrid extends React.Component {
     reader.readAsArrayBuffer(files[0]);
 
     reader.onload = function() {          
-      var subGraph = readGraph(new DataView(reader.result));
-      var aux = scope.state.data.concat(subGraph);
-      scope.setState({ data:aux });
-
-      console.log("data",scope.state.data);
+      var subGraph = readGraph(new DataView(reader.result),"loaded subGraph "+scope.state.subGraphs.length.toString());
+      var aux = scope.state.subGraphs.concat(subGraph);
+      scope.setState({ subGraphs:aux });
 
       scope.state.CSigma.current.loadSugGraph(subGraph);
       var aux = scope.state.lists.concat(scope.addList(subGraph,scope.state.lists.length));
@@ -136,23 +281,23 @@ class MyFirstGrid extends React.Component {
   }
 
   clickSaveFunc() {
-    writeGraph(this.state.data[this.state.data.length-1],"files/auxone.dat");
+    writeGraph(this.state.subGraphs[this.state.subGraphs.length-1],"files/0.temp");
 
     //runOPFFunction("opf_split",["files/auxone.dat","0.5","0","0.5","0"]);
     //var train = readGraph(new DataView(FS.readFile("files/auxone.dat.training.dat", null).buffer));
     //this.state.CSigma.current.loadSugGraph(train);
   }
 
-  addList(Subgraph,eventK){
+  addList(subGraph,eventK){
     return (
       <Card>
         <Accordion.Toggle as={Card.Header} eventKey={eventK}>
-          Click me!
+          {subGraph.name}
         </Accordion.Toggle>
         <Accordion.Collapse eventKey={eventK}>
           <Card.Body>
             <ListGroup>
-              {Subgraph.nodes.map((node, index) => (
+              {subGraph.nodes.map((node, index) => (
                 <ListGroup.Item> 
                   <button onClick={() => this.loadNodeDetails(index,eventK)}>Node {node.id}</button>
                 </ListGroup.Item>
@@ -175,15 +320,15 @@ class MyFirstGrid extends React.Component {
         <InputGroup.Prepend>
           <InputGroup.Text id="ID">ID</InputGroup.Text>
         </InputGroup.Prepend>
-        <FormControl defaultValue={this.state.data[subGraphIndex].nodes[index].id} placeholder="ID" aria-label="ID" aria-describedby="basic-addon1"/>
+        <FormControl defaultValue={this.state.subGraphs[subGraphIndex].nodes[index].id} placeholder="ID" aria-label="ID" aria-describedby="basic-addon1"/>
 
         <InputGroup.Prepend>
           <InputGroup.Text id="TrueLabel">TrueLabel</InputGroup.Text>
         </InputGroup.Prepend>
-        <FormControl defaultValue={this.state.data[subGraphIndex].nodes[index].truelabel} placeholder="ID" aria-label="ID" aria-describedby="basic-addon1"/>
+        <FormControl defaultValue={this.state.subGraphs[subGraphIndex].nodes[index].truelabel} placeholder="ID" aria-label="ID" aria-describedby="basic-addon1"/>
 
 
-        {this.state.data[subGraphIndex].nodes[index].feats.map((feat, index) => (
+        {this.state.subGraphs[subGraphIndex].nodes[index].feat.map((feat, index) => (
           <div>
             <InputGroup.Prepend>
               <InputGroup.Text id={"feat"+index}>Feat {index}</InputGroup.Text>
@@ -239,14 +384,15 @@ class MyFirstGrid extends React.Component {
             var fileUsed = 0;
             for(var i in refs){
               if(refs[i].current.className.includes("graphInput")){
-                writeGraph(this.state.data[refs[i].current.value], "files/aux"+fileUsed+".dat");
-                values = values.concat("files/aux"+fileUsed+".dat");
+                writeGraph(this.state.subGraphs[refs[i].current.value], "files/"+fileUsed+".temp");
+                values = values.concat("files/"+fileUsed+".temp");
               }
               else{
                 values = values.concat(refs[i].current.value);
               }
             }
-            runOPFFunction(OPFFunction,values);
+            this.runOPFFunction(OPFFunction,values);
+            console.log(this.state.subGraphs)
           }}>Run</button>
         <button onClick={() => (this.setState({ functions:[this.loadFunctions()]}))}>Back</button>
       </div>
@@ -261,7 +407,7 @@ class MyFirstGrid extends React.Component {
         id="inlineFormCustomSelect"
         custom
       >
-        {this.state.data.map((subGraph, index) => (
+        {this.state.subGraphs.map((subGraph, index) => (
           <option value={index}>SubGraph {index}</option>
         ))}
       </Form.Control>
@@ -291,7 +437,7 @@ class MyFirstGrid extends React.Component {
         <PanelGroup direction="row" borderColor="grey">
           <PanelGroup direction="column" borderColor="grey">
             <div>
-
+              {this.state.visualizer}
             </div>
             <div>
               {this.state.functions}

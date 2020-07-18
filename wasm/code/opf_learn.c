@@ -55,8 +55,8 @@ void c_opf_learn(int *argc, char **argv)
 
 	fprintf(stdout, "\n\nWriting classifier's model file ...");
 	
-	sprintf(fileName, "%s.classifier.opf", argv[1]);
-	opf_WriteModelFile(gTrain, fileName);
+	//sprintf(fileName, "%s.classifier.opf", argv[1]);
+	opf_WriteModelFile(gTrain, "classifier.opf");
 	fprintf(stdout, " OK");
 	
 

@@ -32,8 +32,8 @@ void c_opf_distance(int *argc, char **argv)
 
 	Subgraph *sg = ReadSubgraph(argv[1]); if(errorOccurred) return;
 	char fileName[256];
-	sprintf(fileName, "%s.distances.dat", argv[1]);
-	FILE *fp = fopen(fileName, "wb"); //Changed to send to tempdir
+	//sprintf(fileName, "%s.distances.opf", argv[1]);
+	FILE *fp = fopen("distances.opf", "wb"); //Changed to send to tempdir
 	int i, j, distance = atoi(argv[2]), normalize = atoi(argv[3]);
 	float **Distances = NULL, max = -FLT_MAX;
 

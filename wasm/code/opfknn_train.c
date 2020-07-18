@@ -54,8 +54,8 @@ void c_opfknn_train(int *argc, char **argv)
 
 	fprintf(stdout, "\nWriting classifier's model file ...");
 	
-	sprintf(fileName, "%s.classifier.opf", argv[1]);
-	opf_WriteModelFile(Train, fileName);
+	//sprintf(fileName, "%s.classifier.opf", argv[1]);
+	opf_WriteModelFile(Train, "classifier.opf");
 	fprintf(stdout, " OK");
 	
 

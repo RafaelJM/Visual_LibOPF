@@ -73,8 +73,8 @@ void c_opf_semi(int *argc, char **argv)
 
   fprintf(stdout, "\nWriting classifier's model file ...");
   
-  sprintf(fileName, "%s.classifier.opf", argv[1]);
-  opf_WriteModelFile(g, fileName);
+  //sprintf(fileName, "%s.classifier.opf", argv[1]);
+  opf_WriteModelFile(g, "classifier.opf");
   fprintf(stdout, " OK");
   
 
