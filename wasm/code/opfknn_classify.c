@@ -31,7 +31,7 @@ void c_opfknn_classify(int *argc, char **argv)
 		opf_PrecomputedDistance = 1;
 	fprintf(stdout, "\nReading data files ...");
 	
-	//sprintf(fileName, "%s.classifier.opf", argv[1]);
+	sprintf(fileName, "%s.classifier.opf", argv[1]);
 	Subgraph *gTest = ReadSubgraph(argv[1]), *gTrain = opf_ReadModelFile(fileName); if(errorOccurred) return;
 	fprintf(stdout, " OK");
 	

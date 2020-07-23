@@ -45,8 +45,8 @@ void c_opf_merge(int *argc, char **argv)
 
 	fprintf(stdout, "\nWriting data set to disk ...");
 	
-	//sprintf(fileName, "%s.merged.dat", argv[1]);
-	WriteSubgraph(aux, "merged.dat"); if(errorOccurred) return;
+	sprintf(fileName, "%s.merged.dat", argv[1]);
+	WriteSubgraph(aux, fileName); if(errorOccurred) return;
 	fprintf(stdout, " OK");
 	
 
