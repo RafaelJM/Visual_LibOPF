@@ -63,7 +63,7 @@ void c_opf_pruning(int *argc, char **argv)
 	
 	fprintf(stdout, " OK");
 	
-	sprintf(fileName, "%s.prate.pr", argv[1]);
+	sprintf(fileName, "%s.pra", argv[1]);
 	f = fopen(fileName, "a");
 	fprintf(f, "%f\n", prate);
 	fclose(f);

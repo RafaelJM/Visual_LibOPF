@@ -108,7 +108,7 @@ void c_opf_cluster(int *argc, char **argv)
 
 	fprintf(stdout, "\nWriting classifier's model file ...");
 	
-	sprintf(fileName, "%s.classifier.opf", argv[1]);
+	sprintf(fileName, "%s.cla", argv[1]);
 	opf_WriteModelFile(g, fileName);
 	fprintf(stdout, " OK");
 	

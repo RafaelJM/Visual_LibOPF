@@ -55,7 +55,7 @@ void c_opf_learn(int *argc, char **argv)
 
 	fprintf(stdout, "\n\nWriting classifier's model file ...");
 	
-	sprintf(fileName, "%s.classifier.opf", argv[1]);
+	sprintf(fileName, "%s.cla", argv[1]);
 	opf_WriteModelFile(gTrain, fileName);
 	fprintf(stdout, " OK");
 	
@@ -72,7 +72,7 @@ void c_opf_learn(int *argc, char **argv)
 	fprintf(stdout, " OK\n");
 	
 
-	sprintf(fileName, "%s.time", argv[1]);
+	sprintf(fileName, "%s.tim", argv[1]);
 	f = fopen(fileName, "a");
 	fprintf(f, "%f\n", time);
 	fclose(f);

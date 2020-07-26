@@ -73,7 +73,7 @@ void c_opf_semi(int *argc, char **argv)
 
   fprintf(stdout, "\nWriting classifier's model file ...");
   
-  sprintf(fileName, "%s.classifier.opf", argv[1]);
+  sprintf(fileName, "%s.cla", argv[1]);
   opf_WriteModelFile(g, fileName);
   fprintf(stdout, " OK");
   
@@ -101,7 +101,7 @@ void c_opf_semi(int *argc, char **argv)
   fprintf(stdout, "\nExecution time: %f seconds\n", time);
   
 
-  sprintf(fileName, "%s.time", argv[1]);
+  sprintf(fileName, "%s.tim", argv[1]);
   f = fopen(fileName, "a");
   fprintf(f, "%f\n", time);
   fclose(f);

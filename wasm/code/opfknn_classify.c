@@ -31,7 +31,7 @@ void c_opfknn_classify(int *argc, char **argv)
 		opf_PrecomputedDistance = 1;
 	fprintf(stdout, "\nReading data files ...");
 	
-	sprintf(fileName, "%s.classifier.opf", argv[1]);
+	sprintf(fileName, "%s.cla", argv[1]);
 	Subgraph *gTest = ReadSubgraph(argv[1]), *gTrain = opf_ReadModelFile(fileName); if(errorOccurred) return;
 	fprintf(stdout, " OK");
 	
@@ -70,7 +70,7 @@ void c_opfknn_classify(int *argc, char **argv)
 	fprintf(stdout, "\nTesting time: %f seconds\n", time);
 	
 
-	sprintf(fileName, "%s.time", argv[1]);
+	sprintf(fileName, "%s.tim", argv[1]);
 	f = fopen(fileName, "a");
 	fprintf(f, "%f\n", time);
 	fclose(f);

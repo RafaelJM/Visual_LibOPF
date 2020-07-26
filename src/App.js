@@ -5,7 +5,7 @@ import './App.css';
 import {Sigma, RandomizeNodePositions, RelativeSize, NodeShapes } from 'react-sigma';
 import dat from './boat.dat';
 
-import { Accordion , Card , Button , useAccordionToggle , ListGroup, InputGroup, FormControl, Form} from 'react-bootstrap';
+import { Accordion , Card , Button , useAccordionToggle , ListGroup, InputGroup, FormControl, Form, OverlayTrigger, Tooltip} from 'react-bootstrap';
 
 import { WASI } from "@wasmer/wasi";
 import wasiBindings from "@wasmer/wasi/lib/bindings/node";
@@ -182,6 +182,116 @@ class MyFirstGrid extends React.Component {
   constructor(props) {
     super(props);
     this.click = this.click.bind(this);
+
+    this.functionDetails = {refs: [],functions: [
+      {function: "opf_accuracy", description: "Computes the OPF accuracy",
+      entraces: () => 
+      [this.entrace_Graph("S","Data object used in the opf_classify function, or similar, normaly is the testing object"),
+      this.entrace_Select(this.state.classifications,"The output list, classified, produced by opf_classify function","C")]
+      },
+
+      {function: "opf_accuracy4label", description: "Computes the OPF accuracy for each class of a given set",
+      entraces: () => 
+      [this.entrace_Graph("S","Data object used in the opf_classify function, or similar, normaly is the testing object"),
+      this.entrace_Select(this.state.classifications,"The output list, classified, produced by opf_classify function","C")]
+      },
+
+      {function: "opf_classify", description: "Executes the test phase of the OPF classifier",
+      entraces: () => 
+      [this.entrace_Graph("S","The testing data object produced by the opf_split function (subGraph object)"),
+      this.entrace_Graph("M","The classifier object produced by one of the classification functions (model object)"),
+      this.entrace_Select(this.state.distances,"The precomputed distance matrix produced by the opf_distance","D",true)]
+      },
+
+      {function: "opf_cluster", description: "Computes clusters by unsupervised OPF",
+      entraces: () => 
+      [this.entrace_Graph("S","The training subGraph object, produced by the opf_split function, for example (subGraph object)"),
+      this.entrace_Number("1","","1","kmax","","The kmax (maximum degree for the knn graph) [greater than 0]"),
+      this.entrace_Select([{name:"Height"},{name:"Area"},{name:"Volume"}],"Clusters by: height, area or volume"),
+      this.entrace_Number("0","1","0.01","parameter of the cluster","","Value of parameter cluster [0-1]"),
+      this.entrace_Select(this.state.distances,"The precomputed distance matrix produced by the opf_distance","D",true)]
+      },
+
+      {function: "opf_distance", description: "Generates the precomputed distance file for the OPF classifier",
+      entraces: () => 
+      [this.entrace_Graph("S","The subGraph object, normaly is the whole data"),
+      this.entrace_Select([{name:"height"},{name:"Chi-Squar"},{name:"Manhattan"},{name:"Canberra"},{name:"Squared Chord"},{name:"Squared Chi-Squared"},{name:"BrayCurtis"}],"Distance calculation option",false,1),
+      this.entrace_Select([{name:"No"},{name:"Yes"}],"Distance normalization?")]
+      },
+
+      {function: "opf_fold", description: "Generates k folds (objects) for the OPF classifier",
+      entraces: () => 
+      [this.entrace_Graph("S","The subGraph object"),
+      this.entrace_Number("2","","1","k","","Number of folds [greater than or equal a 2]"),
+      this.entrace_Select([{name:"No"},{name:"Yes"}],"Distance normalization?")]
+      },
+
+      // opf_info
+
+      {function: "opf_learn", description: "Executes the learning phase of the OPF classifier",
+      entraces: () => 
+      [this.entrace_Graph("S","A subGraph object, can be the training object produced by the opf_split"),
+      this.entrace_Graph("S","A subGraph object, can be the evaluation produced object by the opf_split"),
+      this.entrace_Select(this.state.distances,"The precomputed distance matrix produced by the opf_distance","D",true)]
+      },
+
+      {function: "opf_merge", description: "Merge subGraphs", //can be changed to add more (a func that add more entraces)
+      entraces: () => 
+      [this.entrace_Graph("S","A subGraph object"),
+      this.entrace_Graph("S","A subGraph object")]
+      },
+
+      {function: "opf_normalize", description: "Normalizes data for the OPF classifier",
+      entraces: () => 
+      [this.entrace_Graph("S","The subGraph object")]
+      },
+
+      {function: "opf_pruning", description: "Executes the pruning algorithm",
+      entraces: () => 
+      [this.entrace_Graph("S","A subGraph object, can be the training object produced by the opf_split"),
+      this.entrace_Graph("S","A subGraph object, can be the evaluation produced object by the opf_split"),
+      this.entrace_Number("0","1","0.01","percentageAccuracy","","Max percentage of lost accuracy [0-1]"),
+      this.entrace_Select(this.state.distances,"The precomputed distance matrix produced by the opf_distance","D",true)]
+      },
+
+      {function: "opf_semi", description: "Executes the semi supervised training phase",
+      entraces: () => 
+      [this.entrace_Graph("S","A subGraph object, labeled training object"),
+      this.entrace_Graph("S","A subGraph object, unlabeled training object"),
+      this.entrace_Graph("S","A subGraph object, can be the evaluation produced object by the opf_split"),
+      this.entrace_Select(this.state.distances,"The precomputed distance matrix produced by the opf_distance","D",true)]
+      },
+
+      {function: "opf_split", description: "Generates training, evaluation and test sets for the OPF classifier",
+      entraces: () => 
+      [this.entrace_Graph("S","The data (subGraph object)"),
+      this.entrace_Number("0","1","0.01","training_p","","Percentage for the training set size [0-1]"),
+      this.entrace_Number("0","1","0.01","evaluating_p","","Percentage for the evaluation set size [0-1] (leave 0 in the case of no learning)"),
+      this.entrace_Number("0","1","0.01","testing_p","","Percentage for the test set sizee [0-1]"),
+      this.entrace_Select([{name:"No"},{name:"Yes"}],"Distance normalization?")]
+      },
+
+      {function: "opf_train", description: "Executes the training phase of the OPF classifier",
+      entraces: () => 
+      [this.entrace_Graph("S","A subGraph object, can be the training object produced by the opf_split"),
+      this.entrace_Select(this.state.distances,"The precomputed distance matrix produced by the opf_distance","D",true)]
+      },
+
+      {function: "opf_knn_classify", description: "Executes the test phase of the OPF classifier with knn adjacency",
+      entraces: () => 
+      [this.entrace_Graph("S","The testing data object produced by the opf_split function (subGraph object)"),
+      this.entrace_Graph("M","The classifier object produced by one of the classification functions (model object)"),
+      this.entrace_Select(this.state.distances,"The precomputed distance matrix produced by the opf_distance","D",true)]
+      },
+
+      {function: "opf_knn_train", description: "Executes the training phase of the OPF classifier with knn adjacency",
+      entraces: () => 
+      [this.entrace_Graph("S","The training subGraph object, produced by the opf_split function, for example"),
+      this.entrace_Graph("S","The evaluation object, produced by the opf_split function, for example"),
+      this.entrace_Number("1","","1","kmax","","The kmax (maximum degree for the knn graph) [greater than 0]"),
+      this.entrace_Select(this.state.distances,"The precomputed distance matrix produced by the opf_distance","D",true)]
+      }
+    ]}
     this.state = {
         loadedSubGraphs: 0,
         subGraphs: [],
@@ -192,9 +302,9 @@ class MyFirstGrid extends React.Component {
         lists: [],
         details: [],
         visualizer: [],
-        functions: this.loadFunctions(),
+        functions: this.loadFunctions()
     };
-
+    //this.setState({functions: this.loadFunctions()});
     console.log(Module);
   }
 
@@ -202,7 +312,7 @@ class MyFirstGrid extends React.Component {
     const cwrap = Module.cwrap("c_"+opfFunction,null,['number', 'number']);
   
     variables = [""].concat(variables);  //  ["","files/auxone.dat","0.5","0","0.5","0"];
-  
+    console.log("variables",variables);
     var ptrArr = Module._malloc(variables.length * 4);
     var ptrAux = []
     for (var i = 0; i < variables.length; i++) {
@@ -224,45 +334,45 @@ class MyFirstGrid extends React.Component {
     var buffer = {"subGraphs":[],"modelFiles":[],"distances":[],"classifications":[]}
     for(var i in dir){
       if(dir[i].substring(6) != ""){
-        if(dir[i].includes(".time")){ //execucion time
-          var array = FS.readFile(dir[i]).toString().split("\n");
-          console.log(array);
-          FS.unlink("files/"+dir[i]);
-        }else{
-        if(dir[i].includes(".dat")){ //subGraph
-          buffer["subGraphs"] = buffer["subGraphs"].concat(readGraph(new DataView(FS.readFile("files/"+dir[i], null).buffer),dir[i].substring(7).replace(".dat",""))); //arrumar name //arrumar
-          FS.unlink("files/"+dir[i]);
-        }else{
-        if(dir[i].includes("classifier")){ //modelFile
-          buffer["modelFiles"] = buffer["modelFiles"].concat(readModelFile(new DataView(FS.readFile("files/"+dir[i], null).buffer),dir[i].substring(7).replace(".opf",""))); //arrumar name
-          FS.unlink("files/"+dir[i]);
-        }else{
-        if(dir[i].includes(".out")){ //classification
-          var array = FS.readFile(dir[i]).toString().split("\n");
-          console.log(array);
-          FS.unlink("files/"+dir[i]);
-        }else{
-        if(dir[i].includes(".acc")){ //acuracy
-          var array = FS.readFile(dir[i]).toString().split("\n");
-          console.log(array);
-          FS.unlink("files/"+dir[i]);
-        }else{
-        if(dir[i].includes("distances")){ //distances
-          var dist = readDistances(new DataView(FS.readFile("files/"+dir[i], null).buffer))
-          console.log(dist);
-          FS.unlink("files/"+dir[i]);
-        }else{
-        if(dir[i].includes("prate")){ //pruning rate
-          var array = FS.readFile(dir[i]).toString().split("\n");
-          console.log(array);
-          FS.unlink("files/"+dir[i]);
-        }}}}}}}
+        switch(dir[i].substr(-4)) {
+          case ".tim": //execucion time
+            var array = FS.readFile("files/"+dir[i],null).toString().split("\n");
+            console.log(array);
+            FS.unlink("files/"+dir[i]);
+            break;
+          case ".dat": //subGraph
+            buffer["subGraphs"] = buffer["subGraphs"].concat(readGraph(new DataView(FS.readFile("files/"+dir[i], null).buffer),dir[i].substring(7).replace(".dat",""))); //arrumar name //arrumar
+            FS.unlink("files/"+dir[i]);
+            break;
+          case ".cla": //modelFile
+            buffer["modelFiles"] = buffer["modelFiles"].concat(readModelFile(new DataView(FS.readFile("files/"+dir[i], null).buffer),"classificator " + this.state.modelFiles.length)); //arrumar name
+            FS.unlink("files/"+dir[i]);
+            break;
+          case ".out": //classification
+            buffer["classifications"] = buffer["classifications"].concat(FS.readFile("files/"+dir[i],null).toString().split("\n"));
+            FS.unlink("files/"+dir[i]);
+            break;
+          case ".acc": //accuracy
+            var array = FS.readFile("files/"+dir[i],null).toString().split("\n");
+            console.log(array);
+            FS.unlink("files/"+dir[i]);
+            break;
+          case ".dis": //distances
+            buffer["distances"] = buffer["distances"].concat(readDistances(new DataView(FS.readFile("files/"+dir[i], null).buffer)))
+            FS.unlink("files/"+dir[i]);
+            break;
+          case ".pra": //pruning rate
+            var array = FS.readFile("files/"+dir[i],null).toString().split("\n");
+            console.log(array);
+            FS.unlink("files/"+dir[i]);
+            break;
+        }
       }
     }
     this.setState({ "subGraphs":this.state.subGraphs.concat(buffer["subGraphs"]),
                     "modelFiles":this.state.modelFiles.concat(buffer["modelFiles"]),
                     "distances":this.state.distances.concat(buffer["distances"]),
-                    "classifications":this.state.classifications.concat(buffer["classifications"]) }, () => {this.loadList();});
+                    "classifications":this.state.classifications.concat(buffer["classifications"]) }, () => {console.log("state",this.state); this.loadList();});
   }
 
   click() { //add subgraph (tem q ter outro para model file)
@@ -379,60 +489,71 @@ class MyFirstGrid extends React.Component {
       </InputGroup>
     ]})});
   }
-
+  
   loadFunctions(){
     return (
       <div>
-        <button onClick={() => this.loadFunctionEntrance("opf_accuracy",[this.entrace_SubGraph(0,"test subgraph"),this.entrace_Number("real","ola","ola","ola")])}>opf_accuracy</button>
-        <button onClick={() => this.loadFunctionEntrance("opf_accuracy4label")}>opf_accuracy4label</button>
-        <button onClick={() => this.loadFunctionEntrance("opf_classify")}>opf_classify</button>
-        <button onClick={() => this.loadFunctionEntrance("opf_cluster")}>opf_cluster</button>
-        <button onClick={() => this.loadFunctionEntrance("opf_distance")}>opf_distance</button>
-        <button onClick={() => this.loadFunctionEntrance("opf_fold")}>opf_fold</button>
-        <button onClick={() => this.loadFunctionEntrance("opf_info")}>opf_info</button>
-        <button onClick={() => this.loadFunctionEntrance("opf_learn")}>opf_learn</button>
-        <button onClick={() => this.loadFunctionEntrance("opf_merge")}>opf_merge</button>
-        <button onClick={() => this.loadFunctionEntrance("opf_normalize")}>opf_normalize</button>
-        <button onClick={() => this.loadFunctionEntrance("opf_pruning")}>opf_pruning</button>
-        <button onClick={() => this.loadFunctionEntrance("opf_semi")}>opf_semi</button>
-        <button onClick={() => this.loadFunctionEntrance("opf_split",[this.entrace_SubGraph(0,"subgraph"),this.entrace_Number("real","","training_p",""),this.entrace_Number("real","","evaluating_p",""),this.entrace_Number("real","","testing_p",""),this.entrace_Number("real","","normalize","")])}>opf_split</button>
-        <button onClick={() => this.loadFunctionEntrance("opf_train")}>opf_train</button>
-        <button onClick={() => this.loadFunctionEntrance("opfknn_classify")}>opfknn_classify</button>
-        <button onClick={() => this.loadFunctionEntrance("opfknn_train")}>opfknn_train</button>
+        {this.functionDetails.functions.map((func, index) => (
+        <OverlayTrigger overlay={<Tooltip id="tooltip-disabled">{func.description}</Tooltip>}>
+          <span className="d-inline-block">
+            <button onClick={() => {
+                this.functionDetails.refs = []
+                this.loadFunctionEntrance(func.function,func.description,func.entraces())
+              }}>
+              {func.function}
+            </button>
+          </span>            
+        </OverlayTrigger>
+        ))}
       </div>
     )
   }
   
-  loadFunctionEntrance(OPFFunction, entrances){
-    var refs = [];
-    for(var i in entrances){
-      var aux = React.createRef();
-      entrances[i] = React.cloneElement(entrances[i], { ref: aux });
-      refs = refs.concat(aux);
-    }
+  loadFunctionEntrance(OPFFunction, description, entrances){
     this.setState({ functions:[]}, () => {
     this.setState({ functions:[
       <div>
         <InputGroup className="functions">
-          {OPFFunction}(
-          {entrances.map((entrace, index) => (
+          <OverlayTrigger overlay={<Tooltip id="tooltip-disabled">{description}</Tooltip>}>
+            <span className="d-inline-block"><p>{OPFFunction}</p></span>            
+          </OverlayTrigger>
+          ({entrances.map((entrace, index) => (
             [<b>{((index != 0) ? (" , ") : (""))}</b>,entrace]
           ))}
           )
         </InputGroup>
         <button class="functions" onClick={() => {
+            console.log(this.functionDetails.refs);
             var values = [];
             var fileUsed = 0;
-            for(var i in refs){
-              if(refs[i].current.className.includes("graphInput")){
-                writeGraph(this.state.subGraphs[refs[i].current.value], "files/"+fileUsed+".temp");
+            this.functionDetails.refs.map((ref, index) => {
+              if(ref.current.className.includes("numbersInput")){
+                values = values.concat(ref.current.value);
+              } else {
+                switch (ref.current.value.substring(0,1)) {
+                  case "S":
+                    writeGraph(this.state.subGraphs[ref.current.value.substring(1)],"files/"+fileUsed+".temp")
+                    break;
+                  case "M":
+                    writeModelFile(this.state.modelFiles[ref.current.value.substring(1)],"files/"+fileUsed+".temp")
+                    break;
+                  case "D":
+                    writeDistances(this.state.distances[ref.current.value.substring(1)],"files/"+fileUsed+".temp")
+                    break;
+                  case "C":
+                    writeClassification(this.state.classifications[ref.current.value.substring(1)],"files/"+fileUsed+".temp")
+                    break;
+                  case "":
+                    return;
+                  default:
+                    values = values.concat(ref.current.value);
+                    return;
+                }
                 values = values.concat("files/"+fileUsed+".temp");
                 fileUsed += 1;
               }
-              else{
-                values = values.concat(refs[i].current.value);
-              }
-            }
+              console.log(values);
+            });
             this.runOPFFunction(OPFFunction,values);
           }}>Run</button>
         <button onClick={() => (this.setState({ functions:[this.loadFunctions()]}))}>Back</button>
@@ -440,24 +561,66 @@ class MyFirstGrid extends React.Component {
     ]})});
   }
 
-  entrace_SubGraph(type, title){ // 0 - todos / 1 - treinado apenas 
+  entrace_Graph(type, description){ // S - subgraph / M - model file
+    this.functionDetails.refs = this.functionDetails.refs.concat(React.createRef())
     return (
-      <Form.Control
-        as="select"
-        className="graphInput"
-        id="inlineFormCustomSelect"
-        custom
-      >
-        {this.state.subGraphs.map((subGraph, index) => (
-          <option value={index}>SubGraph {index}</option>
-        ))}
-      </Form.Control>
+      <OverlayTrigger overlay={<Tooltip id="tooltip-disabled">{description}</Tooltip>}>
+        <span className="d-inline-block">
+          <Form.Control
+            as="select"
+            className="graphInput"
+            id="inlineFormCustomSelect"
+            ref={this.functionDetails.refs[this.functionDetails.refs.length-1]}
+            custom
+          >
+            {type != "M" ? 
+              this.state.subGraphs.map((subGraph, index) => (
+                <option value={"S"+index}>{subGraph.name}</option>
+              ))
+            : null }
+            {type != "S" ? 
+              this.state.modelFiles.map((modelFile, index) => (
+                <option value={"M"+index}>{modelFile.name}</option>
+              ))
+            : null }
+          </Form.Control>
+        </span>            
+      </OverlayTrigger>
+      
     )
   }
 
-  entrace_Number(type, value, discribe, rules){
+  entrace_Select(dict,description, auxIndexString = "", none = false, indexAdd = 0){
+    this.functionDetails.refs = this.functionDetails.refs.concat(React.createRef())
     return (
-      <FormControl className="numbersInput" defaultValue={value} placeholder={discribe} aria-label={discribe} aria-describedby="basic-addon1"/>
+      <OverlayTrigger overlay={<Tooltip id="tooltip-disabled">{description}</Tooltip>}>
+        <span className="d-inline-block">
+          <Form.Control
+            as="select"
+            className="selectInput"
+            id="inlineFormCustomSelect"
+            ref={this.functionDetails.refs[this.functionDetails.refs.length-1]}
+            custom
+          >
+            {none ? <option value="">None</option> : null}
+            {dict.map((option, index) => (
+                <option value={auxIndexString + (indexAdd + index)}>{option.name}</option>
+            ))}
+          </Form.Control>
+        </span>            
+      </OverlayTrigger>
+    )
+  }
+
+  entrace_Number(min, max, step, value, pattern, description){
+    this.functionDetails.refs = this.functionDetails.refs.concat(React.createRef())
+    return (
+      <OverlayTrigger overlay={<Tooltip id="tooltip-disabled">{description}</Tooltip>}>
+        <span className="d-inline-block">
+          <FormControl ref={this.functionDetails.refs[this.functionDetails.refs.length-1]} type="number" min={min} max={max} step={step} className="numbersInput" placeholder={value} aria-label={value} pattern={pattern} aria-describedby="basic-addon1"/>
+        </span>            
+      </OverlayTrigger>
+      
       )
   }
 
