@@ -14,10 +14,11 @@ void c_opf_accuracy(int *argc, char **argv)
 
 	
 
-	if (*argc != 2)
+	if (*argc != 3)
 	{
-		fprintf(stderr, "\nusage opf_accuracy <P1>");
+		fprintf(stderr, "\nusage opf_accuracy <P1> <P2>");
 		fprintf(stderr, "\nP1: data set in the OPF file format");
+		fprintf(stderr, "\nP2: classification file");
 		return;
 	}
 
@@ -35,8 +36,8 @@ void c_opf_accuracy(int *argc, char **argv)
 
 	fprintf(stdout, "\nReading output file ...");
 	
-	sprintf(fileName, "%s.out", argv[1]);
-	f = fopen(fileName, "r");
+	//sprintf(fileName, "%s.out", argv[1]);
+	f = fopen(argv[2], "r");
 	if (!f)
 	{
 		fprintf(stderr, "\nunable to open file %s", argv[2]);

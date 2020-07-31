@@ -1,21 +1,9 @@
 import React from 'react';
-import logo from './logo.svg';
 import PanelGroup from 'react-panelgroup'; 
 import './App.css';
-import {Sigma, RandomizeNodePositions, RelativeSize, NodeShapes } from 'react-sigma';
-import dat from './boat.dat';
+import {Sigma, RelativeSize } from 'react-sigma';
 
-import { Accordion , Card , Button , useAccordionToggle , ListGroup, InputGroup, FormControl, Form, OverlayTrigger, Tooltip} from 'react-bootstrap';
-
-import { WASI } from "@wasmer/wasi";
-import wasiBindings from "@wasmer/wasi/lib/bindings/node";
-// Use this on the browser
-// import wasiBindings from "@wasmer/wasi/lib/bindings/browser";
- 
-import { WasmFs } from "@wasmer/wasmfs";
- 
-// Instantiate a new WASI Instance
-
+import { Accordion , Card , button , ListGroup, InputGroup, FormControl, Form, OverlayTrigger, Tooltip} from 'react-bootstrap';
 
 let Module = require('./libopf.js')(); // Your Emscripten JS output file
 let FS = Module.FS;
@@ -76,7 +64,7 @@ function writeGraph(subGraph, file){
 
 function readModelFile(dv, name){
   var subGraph= {
-    nnodes: -1, nlabels: -1, nfeats: -1, df: -1, bestk: -1, K: -1, mindens: -1, maxdens: -1, name: name,
+    nnodes: -1, nlabels: -1, nfeats: -1, df: -1, bestk: -1, K: -1, mindens: -1, maxdens: -1, name: name, ordered_list_of_nodes: [],
     nodes: [],
     edges:[],
   };
@@ -106,6 +94,9 @@ function readModelFile(dv, name){
     }
     subGraph.nodes[i].x = subGraph.nodes[i].feat[0];
     subGraph.nodes[i].y = subGraph.nodes[i].feat[1];
+  }
+  for(i = 0; i < subGraph.nnodes; i++){
+    subGraph.ordered_list_of_nodes[i] = dv.getInt32(cont=cont+4,true);
   }
   return(subGraph);
 }
@@ -138,15 +129,21 @@ function writeModelFile(subGraph, file){
   FS.writeFile(file,Buffer.from(buf));
 }
 
-function readClassification(){
-
+function readClassification(file, name){
+  return({classification: FS.readFile(file,{encoding: 'utf8'}).split("\n"), name: name})
 }
 
-function writeClassification(){
-
+function writeClassification(classification, file){
+  var aux = ""
+  classification.classification.map((classification, index) => {
+    aux = aux.concat(classification.toString()+"\n");
+    return;
+  });
+  console.log("aux",aux);
+  FS.writeFile(file,aux,{encoding: 'utf8'});
 }
 
-function readDistances(dv){
+function readDistances(dv, name){
   var cont = 0;
   var nsamples = dv.getInt32(cont,true);
   var distances = new Array(nsamples);
@@ -157,7 +154,7 @@ function readDistances(dv){
     }
   }
 
-  return(distances);
+  return({"distances": distances, name: name});
 }
 
 function writeDistances(distances, file){
@@ -208,14 +205,14 @@ class MyFirstGrid extends React.Component {
       [this.entrace_Graph("S","The training subGraph object, produced by the opf_split function, for example (subGraph object)"),
       this.entrace_Number("1","","1","kmax","","The kmax (maximum degree for the knn graph) [greater than 0]"),
       this.entrace_Select([{name:"Height"},{name:"Area"},{name:"Volume"}],"Clusters by: height, area or volume"),
-      this.entrace_Number("0","1","0.01","parameter of the cluster","","Value of parameter cluster [0-1]"),
+      this.entrace_Number("0","100","1","parameter of the cluster","","Value of parameter cluster [0-100]",true),
       this.entrace_Select(this.state.distances,"The precomputed distance matrix produced by the opf_distance","D",true)]
       },
 
       {function: "opf_distance", description: "Generates the precomputed distance file for the OPF classifier",
       entraces: () => 
       [this.entrace_Graph("S","The subGraph object, normaly is the whole data"),
-      this.entrace_Select([{name:"height"},{name:"Chi-Squar"},{name:"Manhattan"},{name:"Canberra"},{name:"Squared Chord"},{name:"Squared Chi-Squared"},{name:"BrayCurtis"}],"Distance calculation option",false,1),
+      this.entrace_Select([{name:"Euclidean"},{name:"Chi-Squar"},{name:"Manhattan"},{name:"Canberra"},{name:"Squared Chord"},{name:"Squared Chi-Squared"},{name:"BrayCurtis"}],"Distance calculation option","",false,1),
       this.entrace_Select([{name:"No"},{name:"Yes"}],"Distance normalization?")]
       },
 
@@ -250,7 +247,7 @@ class MyFirstGrid extends React.Component {
       entraces: () => 
       [this.entrace_Graph("S","A subGraph object, can be the training object produced by the opf_split"),
       this.entrace_Graph("S","A subGraph object, can be the evaluation produced object by the opf_split"),
-      this.entrace_Number("0","1","0.01","percentageAccuracy","","Max percentage of lost accuracy [0-1]"),
+      this.entrace_Number("0","100","1","percentageAccuracy","","Max percentage of lost accuracy [0-100]",true),
       this.entrace_Select(this.state.distances,"The precomputed distance matrix produced by the opf_distance","D",true)]
       },
 
@@ -258,16 +255,16 @@ class MyFirstGrid extends React.Component {
       entraces: () => 
       [this.entrace_Graph("S","A subGraph object, labeled training object"),
       this.entrace_Graph("S","A subGraph object, unlabeled training object"),
-      this.entrace_Graph("S","A subGraph object, can be the evaluation produced object by the opf_split"),
+      this.entrace_Graph("S","A subGraph object, can be the evaluation produced object by the opf_split",true),
       this.entrace_Select(this.state.distances,"The precomputed distance matrix produced by the opf_distance","D",true)]
       },
 
       {function: "opf_split", description: "Generates training, evaluation and test sets for the OPF classifier",
       entraces: () => 
       [this.entrace_Graph("S","The data (subGraph object)"),
-      this.entrace_Number("0","1","0.01","training_p","","Percentage for the training set size [0-1]"),
-      this.entrace_Number("0","1","0.01","evaluating_p","","Percentage for the evaluation set size [0-1] (leave 0 in the case of no learning)"),
-      this.entrace_Number("0","1","0.01","testing_p","","Percentage for the test set sizee [0-1]"),
+      this.entrace_Number("0","100","1","training_p","","Percentage for the training set size [0-100]",true),
+      this.entrace_Number("0","100","1","evaluating_p","","Percentage for the evaluation set size [0-100] (leave 0 in the case of no learning)",true),
+      this.entrace_Number("0","100","1","testing_p","","Percentage for the test set sizee [0-100]",true),
       this.entrace_Select([{name:"No"},{name:"Yes"}],"Distance normalization?")]
       },
 
@@ -328,16 +325,16 @@ class MyFirstGrid extends React.Component {
     Module.setValue(ptrNum, variables.length, 'i32');
   
     cwrap(ptrNum,ptrArr);
-  
+    var array = [];
     var dir = FS.readdir("files/");
     console.log(dir);
     var buffer = {"subGraphs":[],"modelFiles":[],"distances":[],"classifications":[]}
-    for(var i in dir){
-      if(dir[i].substring(6) != ""){
+    for(i in dir){
+      if(dir[i].substring(6) !== ""){
         switch(dir[i].substr(-4)) {
           case ".tim": //execucion time
-            var array = FS.readFile("files/"+dir[i],null).toString().split("\n");
-            console.log(array);
+            array = FS.readFile("files/"+dir[i],{encoding: 'utf8'});
+            console.log("tim",array);
             FS.unlink("files/"+dir[i]);
             break;
           case ".dat": //subGraph
@@ -345,26 +342,28 @@ class MyFirstGrid extends React.Component {
             FS.unlink("files/"+dir[i]);
             break;
           case ".cla": //modelFile
-            buffer["modelFiles"] = buffer["modelFiles"].concat(readModelFile(new DataView(FS.readFile("files/"+dir[i], null).buffer),"classificator " + this.state.modelFiles.length)); //arrumar name
+            buffer["modelFiles"] = buffer["modelFiles"].concat(readModelFile(new DataView(FS.readFile("files/"+dir[i], null).buffer),"Model File " + this.state.modelFiles.length)); //arrumar name
             FS.unlink("files/"+dir[i]);
             break;
           case ".out": //classification
-            buffer["classifications"] = buffer["classifications"].concat(FS.readFile("files/"+dir[i],null).toString().split("\n"));
+            buffer["classifications"] = buffer["classifications"].concat(readClassification("files/"+dir[i],"classification "+this.state.classifications.length));
             FS.unlink("files/"+dir[i]);
             break;
           case ".acc": //accuracy
-            var array = FS.readFile("files/"+dir[i],null).toString().split("\n");
+            array = FS.readFile("files/"+dir[i],{encoding: 'utf8'}).split("\n");
             console.log(array);
             FS.unlink("files/"+dir[i]);
             break;
           case ".dis": //distances
-            buffer["distances"] = buffer["distances"].concat(readDistances(new DataView(FS.readFile("files/"+dir[i], null).buffer)))
+            buffer["distances"] = buffer["distances"].concat(readDistances(new DataView(FS.readFile("files/"+dir[i], null).buffer,"distance "+this.state.distances.length)))
             FS.unlink("files/"+dir[i]);
             break;
           case ".pra": //pruning rate
-            var array = FS.readFile("files/"+dir[i],null).toString().split("\n");
+            array = FS.readFile("files/"+dir[i],{encoding: 'utf8'}).split("\n");
             console.log(array);
             FS.unlink("files/"+dir[i]);
+            break;
+          default:
             break;
         }
       }
@@ -424,10 +423,10 @@ class MyFirstGrid extends React.Component {
         ))}
         {this.state.modelFiles.map((modelFile, index) => (
           <Card>
-            <Accordion.Toggle as={Card.Header} eventKey={index} onClick={() => this.loadCSigma(modelFile)}>
+            <Accordion.Toggle as={Card.Header} eventKey={index+this.state.subGraphs.length} onClick={() => this.loadCSigma(modelFile)}>
               {modelFile.name}
             </Accordion.Toggle>
-            <Accordion.Collapse eventKey={index}>
+            <Accordion.Collapse eventKey={index+this.state.subGraphs.length}>
               <Card.Body>
                 <ListGroup>
                   {modelFile.nodes.map((node, indexNode) => (
@@ -463,9 +462,9 @@ class MyFirstGrid extends React.Component {
 
         {Object.keys(graph[graphIndex].nodes[nodeIndex]).map((key, index) => (
           <div>
-            {key != 'x' && key != 'y' ? 
+            {key !== 'x' && key !== 'y' ? 
               <div>
-                  {key != 'feat' ? 
+                  {key !== 'feat' ? 
                     <div>
                       <InputGroup.Prepend>
                         <InputGroup.Text id={key}>{key}</InputGroup.Text>
@@ -518,7 +517,7 @@ class MyFirstGrid extends React.Component {
             <span className="d-inline-block"><p>{OPFFunction}</p></span>            
           </OverlayTrigger>
           ({entrances.map((entrace, index) => (
-            [<b>{((index != 0) ? (" , ") : (""))}</b>,entrace]
+            [<b>{((index !== 0) ? (" , ") : (""))}</b>,entrace]
           ))}
           )
         </InputGroup>
@@ -528,7 +527,7 @@ class MyFirstGrid extends React.Component {
             var fileUsed = 0;
             this.functionDetails.refs.map((ref, index) => {
               if(ref.current.className.includes("numbersInput")){
-                values = values.concat(ref.current.value);
+                values = values.concat((ref.current.value / (ref.current.className.includes("Percent") ? 100 : 1)).toString());
               } else {
                 switch (ref.current.value.substring(0,1)) {
                   case "S":
@@ -553,8 +552,10 @@ class MyFirstGrid extends React.Component {
                 fileUsed += 1;
               }
               console.log(values);
+              return;
             });
             this.runOPFFunction(OPFFunction,values);
+            return;
           }}>Run</button>
         <button onClick={() => (this.setState({ functions:[this.loadFunctions()]}))}>Back</button>
       </div>
@@ -573,12 +574,12 @@ class MyFirstGrid extends React.Component {
             ref={this.functionDetails.refs[this.functionDetails.refs.length-1]}
             custom
           >
-            {type != "M" ? 
+            {type !== "M" ? 
               this.state.subGraphs.map((subGraph, index) => (
                 <option value={"S"+index}>{subGraph.name}</option>
               ))
             : null }
-            {type != "S" ? 
+            {type !== "S" ? 
               this.state.modelFiles.map((modelFile, index) => (
                 <option value={"M"+index}>{modelFile.name}</option>
               ))
@@ -612,13 +613,15 @@ class MyFirstGrid extends React.Component {
     )
   }
 
-  entrace_Number(min, max, step, value, pattern, description){
+  entrace_Number(min, max, step, value, pattern, description, percentage = false){
     this.functionDetails.refs = this.functionDetails.refs.concat(React.createRef())
     return (
       <OverlayTrigger overlay={<Tooltip id="tooltip-disabled">{description}</Tooltip>}>
         <span className="d-inline-block">
-          <FormControl ref={this.functionDetails.refs[this.functionDetails.refs.length-1]} type="number" min={min} max={max} step={step} className="numbersInput" placeholder={value} aria-label={value} pattern={pattern} aria-describedby="basic-addon1"/>
-        </span>            
+          <input ref={this.functionDetails.refs[this.functionDetails.refs.length-1]} type="number" min={min} max={max} step={step} className={"numbersInput"+(percentage ? "Percent" : null)} placeholder={value} aria-label={value} pattern={pattern} aria-describedby="basic-addon1"/>
+          {percentage ? <span>%</span> : null}
+        </span>   
+        
       </OverlayTrigger>
       
       )
