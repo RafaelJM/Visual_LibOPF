@@ -1,7 +1,11 @@
 import React from 'react';
 import PanelGroup from 'react-panelgroup'; 
+import ResizePanel from "react-resize-panel";
 import './App.css';
 import {Sigma, RelativeSize } from 'react-sigma';
+import { Resize, ResizeVertical, ResizeHorizon } from "react-resize-layout";
+import Split from 'react-split-grid'
+import SplitPane, { Pane } from 'react-split-pane';
 
 import { Accordion , Card , button , ListGroup, InputGroup, FormControl, Form, OverlayTrigger, Tooltip} from 'react-bootstrap';
 
@@ -628,37 +632,24 @@ class MyFirstGrid extends React.Component {
   }
 
   render() {   
+    
     return (
+
       <div>
-        <input type="file" id="dat" multiple></input>
-        <button onClick={this.click}>load</button>
-
-
-        <Sigma settings={{drawEdges:true}}>
-          <CustomSigma ref={this.state.CSigma}/>
-          <RelativeSize initialSize={15}/>
-        </Sigma>
-
-        <PanelGroup direction="row" borderColor="grey">
-          <PanelGroup direction="column" borderColor="grey">
-            <div>
-              {this.state.visualizer}
-            </div>
-            <div>
-              {this.state.functions}
-            </div>
-          </PanelGroup>
-          <PanelGroup direction="column" borderColor="grey">
-            <div>
-            <Accordion defaultActiveKey="0">
-              {this.state.lists}
-            </Accordion>
-            </div>
-            <div>
-              {this.state.details}
-            </div>
-          </PanelGroup>
-        </PanelGroup>
+        
+        <SplitPane split="horizontal">
+            <Pane initialSize ="25%"/>
+            <SplitPane split="vertical">
+              <SplitPane split="horizontal">
+                <Pane/>
+                <Pane/>
+              </SplitPane>
+              <SplitPane split="horizontal">
+                <Pane/>
+                <Pane/>
+              </SplitPane>
+            </SplitPane>
+          </SplitPane>
       </div>
     )
   }
