@@ -1,10 +1,6 @@
 import React from 'react';
-import PanelGroup from 'react-panelgroup'; 
-import ResizePanel from "react-resize-panel";
 import './App.css';
 import {Sigma, RelativeSize } from 'react-sigma';
-import { Resize, ResizeVertical, ResizeHorizon } from "react-resize-layout";
-import Split from 'react-split-grid'
 import SplitPane, { Pane } from 'react-split-pane';
 
 import { Accordion , Card , button , ListGroup, InputGroup, FormControl, Form, OverlayTrigger, Tooltip} from 'react-bootstrap';
