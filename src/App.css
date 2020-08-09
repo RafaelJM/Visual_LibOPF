@@ -1,6 +1,3 @@
-.App {
-  text-align: center;
-}
 
 .App-logo {
   height: 40vmin;
@@ -92,4 +89,8 @@
 }
 .Resizer.disabled:hover {
   border-color: transparent;
+}
+
+.Pane{
+  overflow: auto;
 }
