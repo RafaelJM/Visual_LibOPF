@@ -3,7 +3,7 @@ import './App.css';
 import * as FM from './FileManager.js';
 import {Sigma, RelativeSize } from 'react-sigma';
 import SplitPane, { Pane } from 'react-split-pane';
-import 'react-sortable-tree/style.css';
+import FileExplorerTheme from 'react-sortable-tree-theme-file-explorer';
 
 
 import {InputGroup, FormControl, Form, OverlayTrigger, Tooltip} from 'react-bootstrap';
@@ -283,43 +283,39 @@ class MyFirstGrid extends React.Component {
     this.state.CSigma.current.loadSugGraph(graph);
   }
 
-  loadNodeDetails(graph,nodeIndex,graphIndex){
-    console.log(graph[graphIndex].nodes[nodeIndex])
+  loadNodeDetails(node){
+    console.log(node,Object.entries(node))
     this.setState({ details:[]}, () => {
     this.setState({ details:[
-      <InputGroup className="mb-3">
-        <InputGroup.Prepend>
-          <InputGroup.Text>graph ID</InputGroup.Text>
-        </InputGroup.Prepend>
-        <FormControl id="idGraph" defaultValue={graphIndex} placeholder="ID" aria-label="ID" aria-describedby="basic-addon1"/>
-
-        {Object.keys(graph[graphIndex].nodes[nodeIndex]).map((key, index) => (
+      <div>
+        {Object.keys(node).map((key, index) => (
           <div>
-            {key !== 'x' && key !== 'y' ? 
+            {key == 'x' || key == 'y' || key == 'children' || key == 'loadedFiles' || key == 'expanded' || key == 'nodes' || key == 'edges' ? null : //arruamr um metodo melhor
               <div>
-                  {key !== 'feat' ? 
+                {key !== 'feat' ? 
+                  <div>
+                    <InputGroup.Prepend>
+                      <InputGroup.Text id={key}>{key}</InputGroup.Text>
+                    </InputGroup.Prepend>
+                    <FormControl defaultValue={node[key]} placeholder={key} aria-label={key} aria-describedby="basic-addon1"/>
+                  </div>
+                : 
+                  node[key].map((feat, indexFeat) => (
                     <div>
                       <InputGroup.Prepend>
-                        <InputGroup.Text id={key}>{key}</InputGroup.Text>
+                        <InputGroup.Text id={"feat"+indexFeat}>Feat {indexFeat}</InputGroup.Text>
                       </InputGroup.Prepend>
-                      <FormControl defaultValue={graph[graphIndex].nodes[nodeIndex][key]} placeholder={key} aria-label={key} aria-describedby="basic-addon1"/>
+                      <FormControl defaultValue={feat} placeholder="Feats" aria-label="Feats" aria-describedby="basic-addon1"/>
                     </div>
-                  : 
-                    graph[graphIndex].nodes[nodeIndex].feat.map((feat, indexFeat) => (
-                      <div>
-                        <InputGroup.Prepend>
-                          <InputGroup.Text id={"feat"+indexFeat}>Feat {indexFeat}</InputGroup.Text>
-                        </InputGroup.Prepend>
-                        <FormControl defaultValue={feat} placeholder="Feats" aria-label="Feats" aria-describedby="basic-addon1"/>
-                      </div>
-                    ))
-                  }
+                  ))
+                }
               </div>
-            : null }
+            }
           </div>
         ))}
-      </InputGroup>
-    ]})});
+      </div>
+    ]},() => {console.log(this.state.details)})});
+    
   }
   
   loadFunctions(){
@@ -470,7 +466,16 @@ class MyFirstGrid extends React.Component {
   }
 
   render() {   
-    
+    const styleButton = {
+      padding: 0,
+      borderRadius: '100%',
+      backgroundColor: 'gray',
+      color: 'white',
+      width: 16,
+      height: 16,
+      border: 0,
+      fontWeight: 100,
+    }
     return (
       <div>
         <SplitPane split="horizontal">
@@ -478,7 +483,7 @@ class MyFirstGrid extends React.Component {
               <input type="file" id="dat" multiple></input>
               <button onClick={this.click}>load</button>
             </Pane>
-            <SplitPane split="vertical" defaultSize="60%">
+            <SplitPane split="vertical" defaultSize="80%">
               <SplitPane split="horizontal" defaultSize="80%">
                 <Pane style={{width:"100%", height:"100%"}}>
                   <Sigma renderer="webgl" settings={{drawEdges:true, zoomMin:0.000001}} style={{width:"100%", height:"100%", position: "relative", outline: "none"}}> 
@@ -495,12 +500,30 @@ class MyFirstGrid extends React.Component {
                   <SortableTree
                     treeData={this.state.projects}
                     onChange={treeData => this.setState({ projects:treeData })}
-                    generateNodeProps={extendedNode => ({
-                      title: (
-                          <a href={extendedNode.node.url}>{extendedNode.node.title}</a>
-                      ),
-                      buttons: extendedNode.node.title === "Web Content" ? [<button>X</button>] : [],
-                  })}
+                    theme={FileExplorerTheme}
+                    generateNodeProps={node => ({
+                      onClick: () => {},
+                      buttons:  []/*[
+                        <button style={styleButton}
+                          onClick={() => {}}
+                        >
+                          O
+                        </button>,<button style={styleButton}
+                          onClick={() => {this.loadNodeDetails(node.node);}}
+                        >
+                          i
+                        </button>,<button style={styleButton}
+                          onClick={() => {}}
+                        >
+                          +
+                        </button>,<button style={styleButton}
+                          onClick={() => {}}
+                        >
+                          L
+                        </button>,
+                      ]*/
+                  })//buttons: true ? [<button>X</button>] : []
+                }
                   />
                 </Pane>
                 <Pane>
@@ -543,3 +566,7 @@ export default App;
 //sigma alterar tamanho canvas se alterar size do div
 
 //sigma zoom = tamanho dos nos! ai da para ver exatamente as ligações sem ter q dar tanto zoom
+
+//https://icon-icons.com/pt/icone/adicionar-mais-bot%C3%A3o/72878
+//https://icon-icons.com/pt/icone/lixo/48207
+///https://icon-icons.com/pt/icone/olho/128870

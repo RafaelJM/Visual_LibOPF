@@ -94,3 +94,14 @@
 .Pane{
   overflow: auto;
 }
+
+button.list{
+  padding: 0;
+  border-Radius: '100%';
+  background-Color: 'gray';
+  color: 'white';
+  width: 16;
+  height: 16;
+  border: 0;
+  font-Weight: 100;
+}
