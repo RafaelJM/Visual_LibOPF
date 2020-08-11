@@ -49,7 +49,6 @@ class Project {
 class MyFirstGrid extends React.Component {
   constructor(props) {
     super(props);
-    this.click = this.click.bind(this);
 
     this.functionDetails = {refs: [],functions: [
       {function: "opf_accuracy", description: "Computes the OPF accuracy",
@@ -164,6 +163,8 @@ class MyFirstGrid extends React.Component {
         projects: [new Project("Project 1")],
         activeProject: 0,     
         CSigma: React.createRef(),
+        fileUploader: React.createRef(),
+        fileUploaderInfo: null,
         details: [],
         visualizer: [],
         functions: this.loadFunctions(),
@@ -249,34 +250,6 @@ class MyFirstGrid extends React.Component {
         this.loadFunctionEntrance(this.state.activeFunction)
       }
     });
-  }
-
-  click() { //add subgraph (tem q ter outro para model file)
-    var fileInput = document.getElementById("dat");
-    var files = fileInput.files;
-    var reader = new FileReader();
-    const scope = this;
-    
-    reader.readAsArrayBuffer(files[0]);
-
-    reader.onload = function() {          
-      var subGraph = FM.readGraph(new DataView(reader.result),"loaded subGraph "+scope.state.projects[0].children[0].loadedFiles, "Loaded by the user");
-      scope.setState( prevState => {
-        prevState.projects[scope.state.activeProject].children[0].children = prevState.projects[scope.state.activeProject].children[0].children.concat(subGraph);
-        prevState.projects[scope.state.activeProject].children[0].loadedFiles += 1;
-   
-        return {
-          projects: prevState.projects
-        };
-      },() => {
-        if(scope.state.activeFunction != null){ //reload the functions
-          var func = scope.functionDetails.functions[scope.state.activeFunction];
-          scope.loadFunctionEntrance(scope.state.activeFunction)
-        }
-        scope.loadCSigma(subGraph);
-        //scope.loadList();
-      });
-    };
   }
 
   loadCSigma(graph){
@@ -465,6 +438,56 @@ class MyFirstGrid extends React.Component {
       )
   }
 
+  loadFile(){
+    var files = this.state.fileUploader.current.files;
+    var reader = new FileReader();
+    const scope = this;
+    
+    reader.readAsArrayBuffer(files[0]);
+
+    reader.onload = function() {     
+      var loadedFile, auxNum;
+      console.log(scope.state.fileUploaderInfo[1]);
+      switch(scope.state.fileUploaderInfo[1]) {
+        case "SubGraphs":
+          auxNum = 0;
+          loadedFile = FM.readGraph(new DataView(reader.result),"loaded subGraph "+scope.state.projects[scope.state.fileUploaderInfo[0]].children[auxNum].loadedFiles, "Loaded by the user");
+          break;
+        case "ModelFiles":
+          auxNum = 1;
+          loadedFile = FM.readModelFile(new DataView(reader.result),"loaded modelFile "+scope.state.projects[scope.state.fileUploaderInfo[0]].children[auxNum].loadedFiles, "Loaded by the user");
+          break;
+        case "Distances":
+          auxNum = 2;
+          loadedFile = FM.readDistances(new DataView(reader.result),"loaded distance "+scope.state.projects[scope.state.fileUploaderInfo[0]].children[auxNum].loadedFiles, "Loaded by the user");
+          break;
+        case "Classifications":
+          auxNum = 3;
+          loadedFile = FM.readClassification(new DataView(reader.result),"loaded classification "+scope.state.projects[scope.state.fileUploaderInfo[0]].children[auxNum].loadedFiles, "Loaded by the user");
+          break;
+        default:
+          console.log("Error")
+          return;
+      }     
+      
+      scope.setState( prevState => {
+        prevState.projects[scope.state.fileUploaderInfo[0]].children[auxNum].children = prevState.projects[scope.state.fileUploaderInfo[0]].children[auxNum].children.concat(loadedFile);
+        prevState.projects[scope.state.fileUploaderInfo[0]].children[auxNum].loadedFiles += 1;
+    
+        return {
+          projects: prevState.projects
+        };
+      },() => {
+        if(scope.state.activeFunction != null){ //reload the functions
+          var func = scope.functionDetails.functions[scope.state.activeFunction];
+          scope.loadFunctionEntrance(scope.state.activeFunction)
+        }
+        if(auxNum <= 1) 
+          scope.loadCSigma(loadedFile);
+      });
+    };
+  }
+
   render() {   
     const styleButton = {
       padding: 0,
@@ -479,9 +502,9 @@ class MyFirstGrid extends React.Component {
     return (
       <div>
         <SplitPane split="horizontal">
+          
             <Pane defaultSize ="10%">
-              <input type="file" id="dat" multiple></input>
-              <button onClick={this.click}>load</button>
+            <input type="file" id="inputFile" ref={this.state.fileUploader} onChange={(evt) => this.loadFile()} style={{display: "none"}} multiple></input>
             </Pane>
             <SplitPane split="vertical" defaultSize="80%">
               <SplitPane split="horizontal" defaultSize="80%">
@@ -503,7 +526,7 @@ class MyFirstGrid extends React.Component {
                     theme={FileExplorerTheme}
                     generateNodeProps={node => ({
                       onClick: () => {},
-                      buttons:  []/*[
+                      buttons:  [
                         <button style={styleButton}
                           onClick={() => {}}
                         >
@@ -513,16 +536,19 @@ class MyFirstGrid extends React.Component {
                         >
                           i
                         </button>,<button style={styleButton}
-                          onClick={() => {}}
+                          onClick={() => {
+                            this.setState({fileUploaderInfo: [0, node.node.title] },() => {
+                            this.state.fileUploader.current.click();})}}
                         >
+                          <input type="file" style={{display: "none"}} multiple></input>
                           +
                         </button>,<button style={styleButton}
                           onClick={() => {}}
                         >
                           L
                         </button>,
-                      ]*/
-                  })//buttons: true ? [<button>X</button>] : []
+                      ]
+                  })
                 }
                   />
                 </Pane>
