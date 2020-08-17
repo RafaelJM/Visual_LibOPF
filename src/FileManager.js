@@ -1,8 +1,9 @@
 
 
 export class FileManager{
-  constructor(DatasList) {
-    this.DatasList = DatasList;
+  constructor(datasList,stateUpdate) {
+    this.datasList = datasList;
+    this.stateUpdate = stateUpdate;
     
     this.Module = require('./libopf.js')(); // Your Emscripten JS output file
     this.FS = this.Module.FS;
@@ -49,9 +50,33 @@ export class FileManager{
       "#dba2e6", "#76fc1b", "#608fa4", "#20f6ba", "#07d7f6", "#dce77a", "#77ecca"]
   }
 
+  quick_Sort(origArray) {
+    if (origArray.length <= 1) { 
+      return origArray;
+    } else {
+  
+      var left = [];
+      var right = [];
+      var newArray = [];
+      var pivot = origArray.pop();
+      var length = origArray.length;
+  
+      for (var i = 0; i < length; i++) {
+        if (origArray[i].id <= pivot.id) {
+          left.push(origArray[i]);
+        } else {
+          right.push(origArray[i]);
+        }
+      }
+  
+      return newArray.concat(this.quick_Sort(left), pivot, this.quick_Sort(right));
+    }
+  }
+
   readGraph(dv, title, description){
     var subGraph= {
-      nnodes: -1, nlabels: -1, nfeats: -1, title: title, description:description, expanded: true, children:[ ],
+      nnodes: -1, nlabels: -1, nfeats: -1, title: title, description:description, expanded: false, children:[], 
+      infoKeys: ["title","description","nnodes","nlabels","nfeats"],
       nodes: [],
       edges:[],
     };
@@ -62,6 +87,7 @@ export class FileManager{
     subGraph.nfeats = dv.getInt32(cont=cont+4,true);//nfeats
     for(var i = 0; i < subGraph.nnodes; i++){
       subGraph.nodes[i] = {
+      infoKeys: ["title","id","truelabel","feat"],
       feat: [  ],
       id: dv.getInt32(cont=cont+4,true),//position
       truelabel: dv.getInt32(cont=cont+4,true),//truelabel
@@ -74,8 +100,9 @@ export class FileManager{
       subGraph.nodes[i].x = subGraph.nodes[i].feat[0];
       subGraph.nodes[i].y = subGraph.nodes[i].feat[1];
     }
-    
-    subGraph.children = subGraph.nodes; //temp, se existir ponteiro seria bom //testar ponteiro // arrumar
+     //temp, se existir ponteiro seria bom //testar ponteiro // arrumar
+    subGraph.nodes = this.quick_Sort(subGraph.nodes);
+    subGraph.children = subGraph.nodes;
     return(subGraph);
   }
 
@@ -97,9 +124,10 @@ export class FileManager{
     this.FS.writeFile(file,Buffer.from(buf));
   }
 
-  readModelFile(dv, description, title){
+  readModelFile(dv, title, description){
     var subGraph= {
       nnodes: -1, nlabels: -1, nfeats: -1, df: -1, bestk: -1, K: -1, mindens: -1, maxdens: -1, title: title, description:description, ordered_list_of_nodes: [],
+      infoKeys: ["title","description","nnodes","nlabels","nfeats","df","bestk","K","mindens","maxdens","ordered_list_of_nodes"],
       nodes: [],
       edges:[],
     };
@@ -115,6 +143,7 @@ export class FileManager{
     subGraph.maxdens = dv.getFloat32(cont=cont+4,true);
     for(var i = 0; i < subGraph.nnodes; i++){
       subGraph.nodes[i] = {
+      infoKeys: ["title","id","truelabel","pred","label","pathval","radius","dens","feat"],
       feat: [  ],
       id: dv.getInt32(cont=cont+4,true),//position
       truelabel: dv.getInt32(cont=cont+4,true),
@@ -135,13 +164,13 @@ export class FileManager{
     for(i = 0; i < subGraph.nnodes; i++){
       subGraph.ordered_list_of_nodes[i] = dv.getInt32(cont=cont+4,true);
     }
-
+    subGraph.nodes = this.quick_Sort(subGraph.nodes);
     subGraph.children = subGraph.nodes;
     return(subGraph);
   }
 
   writeModelFile(subGraph, file){
-    const buf = Buffer.allocUnsafe((8 + subGraph.nnodes*(7+subGraph.nfeats))*4);
+    const buf = Buffer.allocUnsafe((8 + subGraph.nnodes*(7+subGraph.nfeats) + subGraph.ordered_list_of_nodes.length)*4);
     
     var cont = 0;
     buf.writeInt32LE(subGraph.nnodes,cont);
@@ -164,7 +193,9 @@ export class FileManager{
         buf.writeFloatLE(subGraph.nodes[i].feat[j],cont=cont+4);
       }
     }
-    
+    for(i = 0; i < subGraph.nnodes; i++){
+      buf.writeInt32LE(subGraph.ordered_list_of_nodes[i],cont=cont+4);
+    }
     this.FS.writeFile(file,Buffer.from(buf));
   }
 
@@ -183,6 +214,7 @@ export class FileManager{
   }
 
   readDistances(dv, title, description){
+    console.log(dv);
     var cont = 0;
     var nsamples = dv.getInt32(cont,true);
     var distances = new Array(nsamples);
@@ -234,7 +266,7 @@ export class FileManager{
     var array = [];
     var dir = this.FS.readdir("files/");
     console.log(dir);
-    var buffer = [[],[],[],[]]
+    var buffer = [[],[],[],[],[]]
     for(i in dir){
       if(dir[i].substring(6) !== ""){
         switch(dir[i].substr(-4)) {
@@ -244,15 +276,15 @@ export class FileManager{
             this.FS.unlink("files/"+dir[i]);
             break;
           case ".dat": //subGraph
-            buffer[0] = buffer[0].concat(this.readGraph(new DataView(this.FS.readFile("files/"+dir[i], null).buffer),dir[i].substring(7).replace(".dat",""),description));
+            buffer[1] = buffer[1].concat(this.readGraph(new DataView(this.FS.readFile("files/"+dir[i], null).buffer),dir[i].substring(7).replace(".dat",""),description));
             this.FS.unlink("files/"+dir[i]);
             break;
           case ".cla": //modelFile
-            buffer[1] = buffer[1].concat(this.readModelFile(new DataView(this.FS.readFile("files/"+dir[i], null).buffer),"Model File " + this.DatasList.datas[this.DatasList.active].children[1].children.length,description));
+            buffer[2] = buffer[2].concat(this.readModelFile(new DataView(this.FS.readFile("files/"+dir[i], null).buffer),"Model File " + this.datasList.datas[this.datasList.active].children[2].children.length,description));
             this.FS.unlink("files/"+dir[i]);
             break;
           case ".out": //classification
-            buffer[3] = buffer[3].concat(this.readClassification("files/"+dir[i],"classification "+this.DatasList.datas[this.DatasList.active].children[3].children.length,description));
+            buffer[4] = buffer[4].concat(this.readClassification("files/"+dir[i],"classification "+this.datasList.datas[this.datasList.active].children[4].children.length,description));
             this.FS.unlink("files/"+dir[i]);
             break;
           case ".acc": //accuracy
@@ -261,7 +293,7 @@ export class FileManager{
             this.FS.unlink("files/"+dir[i]);
             break;
           case ".dis": //distances
-            buffer[2] = buffer[2].concat(this.readDistances(new DataView(this.FS.readFile("files/"+dir[i], null).buffer,"distance "+this.DatasList.datas[this.DatasList.active].children[2].children.length,description)))
+            buffer[3] = buffer[3].concat(this.readDistances(new DataView(this.FS.readFile("files/"+dir[i], null).buffer),"distance "+this.datasList.datas[this.datasList.active].children[3].children.length,description));
             this.FS.unlink("files/"+dir[i]);
             break;
           case ".pra": //pruning rate
@@ -274,9 +306,17 @@ export class FileManager{
         }
       }
     }
-    for(var i = 0; i < 4; i++){ //arrumar //usar setstate
-      this.DatasList.datas[this.DatasList.active].children[i].children = this.DatasList.datas[this.DatasList.active].children[i].children.concat(buffer[i])
-    }/*
+    this.stateUpdate(prevState => {
+      for(var i = 0; i < buffer.length; i++){ //arrumar //usar setstate
+        if(buffer[i].length > 0){
+          prevState.datasList.datas[prevState.datasList.active].children[i].children = prevState.datasList.datas[prevState.datasList.active].children[i].children.concat(buffer[i])
+        }
+      }
+      return {
+        datasList: prevState.datasList
+      }
+    })
+    /*
     this.setState( prevState => {
         for(var i = 0; i < 4; i++){
           prevState.datas[prevState.activeData].children[i].children = prevState.datas[prevState.activeData].children[i].children.concat(buffer[i])
@@ -310,19 +350,19 @@ export class FileManager{
             break;
           case "SubGraphs":
             auxNum = 0;
-            loadedFile = scope.readGraph(new DataView(reader.result),"loaded subGraph "+scope.DatasList.datas[fileUploaderInfo[0]].children[auxNum].loadedFiles, "Loaded by the user");
+            loadedFile = scope.readGraph(new DataView(reader.result),"loaded subGraph "+scope.datasList.datas[fileUploaderInfo[0]].children[auxNum].loadedFiles, "Loaded by the user");
             break;
           case "ModelFiles":
             auxNum = 1;
-            loadedFile = scope.readModelFile(new DataView(reader.result),"loaded modelFile "+scope.DatasList.datas[fileUploaderInfo[0]].children[auxNum].loadedFiles, "Loaded by the user");
+            loadedFile = scope.readModelFile(new DataView(reader.result),"loaded modelFile "+scope.datasList.datas[fileUploaderInfo[0]].children[auxNum].loadedFiles, "Loaded by the user");
             break;
           case "Distances":
             auxNum = 2;
-            loadedFile = scope.readDistances(new DataView(reader.result),"loaded distance "+scope.DatasList.datas[fileUploaderInfo[0]].children[auxNum].loadedFiles, "Loaded by the user");
+            loadedFile = scope.readDistances(new DataView(reader.result),"loaded distance "+scope.datasList.datas[fileUploaderInfo[0]].children[auxNum].loadedFiles, "Loaded by the user");
             break;
           case "Classifications":
             auxNum = 3;
-            loadedFile = scope.readClassification(new DataView(reader.result),"loaded classification "+scope.DatasList.datas[fileUploaderInfo[0]].children[auxNum].loadedFiles, "Loaded by the user");
+            loadedFile = scope.readClassification(new DataView(reader.result),"loaded classification "+scope.datasList.datas[fileUploaderInfo[0]].children[auxNum].loadedFiles, "Loaded by the user");
             break;
           default:
             console.log("Error")

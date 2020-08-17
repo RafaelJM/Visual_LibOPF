@@ -41,7 +41,7 @@ void c_opf_fold(int *argc, char **argv)
 	{
 		fprintf(stdout, "\nWriting fold %d ...", i + 1);
 			
-		sprintf(fileName, "fold%d.dat",(i+1));
+		sprintf(fileName, "%sfold%d.dat",argv[1],(i+1));
 		if (op){
 			opf_NormalizeFeatures(fold[i]); if(errorOccurred) return;
 		}

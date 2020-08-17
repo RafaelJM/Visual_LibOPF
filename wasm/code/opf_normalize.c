@@ -14,14 +14,14 @@ void c_opf_normalize(int *argc, char **argv)
 
 	errorOccurred = 0;	
 
-	if (*argc != 3)
+	if (*argc != 2)
 	{
 		fprintf(stderr, "\nusage opf_normalize <P1> <P2>");
 		fprintf(stderr, "\nP1: input dataset in the OPF file format");
-		fprintf(stderr, "\nP2: normalized output dataset in the OPF file format\n");
 		return;
 	}
 	Subgraph *g = NULL;
+	char fileName[512];
 
 	fprintf(stdout, "\nReading data set ...");
 	
@@ -37,7 +37,8 @@ void c_opf_normalize(int *argc, char **argv)
 
 	fprintf(stdout, "\nWriting normalized data set to disk ...");
 	
-	WriteSubgraph(g, argv[2]); if(errorOccurred) return;
+	sprintf(fileName, "%s.dat", argv[1]);
+	WriteSubgraph(g, fileName); if(errorOccurred) return;
 	fprintf(stdout, " OK");
 	
 

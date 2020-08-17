@@ -19,9 +19,11 @@ function App() {
 }
 
 class Data {
+  infoKeys = ["title","description"]
   title = ""
-  //description = ""
-  children = [{
+  description = ""
+  expanded = true
+  children = [{},{ //list of pointers?
     title: "SubGraphs",
     loadedFiles: 0,
     children: []
@@ -40,9 +42,10 @@ class Data {
   }]
   //children = objects //testar ponteiro //arrumar
 
-  constructor(title) {
+  constructor(title,data) {
     this.title = title;
-    
+    this.children[0] = data;
+    console.log("this",this)
   }
 }
 
@@ -51,18 +54,19 @@ class Data {
 class MyFirstGrid extends React.Component {
   constructor(props) {
     super(props);
-    var datas = {datas: [], active: null};
-    this.FM = new FileManager(datas)
-    this.OPFF =  new FunctionManager(this.FM, datas,(funcsHTML) => {this.setState({functions:funcsHTML})})
+    var datasAux = {datas: [], active: -1};
+    this.FM = new FileManager(datasAux, (stateUpdate) => this.setState(stateUpdate))
+    this.OPFF =  new FunctionManager(this.FM, datasAux,(funcsHTML) => {this.setState({functions:funcsHTML})})
     console.log("fm",this.FM)
 
     this.state = {
-        DatasList: datas,
+        datasList: datasAux,
         CSigma: React.createRef(),
         fileUploader: React.createRef(),
         details: [],
         visualizer: [],
         functions: this.OPFF.loadFunctions(),
+        
     };
   }
 
@@ -78,28 +82,24 @@ class MyFirstGrid extends React.Component {
     this.setState({ details:[]}, () => {
     this.setState({ details:[
       <div>
-        {Object.keys(node).map((key, index) => (
+        {node.infoKeys.map((key, index) => (
           <div>
-            {key == 'x' || key == 'y' || key == 'children' || key == 'loadedFiles' || key == 'expanded' || key == 'nodes' || key == 'edges' ? null : //arruamr um metodo melhor
+            {key !== 'feat' ? 
               <div>
-                {key !== 'feat' ? 
-                  <div>
-                    <InputGroup.Prepend>
-                      <InputGroup.Text id={key}>{key}</InputGroup.Text>
-                    </InputGroup.Prepend>
-                    <FormControl defaultValue={node[key]} placeholder={key} aria-label={key} aria-describedby="basic-addon1"/>
-                  </div>
-                : 
-                  node[key].map((feat, indexFeat) => (
-                    <div>
-                      <InputGroup.Prepend>
-                        <InputGroup.Text id={"feat"+indexFeat}>Feat {indexFeat}</InputGroup.Text>
-                      </InputGroup.Prepend>
-                      <FormControl defaultValue={feat} placeholder="Feats" aria-label="Feats" aria-describedby="basic-addon1"/>
-                    </div>
-                  ))
-                }
+                <InputGroup.Prepend>
+                  <InputGroup.Text id={key}>{key}</InputGroup.Text>
+                </InputGroup.Prepend>
+                <FormControl defaultValue={node[key]} placeholder={key} aria-label={key} aria-describedby="basic-addon1"/>
               </div>
+            : 
+              node[key].map((feat, indexFeat) => (
+                <div>
+                  <InputGroup.Prepend>
+                    <InputGroup.Text id={"feat"+indexFeat}>Feat {indexFeat}</InputGroup.Text>
+                  </InputGroup.Prepend>
+                  <FormControl defaultValue={feat} placeholder="Feats" aria-label="Feats" aria-describedby="basic-addon1"/>
+                </div>
+              ))
             }
           </div>
         ))}
@@ -126,37 +126,27 @@ class MyFirstGrid extends React.Component {
             <Pane defaultSize ="10%">
             <input type="file" id="inputFile" ref={this.state.fileUploader} onChange={(evt) => {
               //if(evt == -1)
-              this.setState( prevState => {
-                prevState.DatasList.datas = prevState.DatasList.datas.concat(new Data("Data "+ (this.state.DatasList.datas.length+1)))
-                prevState.DatasList.active = this.state.DatasList.datas.length-1;
-                return {
-                  datas: prevState.DatasList.datas
-                };
-              },() => {
-                var reader = new FileReader();
-                const scope = this;
-                
-                reader.readAsArrayBuffer(this.state.fileUploader.current.files[0]);//arrumar
-                reader.onload = function() {     
-                  var loadedFile = scope.FM.readGraph(new DataView(reader.result),"Data nodes", "Loaded by the user");
-                  scope.setState( prevState => {
-                    
-                    prevState.DatasList.datas[prevState.DatasList.active].children[0].children = prevState.DatasList.datas[prevState.DatasList.active].children[0].children.concat(loadedFile);
-                    prevState.DatasList.datas[prevState.DatasList.active].children[0].loadedFiles += 1;
-                
-                    return {
-                      datas: prevState.DatasList.datas
-                    };
-                  },() => {
-                    /*if(this.state.activeFunction != null){ //reload the functions
-                      var func = this.functionDetails.functions[this.state.activeFunction];
-                      this.loadFunctionEntrance(this.state.activeFunction)
-                    }*/
-                    scope.loadCSigma(loadedFile);
-                    scope.OPFF.loadFunctions()
-                  });
-                }
-              });
+              var reader = new FileReader();
+              const scope = this;
+              
+              reader.readAsArrayBuffer(this.state.fileUploader.current.files[0]);//arrumar
+              reader.onload = function() {     
+                var loadedFile = scope.FM.readGraph(new DataView(reader.result),"Graph Data", "Loaded by the user");
+                scope.setState( prevState => {
+                  prevState.datasList.datas = prevState.datasList.datas.concat(new Data("Data "+ (scope.state.datasList.datas.length+1),loadedFile))
+                  prevState.datasList.active = scope.state.datasList.datas.length-1;
+                  return {
+                    datasList: prevState.datasList
+                  }
+                },() => {
+                  /*if(this.state.activeFunction != null){ //reload the functions
+                    var func = this.functionDetails.functions[this.state.activeFunction];
+                    this.loadFunctionEntrance(this.state.activeFunction)
+                  }*/
+                  scope.loadCSigma(loadedFile);
+                  scope.OPFF.loadFunctions()
+                });
+              }
             }} style={{display: "none"}} multiple></input>
             <button
               onClick={() => this.state.fileUploader.current.click(-1)}
@@ -179,40 +169,79 @@ class MyFirstGrid extends React.Component {
               <SplitPane split="horizontal" defaultSize="80%">
                 <Pane>
                   <SortableTree
-                    treeData={this.state.DatasList.datas}
+                    id="dat"
+                    treeData={this.state.datasList.datas}
                     onChange={treeData => this.setState(prevState => {
-                      prevState.DatasList.datas = treeData;
+                      /*
+                      var changeExpanded = (prev,tree) => {
+                        for(var i = 0; i < tree.length; i++){
+                          Object.setPrototypeOf(prev[i], tree[i].prototype)
+                          prev[i].expanded = tree[i].expanded
+                          if(prev[i].hasOwnProperty("children")){
+                            changeExpanded(prev[i].children,tree[i].children)
+                          }
+                        }
+                      }
+                      console.log(prevState.datasList.datas,treeData);
+                      //console.log("p",prevState.datasList.datas[0].expanded)
+                      changeExpanded(prevState.datasList.datas,treeData)
+                      //console.log("p\>",prevState.datasList.datas[0].expanded)*/
+                      console.log("prevState",prevState,"treeData",treeData)
+                      prevState.datasList.datas = treeData;
                       return {
-                        datas: prevState.DatasList.datas
+                        datasList: prevState.datasList
                       }})}
                     theme={FileExplorerTheme}
                     generateNodeProps={node => ({
-                      onClick: () => {
+                      onClick: () => {/*
+                        console.log(node);
+                        this.loadCSigma(node.node.Data);//node.node.onclickFunction //arrumar call functions
                         this.loadNodeDetails(node.node);
+                        this.setState(prevState => {
+                          prevState.datasList.active = node.node;
+                          return {
+                            datas: prevState.datasList.datas
+                          }})*/
                       },
                       buttons:  [
-                        <button style={styleButton}
-                          onClick={() => {}}
-                        >
-                          O
-                        </button>,/*<button style={styleButton}
-                          onClick={() => {this.loadNodeDetails(node.node);}}
-                        >
-                          i
-                        </button>,<button style={styleButton}
-                          onClick={() => this.state.fileUploader.current.click(0)}>
-                          +
-                        </button>,*/<button style={styleButton}
-                          onClick={() => {
-                            this.setState( prevState => {                    
-                              //    months.splice(1,1);
-                              return {
-                                datas: prevState.DatasList.datas
-                              };})
-                          }}
-                        >
-                          L
-                        </button>,
+                        node.node.hasOwnProperty("nodes") ? 
+                          <button style={styleButton}
+                            onClick={() => {this.loadCSigma(node.node)}}
+                          >
+                            O
+                          </button>
+                        :
+                          null,
+                        node.node.hasOwnProperty("infoKeys") ? 
+                          <button style={styleButton}
+                            onClick={() => {this.loadNodeDetails(node.node);}}
+                          >
+                            i
+                          </button> 
+                        :
+                           null,
+                        node.node.hasOwnProperty("addFunction") ? 
+                          <button style={styleButton}
+                            onClick={() => {}}
+                          >
+                            +
+                          </button> 
+                        :
+                           null,
+                        node.node.hasOwnProperty("delFunction") ? 
+                          <button style={styleButton}
+                            onClick={() => {
+                              this.setState( prevState => {                    
+                                //    months.splice(1,1);
+                                return {
+                                  datasList: prevState.datasList
+                                };})
+                            }}
+                          >
+                            L
+                          </button> 
+                        :
+                           null
                       ]
                   })
                 }
@@ -238,9 +267,9 @@ class CustomSigma extends React.Component {
     return 'bar';
   }
 
-  loadSugGraph(SubGraph){
+  loadSugGraph(Graph){
     this.props.sigma.graph.clear();
-    this.props.sigma.graph.read(SubGraph);
+    this.props.sigma.graph.read(Graph);
     this.props.sigma.refresh();
   }
 
@@ -271,3 +300,11 @@ export default App;
 //https://icon-icons.com/pt/icone/adicionar-mais-bot%C3%A3o/72878
 //https://icon-icons.com/pt/icone/lixo/48207
 ///https://icon-icons.com/pt/icone/olho/128870
+
+
+//TODO: node vinculation, work with pointers, same node "diferent" subgraph
+//TODO: node details by function or list [[key,type],....]
+//TODO: sigma animation, sigma focous on point, edges (arrows) [not realtime]
+//TODO: fix list expension / buttons (function or array of buttons)
+//TODO: sigma zoom / size node
+//TODO: add info to infoKeys about what can be changed
