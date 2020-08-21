@@ -164,7 +164,18 @@ export class FileManager{
     for(i = 0; i < subGraph.nnodes; i++){
       subGraph.ordered_list_of_nodes[i] = dv.getInt32(cont=cont+4,true);
     }
-    subGraph.nodes = this.quick_Sort(subGraph.nodes);
+    //subGraph.nodes = this.quick_Sort(subGraph.nodes);
+    for(var ID in subGraph.ordered_list_of_nodes){
+      console.log(ID)
+      if(subGraph.nodes[ID].pred != -1){
+        subGraph.edges = subGraph.edges.concat({
+          id: subGraph.edges.length,
+          source: subGraph.nodes[subGraph.nodes[ID].pred].id,
+          target: subGraph.nodes[ID].id,
+          type: "arrow",
+        })
+      }
+    }
     subGraph.children = subGraph.nodes;
     return(subGraph);
   }
@@ -243,7 +254,7 @@ export class FileManager{
     this.FS.writeFile(file,Buffer.from(buf));
   }
 
-  runOPFFunction(opfFunction, variables, description){
+  runOPFFunction(opfFunction, variables, description, subGraphOrigin){
     const cwrap = this.Module.cwrap("c_"+opfFunction,null,['number', 'number']);
   
     variables = [""].concat(variables);  //  ["","files/auxone.dat","0.5","0","0.5","0"];
@@ -266,9 +277,9 @@ export class FileManager{
     var array = [];
     var dir = this.FS.readdir("files/");
     console.log(dir);
-    var buffer = [[],[],[],[],[]]
+    var buffer = [[],[],[],[],[],[]]
     for(i in dir){
-      if(dir[i].substring(6) !== ""){
+      if(dir[i].substring(6) !== ""){ //use function to know what will be back can be useful
         switch(dir[i].substr(-4)) {
           case ".tim": //execucion time
             array = this.FS.readFile("files/"+dir[i],{encoding: 'utf8'});
@@ -296,9 +307,14 @@ export class FileManager{
             buffer[3] = buffer[3].concat(this.readDistances(new DataView(this.FS.readFile("files/"+dir[i], null).buffer),"distance "+this.datasList.datas[this.datasList.active].children[3].children.length,description));
             this.FS.unlink("files/"+dir[i]);
             break;
-          case ".pra": //pruning rate
+            case ".pra": //pruning rate
             array = this.FS.readFile("files/"+dir[i],{encoding: 'utf8'}).split("\n");
             console.log(array);
+            this.FS.unlink("files/"+dir[i]);
+            break;
+          case ".pre": //pred file (classification)
+            buffer[5] = buffer[5].concat([this.FS.readFile("files/"+dir[i],{encoding: 'utf8'}).split("\n")]);
+            console.log(buffer[5]);
             this.FS.unlink("files/"+dir[i]);
             break;
           default:
@@ -307,7 +323,14 @@ export class FileManager{
       }
     }
     this.stateUpdate(prevState => {
-      for(var i = 0; i < buffer.length; i++){ //arrumar //usar setstate
+		//discover who is the subgraph father to add the pred!!!!
+      if(buffer[5].length){
+        for(i = 0; i < subGraphOrigin[0].nnodes; i++){
+          subGraphOrigin[0].nodes[i].pred = buffer[5][0][i]
+        }
+        console.log("buffer",subGraphOrigin,buffer);
+      }
+      for(i = 0; i < (buffer.length-1); i++){ //arrumar //usar setstate
         if(buffer[i].length > 0){
           prevState.datasList.datas[prevState.datasList.active].children[i].children = prevState.datasList.datas[prevState.datasList.active].children[i].children.concat(buffer[i])
         }

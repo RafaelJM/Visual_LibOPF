@@ -77,7 +77,8 @@ class MyFirstGrid extends React.Component {
   loadNodeDetails(node){
     console.log(node,Object.entries(node))
     if("x" in node){
-      this.state.CSigma.current.focousInXY(node.x,node.y)
+      console.log("zoom",node.x,node.y)
+      this.state.CSigma.current.focousInXY(node)
     }
     this.setState({ details:[]}, () => {
     this.setState({ details:[
@@ -152,6 +153,16 @@ class MyFirstGrid extends React.Component {
               onClick={() => this.state.fileUploader.current.click(-1)}
             >
               +
+            </button>
+            <button
+              onClick={() => this.state.fileUploader.current.click(-1)}
+            >
+              Z+
+            </button>
+            <button
+              onClick={() => this.state.fileUploader.current.click(-1)}
+            >
+              Z-
             </button>
             </Pane>
             <SplitPane split="vertical" defaultSize="80%">
@@ -273,14 +284,17 @@ class CustomSigma extends React.Component {
     this.props.sigma.refresh();
   }
 
-  focousInXY(x,y){ //setTimeout
+  focousInXY(node){ //setTimeout
     var c = this.props.sigma.camera;
-    console.log("c",c);
-    
     c.goTo({
-      //x: x/c.ratio,
-     //y: y/c.ratio
+      x: node.x,
+      y: node.y
     });
+    var aux = node.color;
+    node.color = "#000000";
+    console.log("node",this.props.sigma)
+    this.props.sigma.refresh();
+    setTimeout(() => {node.color = aux; console.log("b");this.props.sigma.refresh();}, 3000);
   }
   
   render(){

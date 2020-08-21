@@ -101,8 +101,9 @@ void opf_OPFTraining(Subgraph *sg)
 //Classification function: it simply classifies samples from sg -----
 void opf_OPFClassifying(Subgraph *sgtrain, Subgraph *sg)
 {
-  int i, j, k, l, label = -1;
+  int i, j, k, l, pred, label = -1;
   float tmp, weight, minCost;
+  int* preds = (int*) calloc(sg->nnodes, sizeof(int));	
 
   for (i = 0; i < sg->nnodes; i++)
   {
@@ -115,7 +116,8 @@ void opf_OPFClassifying(Subgraph *sgtrain, Subgraph *sg)
 
     minCost = MAX(sgtrain->node[k].pathval, weight);
     label = sgtrain->node[k].label;
-
+	preds[i] = k;
+	
     while ((j < sgtrain->nnodes - 1) &&
            (minCost > sgtrain->node[sgtrain->ordered_list_of_nodes[j + 1]].pathval))
     {
@@ -131,12 +133,21 @@ void opf_OPFClassifying(Subgraph *sgtrain, Subgraph *sg)
       {
         minCost = tmp;
         label = sgtrain->node[l].label;
+		preds[i] = l; //who dominated the node i [realtime or not]  
       }
       j++;
       k = l;
     }
     sg->node[i].label = label;
   }
+  
+  //save in file
+  FILE *fp = NULL;
+  fp = fopen("files/0.temp.pre", "w");
+  for (i = 0; i < sg->nnodes; i++){
+	fprintf(fp, "%d\n", preds[i]);
+  }
+  fclose(fp);
 }
 
 /*Classification function: it classifies samples from sg and it marks as relevant
@@ -428,9 +439,11 @@ void opf_OPFknnClassify(Subgraph *Train, Subgraph *Test)
         {
           cost = tmp;
           Test->node[i].label = Train->node[nn[l]].label;
+		  //prev = nn[l]
         }
       }
     }
+	
   }
 
   free(d);

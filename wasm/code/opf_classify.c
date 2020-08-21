@@ -43,6 +43,9 @@ void c_opf_classify(int *argc, char **argv)
 
 	fprintf(stdout, "\nClassifying test set ...");
 	
+
+	//sprintf(fileName, "%s.pre", argv[1]);
+	
 	gettimeofday(&tic, NULL);
 	opf_OPFClassifying(gTrain, gTest);
 	gettimeofday(&toc, NULL);
