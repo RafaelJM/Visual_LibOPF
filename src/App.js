@@ -2,13 +2,16 @@ import React from 'react';
 import './App.css';
 import {FileManager} from './FileManager.js';
 import {FunctionManager} from './OPFFunctions.js';
-import {Sigma, RelativeSize } from 'react-sigma';
+import {Sigma } from 'react-sigma';
 
 import SplitPane, { Pane } from 'react-split-pane';
-import {InputGroup, FormControl, Form, OverlayTrigger, Tooltip} from 'react-bootstrap';
+import {InputGroup, FormControl} from 'react-bootstrap';
 
 import SortableTree from "react-sortable-tree";
 import FileExplorerTheme from 'react-sortable-tree-theme-file-explorer';
+
+import Cookies from 'universal-cookie';
+const cookies = new Cookies();
 
 function App() {
   return (
@@ -54,6 +57,13 @@ class Data {
 class MyFirstGrid extends React.Component {
   constructor(props) {
     super(props);
+
+    console.log(console.log(cookies.get('SigmaSettings')))
+
+    if(cookies.get("SigmaSettings") === undefined)
+      cookies.set('SigmaSettings', {labelThreshold: 999999999, minArrowSize:10, maxNodeSize:9, drawEdges:true, zoomMin:0.000001}, { path: '/' });
+    this.LoadedCookies = {SigmaSettings:cookies.get("SigmaSettings")}
+
     var datasAux = {datas: [], active: -1};
     this.FM = new FileManager(datasAux, (stateUpdate) => this.setState(stateUpdate))
     this.OPFF =  new FunctionManager(this.FM, datasAux,(funcsHTML) => {this.setState({functions:funcsHTML})})
@@ -78,7 +88,7 @@ class MyFirstGrid extends React.Component {
       temp.edges = temp.edges.concat(graph.modelFileClassificator.edges);
 
       for(var ID in graph.nodes){
-        if(temp.nodes[ID].pred != -1){
+        if(temp.nodes[ID].pred !== -1){
           temp.edges = temp.edges.concat({
             id: temp.edges.length,
             source: graph.modelFileClassificator.nodes[temp.nodes[ID].pred].id,
@@ -150,9 +160,9 @@ class MyFirstGrid extends React.Component {
           
             <Pane defaultSize ="10%">
             <input type="file" id="inputFile" ref={this.state.fileUploader} onChange={(evt) => {
-              //if(evt == -1)
+              //if(evt === -1)
               
-              if(this.state.fileUploader.current.files.length == 0) return;
+              if(this.state.fileUploader.current.files.length === 0) return;
               
               var reader = new FileReader();
               const scope = this;
@@ -186,15 +196,19 @@ class MyFirstGrid extends React.Component {
                 console.log("this.state.Sigma.current.sigma",this.state.Sigma.current.sigma)
                 this.state.Sigma.current.sigma.settings("maxNodeSize",this.state.Sigma.current.sigma.settings("maxNodeSize")+1)
                 this.state.Sigma.current.sigma.refresh();
+                this.LoadedCookies.SigmaSettings.maxNodeSize = this.state.Sigma.current.sigma.settings("maxNodeSize")
+                cookies.set('SigmaSettings', this.LoadedCookies.SigmaSettings, { path: '/' });
               }}
             >
               N+
             </button>
             <button
               onClick={() => {
-                if(this.state.Sigma.current.sigma.settings("maxNodeSize")==1) return;
+                if(this.state.Sigma.current.sigma.settings("maxNodeSize") === 1) return;
                 this.state.Sigma.current.sigma.settings("maxNodeSize",this.state.Sigma.current.sigma.settings("maxNodeSize")-1)
                 this.state.Sigma.current.sigma.refresh();
+                this.LoadedCookies.SigmaSettings.maxNodeSize = this.state.Sigma.current.sigma.settings("maxNodeSize")
+                cookies.set('SigmaSettings', this.LoadedCookies.SigmaSettings, { path: '/' });
               }}
             >
               N-
@@ -204,33 +218,42 @@ class MyFirstGrid extends React.Component {
                 console.log("this.state.Sigma.current.sigma",this.state.Sigma.current.sigma)
                 this.state.Sigma.current.sigma.settings("minArrowSize",this.state.Sigma.current.sigma.settings("minArrowSize")+1)
                 this.state.Sigma.current.sigma.refresh();
+                this.LoadedCookies.SigmaSettings.minArrowSize = this.state.Sigma.current.sigma.settings("minArrowSize")
+                cookies.set('SigmaSettings', this.LoadedCookies.SigmaSettings, { path: '/' });
               }}
             >
               E+
             </button>
             <button
               onClick={() => {
-                if(this.state.Sigma.current.sigma.settings("maxNodeSize")==1) return;
                 this.state.Sigma.current.sigma.settings("minArrowSize",this.state.Sigma.current.sigma.settings("minArrowSize")-1)
                 this.state.Sigma.current.sigma.refresh();
+                this.LoadedCookies.SigmaSettings.minArrowSize = this.state.Sigma.current.sigma.settings("minArrowSize")
+                cookies.set('SigmaSettings', this.LoadedCookies.SigmaSettings, { path: '/' });
               }}
             >
               E-
             </button>
             <button
               onClick={() => {
-                if(this.state.Sigma.current.sigma.settings("maxNodeSize")==1) return;
                 this.state.Sigma.current.sigma.settings("labelThreshold",999999999 - this.state.Sigma.current.sigma.settings("labelThreshold"))
                 this.state.Sigma.current.sigma.refresh();
+                this.LoadedCookies.SigmaSettings.labelThreshold = this.state.Sigma.current.sigma.settings("labelThreshold")
+                cookies.set('SigmaSettings', this.LoadedCookies.SigmaSettings, { path: '/' });
               }}
             >
               All Labels
             </button>
             </Pane>
-            <SplitPane split="vertical" defaultSize="80%">
+            <SplitPane split="vertical" defaultSize="80%"
+              onDragFinished={(size) => { //https://github.com/tomkp/react-split-pane/issues/57
+                console.log(size)
+                localStorage.setItem('splitPos', size)}
+              }
+            >
               <SplitPane split="horizontal" defaultSize="80%">
                 <Pane style={{width:"100%", height:"100%"}}>
-                  <Sigma ref={this.state.Sigma} renderer="canvas" container= 'container' settings={{labelThreshold: 999999999, minArrowSize:10, maxNodeSize:9, drawEdges:true, zoomMin:0.000001}} style={{width:"100%", height:"100%", position: "relative", outline: "none"}}> 
+                  <Sigma ref={this.state.Sigma} renderer="canvas" container= 'container' settings={this.LoadedCookies.SigmaSettings} style={{width:"100%", height:"100%", position: "relative", outline: "none"}}> 
                     <CustomSigma ref={this.state.CSigma}/>
                   </Sigma>
                 </Pane>
@@ -330,11 +353,7 @@ class MyFirstGrid extends React.Component {
   }
 }
 
-class CustomSigma extends React.Component {
-	constructor(props) {
-    super(props)
-  }
-  
+class CustomSigma extends React.Component {  
   someMethod() {
     return 'bar';
   }

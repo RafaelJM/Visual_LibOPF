@@ -15,7 +15,8 @@
     "react-sigma": "^1.2.34",
     "react-sortable-tree": "^2.8.0",
     "react-sortable-tree-theme-file-explorer": "^2.0.0",
-    "react-split-pane": "^0.1.92"
+    "react-split-pane": "^0.1.92",
+    "universal-cookie": "^4.0.3"
   },
   "scripts": {
     "start": "react-scripts start",

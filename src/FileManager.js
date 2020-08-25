@@ -144,16 +144,16 @@ export class FileManager{
     subGraph.maxdens = dv.getFloat32(cont=cont+4,true);
     for(var i = 0; i < subGraph.nnodes; i++){
       subGraph.nodes[i] = {
-      infoKeys: ["title","id","truelabel","pred","label","pathval","radius","dens","feat"],
+      infoKeys: ["title","id","truelabel","pred","nodelabel","pathval","radius","dens","feat"],
       feat: [  ],
       id: dv.getInt32(cont=cont+4,true),//position
       truelabel: dv.getInt32(cont=cont+4,true),
       pred: dv.getInt32(cont=cont+4,true),
-      label: dv.getInt32(cont=cont+4,true),
+      nodelabel: dv.getInt32(cont=cont+4,true),
       pathval: dv.getFloat32(cont=cont+4,true),
       radius: dv.getFloat32(cont=cont+4,true),
       dens: dv.getFloat32(cont=cont+4,true),
-      x:0, y:0, size:0.5, color:null, title:"", label:""};
+      x:0, y:0, size:0.5, color:null, title:"", label:""}; //nodelabel == LABEL FROM OPF
       subGraph.nodes[i].color = this.colors[subGraph.nodes[i].truelabel]
       subGraph.nodes[i].title = "Node "+subGraph.nodes[i].id.toString();
       subGraph.nodes[i].label = subGraph.nodes[i].title;
@@ -168,7 +168,7 @@ export class FileManager{
     }
     //subGraph.nodes = this.quick_Sort(subGraph.nodes);
     for(var ID in subGraph.ordered_list_of_nodes){
-      if(subGraph.nodes[ID].pred != -1){
+      if(subGraph.nodes[ID].pred !== -1){
         subGraph.edges = subGraph.edges.concat({
           id: subGraph.edges.length,
           source: subGraph.nodes[subGraph.nodes[ID].pred].id,
@@ -197,7 +197,7 @@ export class FileManager{
       buf.writeInt32LE(subGraph.nodes[i].id,cont=cont+4);//position
       buf.writeInt32LE(subGraph.nodes[i].truelabel,cont=cont+4);
       buf.writeInt32LE(subGraph.nodes[i].pred,cont=cont+4);
-      buf.writeInt32LE(subGraph.nodes[i].label,cont=cont+4);
+      buf.writeInt32LE(subGraph.nodes[i].nodelabel,cont=cont+4);
       buf.writeFloatLE(subGraph.nodes[i].pathval,cont=cont+4);
       buf.writeFloatLE(subGraph.nodes[i].radius,cont=cont+4);
       buf.writeFloatLE(subGraph.nodes[i].dens,cont=cont+4);
@@ -219,7 +219,7 @@ export class FileManager{
     var aux = ""
     classification.classification.map((classification, index) => {
       aux = aux.concat(classification.toString()+"\n");
-      return;
+      return -1;
     });
     console.log("aux",aux);
     this.FS.writeFile(file,aux,{encoding: 'utf8'});

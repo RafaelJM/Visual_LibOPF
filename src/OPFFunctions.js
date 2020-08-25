@@ -1,5 +1,5 @@
 import React from 'react';
-import {InputGroup, FormControl, Form, OverlayTrigger, Tooltip} from 'react-bootstrap';
+import {InputGroup, Form, OverlayTrigger, Tooltip} from 'react-bootstrap';
 
 export class FunctionManager{
     constructor(FileManager,datasList,ChangeFunctionScreen) {
@@ -190,7 +190,7 @@ export class FunctionManager{
         return (
           <div>
             {this.functionDetails.map((func, index) => (
-            <OverlayTrigger overlay={<Tooltip id="tooltip-disabled">{func.description}</Tooltip>}>
+            <OverlayTrigger key={index} overlay={<Tooltip id="tooltip-disabled">{func.description}</Tooltip>}>
               <span className="d-inline-block">
                 <button onClick={() => {
                     this.ChangeFunctionScreen(this.loadFunctionEntrance(index));
@@ -255,17 +255,17 @@ export class FunctionManager{
                         discribeAux += "Classification: " + this.datasList.datas[this.datasList.active].children[4].children[ref.current.value.substring(1)].title + "\n";
                         break;
                       case "":
-                        return;
+                        return -1;
                       default:
                         values = values.concat(ref.current.value);
                         discribeAux += ref.current.description + ": " + ref.current.value + "\n"; //pegar o termo do option
-                        return;
+                        return -1;
                     }
                     values = values.concat("files/"+fileUsed+".temp");
                     fileUsed += 1;
                   }
                   console.log(values);
-                  return;
+                  return -1;
                 });
                 this.FM.runOPFFunction(this.functionDetails[index].function,values, "Created by the function "+this.functionDetails[index].function+" using the paramters: \n"+ discribeAux,subGraphOrigin,modelFileOrigin);
                 return;
