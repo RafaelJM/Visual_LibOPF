@@ -223,6 +223,7 @@ export class FunctionManager{
                 console.log(this.refs);
                 var values = [];
                 var subGraphOrigin = [];
+                var modelFileOrigin = [];
                 var discribeAux = "";
                 var fileUsed = 0;
                 this.refs.map((ref, index) => {
@@ -243,6 +244,7 @@ export class FunctionManager{
                       case "M":
                         this.FM.writeModelFile(this.datasList.datas[this.datasList.active].children[2].children[ref.current.value.substring(1)],"files/"+fileUsed+".temp")
                         discribeAux += "ModelFile: " + this.datasList.datas[this.datasList.active].children[2].children[ref.current.value.substring(1)].title + "\n";
+                        modelFileOrigin = modelFileOrigin.concat(this.datasList.datas[this.datasList.active].children[2].children[ref.current.value.substring(1)]);
                         break;
                       case "D":
                         this.FM.writeDistances(this.datasList.datas[this.datasList.active].children[3].children[ref.current.value.substring(1)],"files/"+fileUsed+".temp")
@@ -265,7 +267,7 @@ export class FunctionManager{
                   console.log(values);
                   return;
                 });
-                this.FM.runOPFFunction(this.functionDetails[index].function,values, "Created by the function "+this.functionDetails[index].function+" using the paramters: \n"+ discribeAux,subGraphOrigin);
+                this.FM.runOPFFunction(this.functionDetails[index].function,values, "Created by the function "+this.functionDetails[index].function+" using the paramters: \n"+ discribeAux,subGraphOrigin,modelFileOrigin);
                 return;
               }}>Run</button>
             <button onClick={() => {this.activeFunction = null; this.ChangeFunctionScreen(this.loadFunctions())}}>Back</button>

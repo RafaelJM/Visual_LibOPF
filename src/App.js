@@ -62,6 +62,7 @@ class MyFirstGrid extends React.Component {
     this.state = {
         datasList: datasAux,
         CSigma: React.createRef(),
+        Sigma: React.createRef(),
         fileUploader: React.createRef(),
         details: [],
         visualizer: [],
@@ -71,6 +72,29 @@ class MyFirstGrid extends React.Component {
   }
 
   loadCSigma(graph){
+    if(graph.hasOwnProperty("modelFileClassificator")){ //temp
+      var temp = {nodes:graph.nodes, edges: []};
+
+      temp.edges = temp.edges.concat(graph.modelFileClassificator.edges);
+
+      for(var ID in graph.nodes){
+        if(temp.nodes[ID].pred != -1){
+          temp.edges = temp.edges.concat({
+            id: temp.edges.length,
+            source: graph.modelFileClassificator.nodes[temp.nodes[ID].pred].id,
+            target: temp.nodes[ID].id,
+            type: "arrow",
+          })
+        }
+      }
+
+      temp.nodes = temp.nodes.concat(graph.modelFileClassificator.nodes);
+
+      console.log("temp",temp)
+
+      this.state.CSigma.current.loadSugGraph(temp);
+      return;
+    }
     this.state.CSigma.current.loadSugGraph(graph);
   }
 
@@ -127,6 +151,9 @@ class MyFirstGrid extends React.Component {
             <Pane defaultSize ="10%">
             <input type="file" id="inputFile" ref={this.state.fileUploader} onChange={(evt) => {
               //if(evt == -1)
+              
+              if(this.state.fileUploader.current.files.length == 0) return;
+              
               var reader = new FileReader();
               const scope = this;
               
@@ -155,22 +182,56 @@ class MyFirstGrid extends React.Component {
               +
             </button>
             <button
-              onClick={() => this.state.fileUploader.current.click(-1)}
+              onClick={() => {
+                console.log("this.state.Sigma.current.sigma",this.state.Sigma.current.sigma)
+                this.state.Sigma.current.sigma.settings("maxNodeSize",this.state.Sigma.current.sigma.settings("maxNodeSize")+1)
+                this.state.Sigma.current.sigma.refresh();
+              }}
             >
-              Z+
+              N+
             </button>
             <button
-              onClick={() => this.state.fileUploader.current.click(-1)}
+              onClick={() => {
+                if(this.state.Sigma.current.sigma.settings("maxNodeSize")==1) return;
+                this.state.Sigma.current.sigma.settings("maxNodeSize",this.state.Sigma.current.sigma.settings("maxNodeSize")-1)
+                this.state.Sigma.current.sigma.refresh();
+              }}
             >
-              Z-
+              N-
+            </button>
+            <button
+              onClick={() => {
+                console.log("this.state.Sigma.current.sigma",this.state.Sigma.current.sigma)
+                this.state.Sigma.current.sigma.settings("minArrowSize",this.state.Sigma.current.sigma.settings("minArrowSize")+1)
+                this.state.Sigma.current.sigma.refresh();
+              }}
+            >
+              E+
+            </button>
+            <button
+              onClick={() => {
+                if(this.state.Sigma.current.sigma.settings("maxNodeSize")==1) return;
+                this.state.Sigma.current.sigma.settings("minArrowSize",this.state.Sigma.current.sigma.settings("minArrowSize")-1)
+                this.state.Sigma.current.sigma.refresh();
+              }}
+            >
+              E-
+            </button>
+            <button
+              onClick={() => {
+                if(this.state.Sigma.current.sigma.settings("maxNodeSize")==1) return;
+                this.state.Sigma.current.sigma.settings("labelThreshold",999999999 - this.state.Sigma.current.sigma.settings("labelThreshold"))
+                this.state.Sigma.current.sigma.refresh();
+              }}
+            >
+              All Labels
             </button>
             </Pane>
             <SplitPane split="vertical" defaultSize="80%">
               <SplitPane split="horizontal" defaultSize="80%">
                 <Pane style={{width:"100%", height:"100%"}}>
-                  <Sigma renderer="webgl" settings={{drawEdges:true, zoomMin:0.000001}} style={{width:"100%", height:"100%", position: "relative", outline: "none"}}> 
+                  <Sigma ref={this.state.Sigma} renderer="canvas" container= 'container' settings={{labelThreshold: 999999999, minArrowSize:10, maxNodeSize:9, drawEdges:true, zoomMin:0.000001}} style={{width:"100%", height:"100%", position: "relative", outline: "none"}}> 
                     <CustomSigma ref={this.state.CSigma}/>
-                    <RelativeSize initialSize={15}/>
                   </Sigma>
                 </Pane>
                 <Pane>
@@ -281,6 +342,10 @@ class CustomSigma extends React.Component {
   loadSugGraph(Graph){
     this.props.sigma.graph.clear();
     this.props.sigma.graph.read(Graph);
+    this.props.sigma.refresh();
+  }
+
+  refresh(){
     this.props.sigma.refresh();
   }
 

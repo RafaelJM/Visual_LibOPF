@@ -91,9 +91,10 @@ export class FileManager{
       feat: [  ],
       id: dv.getInt32(cont=cont+4,true),//position
       truelabel: dv.getInt32(cont=cont+4,true),//truelabel
-      x:0, y:0, size:0.5, color:null, expanded: false, title:""};
+      x:0, y:0, size:0.5, color:null, expanded: false, title:"", label:""};
       subGraph.nodes[i].color = this.colors[subGraph.nodes[i].truelabel]
       subGraph.nodes[i].title = "Node "+subGraph.nodes[i].id.toString();
+      subGraph.nodes[i].label = subGraph.nodes[i].title;
       for(var j = 0; j < subGraph.nfeats; j++){
         subGraph.nodes[i].feat[j] = dv.getFloat32(cont=cont+4,true);//feat
       }
@@ -152,9 +153,10 @@ export class FileManager{
       pathval: dv.getFloat32(cont=cont+4,true),
       radius: dv.getFloat32(cont=cont+4,true),
       dens: dv.getFloat32(cont=cont+4,true),
-      x:0, y:0, size:0.5, color:null, title:""};
+      x:0, y:0, size:0.5, color:null, title:"", label:""};
       subGraph.nodes[i].color = this.colors[subGraph.nodes[i].truelabel]
       subGraph.nodes[i].title = "Node "+subGraph.nodes[i].id.toString();
+      subGraph.nodes[i].label = subGraph.nodes[i].title;
       for(var j = 0; j < subGraph.nfeats; j++){
         subGraph.nodes[i].feat[j] = dv.getFloat32(cont=cont+4,true);//feat
       }
@@ -166,7 +168,6 @@ export class FileManager{
     }
     //subGraph.nodes = this.quick_Sort(subGraph.nodes);
     for(var ID in subGraph.ordered_list_of_nodes){
-      console.log(ID)
       if(subGraph.nodes[ID].pred != -1){
         subGraph.edges = subGraph.edges.concat({
           id: subGraph.edges.length,
@@ -254,7 +255,7 @@ export class FileManager{
     this.FS.writeFile(file,Buffer.from(buf));
   }
 
-  runOPFFunction(opfFunction, variables, description, subGraphOrigin){
+  runOPFFunction(opfFunction, variables, description, subGraphOrigin, modelFileOrigin = null){
     const cwrap = this.Module.cwrap("c_"+opfFunction,null,['number', 'number']);
   
     variables = [""].concat(variables);  //  ["","files/auxone.dat","0.5","0","0.5","0"];
@@ -328,6 +329,7 @@ export class FileManager{
         for(i = 0; i < subGraphOrigin[0].nnodes; i++){
           subGraphOrigin[0].nodes[i].pred = buffer[5][0][i]
         }
+        subGraphOrigin[0].modelFileClassificator = modelFileOrigin[0]
         console.log("buffer",subGraphOrigin,buffer);
       }
       for(i = 0; i < (buffer.length-1); i++){ //arrumar //usar setstate
