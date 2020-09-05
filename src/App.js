@@ -58,17 +58,14 @@ class MyFirstGrid extends React.Component {
   constructor(props) {
     super(props);
 
-    console.log(console.log(cookies.get('SigmaSettings')))
-
     if(cookies.get("SigmaSettings") === undefined)
       cookies.set('SigmaSettings', {labelThreshold: 999999999, minArrowSize:10, maxNodeSize:9, drawEdges:true, zoomMin:0.000001}, { path: '/' });
     this.LoadedCookies = {SigmaSettings:cookies.get("SigmaSettings")}
 
-    var datasAux = {datas: [], active: -1};
     this.FM = new FileManager(datasAux, (stateUpdate) => this.setState(stateUpdate))
     this.OPFF =  new FunctionManager(this.FM, datasAux,(funcsHTML) => {this.setState({functions:funcsHTML})})
-    console.log("fm",this.FM)
 
+    var datasAux = {datas: [], active: -1};
     this.state = {
         datasList: datasAux,
         CSigma: React.createRef(),
@@ -77,7 +74,6 @@ class MyFirstGrid extends React.Component {
         details: [],
         visualizer: [],
         functions: this.OPFF.loadFunctions(),
-        
     };
   }
 
@@ -102,18 +98,13 @@ class MyFirstGrid extends React.Component {
 
       console.log("temp",temp)
 
-      this.state.CSigma.current.loadSugGraph(temp);
+      this.state.CSigma.current.loadSugGraph(temp, (id) => this.loadNodeDetails(id));
       return;
     }
-    this.state.CSigma.current.loadSugGraph(graph);
+    this.state.CSigma.current.loadSugGraph(graph, (id) => this.loadNodeDetails(id));
   }
 
   loadNodeDetails(node){
-    console.log(node,Object.entries(node))
-    if("x" in node){
-      console.log("zoom",node.x,node.y)
-      this.state.CSigma.current.focousInXY(node)
-    }
     this.setState({ details:[]}, () => {
     this.setState({ details:[
       <div>
@@ -309,7 +300,11 @@ class MyFirstGrid extends React.Component {
                           null,
                         node.node.hasOwnProperty("infoKeys") ? 
                           <button style={styleButton}
-                            onClick={() => {this.loadNodeDetails(node.node);}}
+                            onClick={() => {
+                              if("x" in node.node){
+                                this.state.CSigma.current.focousInXY(node.node.id) //arrumar, like if loaded so focous
+                              }
+                              this.loadNodeDetails(node.node);}}
                           >
                             i
                           </button> 
@@ -358,7 +353,11 @@ class CustomSigma extends React.Component {
     return 'bar';
   }
 
-  loadSugGraph(Graph){
+  loadSugGraph(Graph, loadNodeInfo){
+    this.props.sigma.bind('clickNode',(e) => {
+      console.log(e);
+      loadNodeInfo(e.data.node)//.id) //arrumar, work better with hash, id, i need to work without pointers
+    })
     this.props.sigma.graph.clear();
     this.props.sigma.graph.read(Graph);
     this.props.sigma.refresh();
@@ -368,17 +367,25 @@ class CustomSigma extends React.Component {
     this.props.sigma.refresh();
   }
 
-  focousInXY(node){ //setTimeout
+  focousInXY(id){ //setTimeout
+    var node;
+    var nodes = this.props.sigma.graph.nodes();
+    for(var i = 0; i < nodes.length; i++){ //arrumar, work with hash or something like that
+      if(id === nodes[i].id){
+        node = nodes[i];
+        break;
+      }
+    }
     var c = this.props.sigma.camera;
     c.goTo({
-      x: node.x,
-      y: node.y
+      x:node['read_cam0:x'],
+      y:node['read_cam0:y']
     });
     var aux = node.color;
     node.color = "#000000";
     console.log("node",this.props.sigma)
     this.props.sigma.refresh();
-    setTimeout(() => {node.color = aux; console.log("b");this.props.sigma.refresh();}, 3000);
+    setTimeout(() => {node.color = aux; console.log("b");this.props.sigma.refresh();}, 1000);
   }
   
   render(){
