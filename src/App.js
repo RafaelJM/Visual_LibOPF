@@ -1,14 +1,12 @@
 import React from 'react';
 import './App.css';
-import {FileManager} from './FileManager.js';
-import {FunctionManager} from './OPFFunctions.js';
-import {Sigma } from 'react-sigma';
+import FileManager from './FileManager.js';
+import FunctionManager from './OPFFunctions.js';
+import TreeData from './Tree.js';
+import {Sigma} from 'react-sigma';
 
 import SplitPane, { Pane } from 'react-split-pane';
 import {InputGroup, FormControl} from 'react-bootstrap';
-
-import SortableTree from "react-sortable-tree";
-import FileExplorerTheme from 'react-sortable-tree-theme-file-explorer';
 
 import Cookies from 'universal-cookie';
 const cookies = new Cookies();
@@ -21,37 +19,6 @@ function App() {
   );
 }
 
-class Data {
-  infoKeys = ["title","description"]
-  title = ""
-  description = ""
-  expanded = true
-  children = [{},{ //list of pointers?
-    title: "SubGraphs",
-    loadedFiles: 0,
-    children: []
-  },{
-    title: "ModelFiles",
-    loadedFiles: 0,
-    children: []
-  },{
-    title: "Distances",
-    loadedFiles: 0,
-    children: []
-  },{
-    title: "Classifications",
-    loadedFiles: 0,
-    children: []
-  }]
-  //children = objects //testar ponteiro //arrumar
-
-  constructor(title,data) {
-    this.title = title;
-    this.children[0] = data;
-    console.log("this",this)
-  }
-}
-
 //--------------------------------------
 
 class MyFirstGrid extends React.Component {
@@ -62,15 +29,15 @@ class MyFirstGrid extends React.Component {
       cookies.set('SigmaSettings', {labelThreshold: 999999999, minArrowSize:10, maxNodeSize:9, drawEdges:true, zoomMin:0.000001}, { path: '/' });
     this.LoadedCookies = {SigmaSettings:cookies.get("SigmaSettings")}
 
-    this.FM = new FileManager(datasAux, (stateUpdate) => this.setState(stateUpdate))
-    this.OPFF =  new FunctionManager(this.FM, datasAux,(funcsHTML) => {this.setState({functions:funcsHTML})})
+    var treeRef = React.createRef()
+    this.FM = new FileManager(treeRef, (stateUpdate) => this.setState(stateUpdate))
+    this.OPFF =  new FunctionManager(this.FM, treeRef,(funcsHTML) => {this.setState({functions:funcsHTML})})
+    this.fileUploader = React.createRef();
 
-    var datasAux = {datas: [], active: -1};
     this.state = {
-        datasList: datasAux,
+        Tree: treeRef,
         CSigma: React.createRef(),
         Sigma: React.createRef(),
-        fileUploader: React.createRef(),
         details: [],
         visualizer: [],
         functions: this.OPFF.loadFunctions(),
@@ -135,50 +102,31 @@ class MyFirstGrid extends React.Component {
   }
 
   render() {   
-    const styleButton = {
-      padding: 0,
-      borderRadius: '100%',
-      backgroundColor: 'gray',
-      color: 'white',
-      width: 16,
-      height: 16,
-      border: 0,
-      fontWeight: 100,
-    }
     return (
       <div>
         <SplitPane split="horizontal">
           
             <Pane defaultSize ="10%">
-            <input type="file" id="inputFile" ref={this.state.fileUploader} onChange={(evt) => {
+            <input type="file" id="inputFile" ref={this.fileUploader} onChange={(evt) => {
               //if(evt === -1)
               
-              if(this.state.fileUploader.current.files.length === 0) return;
+              if(this.fileUploader.current.files.length === 0) return;
               
               var reader = new FileReader();
               const scope = this;
               
-              reader.readAsArrayBuffer(this.state.fileUploader.current.files[0]);//arrumar
+              reader.readAsArrayBuffer(this.fileUploader.current.files[0]);//arrumar
               reader.onload = function() {     
                 var loadedFile = scope.FM.readGraph(new DataView(reader.result),"Graph Data", "Loaded by the user");
-                scope.setState( prevState => {
-                  prevState.datasList.datas = prevState.datasList.datas.concat(new Data("Data "+ (scope.state.datasList.datas.length+1),loadedFile))
-                  prevState.datasList.active = scope.state.datasList.datas.length-1;
-                  return {
-                    datasList: prevState.datasList
-                  }
-                },() => {
-                  /*if(this.state.activeFunction != null){ //reload the functions
-                    var func = this.functionDetails.functions[this.state.activeFunction];
-                    this.loadFunctionEntrance(this.state.activeFunction)
-                  }*/
-                  scope.loadCSigma(loadedFile);
-                  scope.OPFF.loadFunctions()
-                });
+
+                scope.state.Tree.current.addNewData(loadedFile);
+                scope.loadCSigma(loadedFile);
+                scope.OPFF.loadFunctions()
               }
+              this.fileUploader.current.value = '' //https://stackoverflow.com/questions/1703228/how-can-i-clear-an-html-file-input-with-javascript
             }} style={{display: "none"}} multiple></input>
             <button
-              onClick={() => this.state.fileUploader.current.click(-1)}
+              onClick={() => this.fileUploader.current.click(-1)}
             >
               +
             </button>
@@ -254,88 +202,7 @@ class MyFirstGrid extends React.Component {
               </SplitPane>
               <SplitPane split="horizontal" defaultSize="80%">
                 <Pane>
-                  <SortableTree
-                    id="dat"
-                    treeData={this.state.datasList.datas}
-                    onChange={treeData => this.setState(prevState => {
-                      /*
-                      var changeExpanded = (prev,tree) => {
-                        for(var i = 0; i < tree.length; i++){
-                          Object.setPrototypeOf(prev[i], tree[i].prototype)
-                          prev[i].expanded = tree[i].expanded
-                          if(prev[i].hasOwnProperty("children")){
-                            changeExpanded(prev[i].children,tree[i].children)
-                          }
-                        }
-                      }
-                      console.log(prevState.datasList.datas,treeData);
-                      //console.log("p",prevState.datasList.datas[0].expanded)
-                      changeExpanded(prevState.datasList.datas,treeData)
-                      //console.log("p\>",prevState.datasList.datas[0].expanded)*/
-                      console.log("prevState",prevState,"treeData",treeData)
-                      prevState.datasList.datas = treeData;
-                      return {
-                        datasList: prevState.datasList
-                      }})}
-                    theme={FileExplorerTheme}
-                    generateNodeProps={node => ({
-                      onClick: () => {/*
-                        console.log(node);
-                        this.loadCSigma(node.node.Data);//node.node.onclickFunction //arrumar call functions
-                        this.loadNodeDetails(node.node);
-                        this.setState(prevState => {
-                          prevState.datasList.active = node.node;
-                          return {
-                            datas: prevState.datasList.datas
-                          }})*/
-                      },
-                      buttons:  [
-                        node.node.hasOwnProperty("nodes") ? 
-                          <button style={styleButton}
-                            onClick={() => {this.loadCSigma(node.node)}}
-                          >
-                            O
-                          </button>
-                        :
-                          null,
-                        node.node.hasOwnProperty("infoKeys") ? 
-                          <button style={styleButton}
-                            onClick={() => {
-                              if("x" in node.node){
-                                this.state.CSigma.current.focousInXY(node.node.id) //arrumar, like if loaded so focous
-                              }
-                              this.loadNodeDetails(node.node);}}
-                          >
-                            i
-                          </button> 
-                        :
-                           null,
-                        node.node.hasOwnProperty("addFunction") ? 
-                          <button style={styleButton}
-                            onClick={() => {}}
-                          >
-                            +
-                          </button> 
-                        :
-                           null,
-                        node.node.hasOwnProperty("delFunction") ? 
-                          <button style={styleButton}
-                            onClick={() => {
-                              this.setState( prevState => {                    
-                                //    months.splice(1,1);
-                                return {
-                                  datasList: prevState.datasList
-                                };})
-                            }}
-                          >
-                            L
-                          </button> 
-                        :
-                           null
-                      ]
-                  })
-                }
-                  />
+                  <TreeData ref={this.state.Tree} parent={this}/>
                 </Pane>
                 <Pane>
                   {this.state.details}

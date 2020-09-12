@@ -1,10 +1,10 @@
 import React from 'react';
 import {InputGroup, Form, OverlayTrigger, Tooltip} from 'react-bootstrap';
 
-export class FunctionManager{
-    constructor(FileManager,datasList,ChangeFunctionScreen) {
+export default class FunctionManager{
+    constructor(FileManager,dataTrees,ChangeFunctionScreen) {
         this.FM = FileManager;
-        this.datasList = datasList;
+        this.dataTrees = dataTrees;
         this.ChangeFunctionScreen = ChangeFunctionScreen;
         
         this.activeFunction = null;
@@ -13,21 +13,20 @@ export class FunctionManager{
             {function: "opf_accuracy", description: "Computes the OPF accuracy",
             entraces: () => 
             [this.entrace_Graph("S","Data object used in the opf_classify function, or similar, normaly is the testing object"),
-            console.log(this.datasList.datas[this.datasList.active].Classifications),
-            this.entrace_Select(this.datasList.datas[this.datasList.active].children[4].children,"The output list, classified, produced by opf_classify function","C")]
+            this.entrace_Select(this.dataTrees.current.state.activeData.children[4].children,"The output list, classified, produced by opf_classify function","C")]
             },
 
             {function: "opf_accuracy4label", description: "Computes the OPF accuracy for each class of a given set",
             entraces: () => 
             [this.entrace_Graph("S","Data object used in the opf_classify function, or similar, normaly is the testing object"),
-            this.entrace_Select(this.datasList.datas[this.datasList.active].children[4].children,"The output list, classified, produced by opf_classify function","C")]
+            this.entrace_Select(this.dataTrees.current.state.activeData.children[4].children,"The output list, classified, produced by opf_classify function","C")]
             },
 
             {function: "opf_classify", description: "Executes the test phase of the OPF classifier",
             entraces: () => 
             [this.entrace_Graph("S","The testing data object produced by the opf_split function (subGraph object)"),
             this.entrace_Graph("M","The classifier object produced by one of the classification functions (model object)"),
-            this.entrace_Select(this.datasList.datas[this.datasList.active].children[3].children,"The precomputed distance matrix produced by the opf_distance","D",true)]
+            this.entrace_Select(this.dataTrees.current.state.activeData.children[3].children,"The precomputed distance matrix produced by the opf_distance","D",true)]
             },
 
             {function: "opf_cluster", description: "Computes clusters by unsupervised OPF",
@@ -36,7 +35,7 @@ export class FunctionManager{
             this.entrace_Number("1","","1","kmax","","The kmax (maximum degree for the knn graph) [greater than 0]"),
             this.entrace_Select([{title:"Height"},{title:"Area"},{title:"Volume"}],"Clusters by: height, area or volume"),
             this.entrace_Number("0","100","1","parameter of the cluster","","Value of parameter cluster [0-100]",true),
-            this.entrace_Select(this.datasList.datas[this.datasList.active].children[3].children,"The precomputed distance matrix produced by the opf_distance","D",true)]
+            this.entrace_Select(this.dataTrees.current.state.activeData.children[3].children,"The precomputed distance matrix produced by the opf_distance","D",true)]
             },
 
             {function: "opf_distance", description: "Generates the precomputed distance file for the OPF classifier",
@@ -59,7 +58,7 @@ export class FunctionManager{
             entraces: () => 
             [this.entrace_Graph("S","A subGraph object, can be the training object produced by the opf_split"),
             this.entrace_Graph("S","A subGraph object, can be the evaluation produced object by the opf_split"),
-            this.entrace_Select(this.datasList.datas[this.datasList.active].children[3].children,"The precomputed distance matrix produced by the opf_distance","D",true)]
+            this.entrace_Select(this.dataTrees.current.state.activeData.children[3].children,"The precomputed distance matrix produced by the opf_distance","D",true)]
             },
 
             {function: "opf_merge", description: "Merge subGraphs", //can be changed to add more (a func that add more entraces)
@@ -78,7 +77,7 @@ export class FunctionManager{
             [this.entrace_Graph("S","A subGraph object, can be the training object produced by the opf_split"),
             this.entrace_Graph("S","A subGraph object, can be the evaluation produced object by the opf_split"),
             this.entrace_Number("0","100","1","percentageAccuracy","","Max percentage of lost accuracy [0-100]",true),
-            this.entrace_Select(this.datasList.datas[this.datasList.active].children[3].children,"The precomputed distance matrix produced by the opf_distance","D",true)]
+            this.entrace_Select(this.dataTrees.current.state.activeData.children[3].children,"The precomputed distance matrix produced by the opf_distance","D",true)]
             },
 
             {function: "opf_semi", description: "Executes the semi supervised training phase",
@@ -86,7 +85,7 @@ export class FunctionManager{
             [this.entrace_Graph("S","A subGraph object, labeled training object"),
             this.entrace_Graph("S","A subGraph object, unlabeled training object"),
             this.entrace_Graph("S","A subGraph object, can be the evaluation produced object by the opf_split",true),
-            this.entrace_Select(this.datasList.datas[this.datasList.active].children[3].children,"The precomputed distance matrix produced by the opf_distance","D",true)]
+            this.entrace_Select(this.dataTrees.current.state.activeData.children[3].children,"The precomputed distance matrix produced by the opf_distance","D",true)]
             },
 
             {function: "opf_split", description: "Generates training, evaluation and test sets for the OPF classifier",
@@ -101,14 +100,14 @@ export class FunctionManager{
             {function: "opf_train", description: "Executes the training phase of the OPF classifier",
             entraces: () => 
             [this.entrace_Graph("S","A subGraph object, can be the training object produced by the opf_split"),
-            this.entrace_Select(this.datasList.datas[this.datasList.active].children[3].children,"The precomputed distance matrix produced by the opf_distance","D",true)]
+            this.entrace_Select(this.dataTrees.current.state.activeData.children[3].children,"The precomputed distance matrix produced by the opf_distance","D",true)]
             },
 
             {function: "opfknn_classify", description: "Executes the test phase of the OPF classifier with knn adjacency",
             entraces: () => 
             [this.entrace_Graph("S","The testing data object produced by the opf_split function (subGraph object)"),
             this.entrace_Graph("M","The classifier object produced by one of the classification functions (model object)"),
-            this.entrace_Select(this.datasList.datas[this.datasList.active].children[3].children,"The precomputed distance matrix produced by the opf_distance","D",true)]
+            this.entrace_Select(this.dataTrees.current.state.activeData.children[3].children,"The precomputed distance matrix produced by the opf_distance","D",true)]
             },
 
             {function: "opfknn_train", description: "Executes the training phase of the OPF classifier with knn adjacency",
@@ -116,13 +115,13 @@ export class FunctionManager{
             [this.entrace_Graph("S","The training subGraph object, produced by the opf_split function, for example"),
             this.entrace_Graph("S","The evaluation object, produced by the opf_split function, for example"),
             this.entrace_Number("1","","1","kmax","","The kmax (maximum degree for the knn graph) [greater than 0]"),
-            this.entrace_Select(this.datasList.datas[this.datasList.active].children[3].children,"The precomputed distance matrix produced by the opf_distance","D",true)]
+            this.entrace_Select(this.dataTrees.current.state.activeData.children[3].children,"The precomputed distance matrix produced by the opf_distance","D",true)]
             }
         ]
     }
 
     entrace_Graph(type, description){ // S - subgraph / M - model file
-      console.log("datalist",this.datasList)
+      console.log(this.dataTrees)
         this.refs = this.refs.concat(React.createRef())
         return (
         <OverlayTrigger overlay={<Tooltip id="tooltip-disabled">{description}</Tooltip>}>
@@ -135,13 +134,13 @@ export class FunctionManager{
             custom
             >
             {type !== "M" ? 
-                [<option value={"d"}>{this.datasList.datas[this.datasList.active].children[0].title}</option>,
-                this.datasList.datas[this.datasList.active].children[1].children.map((subGraph, index) => (
+                [<option value={"d"}>{this.dataTrees.current.state.activeData.children[0].title}</option>,
+                this.dataTrees.current.state.activeData.children[1].children.map((subGraph, index) => (
                   <option value={"S"+index}>{subGraph.title}</option>
                 ))]
             : null }
             {type !== "S" ? 
-                this.datasList.datas[this.datasList.active].children[2].children.map((modelFile, index) => (
+                this.dataTrees.current.state.activeData.children[2].children.map((modelFile, index) => (
                 <option value={"M"+index}>{modelFile.title}</option>
                 ))
             : null }
@@ -205,7 +204,6 @@ export class FunctionManager{
     }
 
     loadFunctionEntrance(index){
-        console.log(this.functionDetails[index])
         this.refs = []
         var entrances = this.functionDetails[index].entraces()
         return(
@@ -220,7 +218,6 @@ export class FunctionManager{
               )
             </InputGroup>
             <button class="functions" onClick={() => {
-                console.log(this.refs);
                 var values = [];
                 var subGraphOrigin = [];
                 var modelFileOrigin = [];
@@ -233,26 +230,26 @@ export class FunctionManager{
                   } else {
                     switch (ref.current.value.substring(0,1)) {
                       case "d":
-                        this.FM.writeGraph(this.datasList.datas[this.datasList.active].children[0],"files/"+fileUsed+".temp")
-                        discribeAux += "Data Graph: " + this.datasList.datas[this.datasList.active].children[0].title + "\n";
+                        this.FM.writeGraph(this.dataTrees.current.state.activeData.children[0],"files/"+fileUsed+".temp")
+                        discribeAux += "Data Graph: " + this.dataTrees.current.state.activeData.children[0].title + "\n";
                         break;
                       case "S":
-                        this.FM.writeGraph(this.datasList.datas[this.datasList.active].children[1].children[ref.current.value.substring(1)],"files/"+fileUsed+".temp")
-                        discribeAux += "SubGraph: " + this.datasList.datas[this.datasList.active].children[1].children[ref.current.value.substring(1)].title + "\n";
-                        subGraphOrigin = subGraphOrigin.concat(this.datasList.datas[this.datasList.active].children[1].children[ref.current.value.substring(1)]);
+                        this.FM.writeGraph(this.dataTrees.current.state.activeData.children[1].children[ref.current.value.substring(1)],"files/"+fileUsed+".temp")
+                        discribeAux += "SubGraph: " + this.dataTrees.current.state.activeData.children[1].children[ref.current.value.substring(1)].title + "\n";
+                        subGraphOrigin = subGraphOrigin.concat(this.dataTrees.current.state.activeData.children[1].children[ref.current.value.substring(1)]);
                         break;
                       case "M":
-                        this.FM.writeModelFile(this.datasList.datas[this.datasList.active].children[2].children[ref.current.value.substring(1)],"files/"+fileUsed+".temp")
-                        discribeAux += "ModelFile: " + this.datasList.datas[this.datasList.active].children[2].children[ref.current.value.substring(1)].title + "\n";
-                        modelFileOrigin = modelFileOrigin.concat(this.datasList.datas[this.datasList.active].children[2].children[ref.current.value.substring(1)]);
+                        this.FM.writeModelFile(this.dataTrees.current.state.activeData.children[2].children[ref.current.value.substring(1)],"files/"+fileUsed+".temp")
+                        discribeAux += "ModelFile: " + this.dataTrees.current.state.activeData.children[2].children[ref.current.value.substring(1)].title + "\n";
+                        modelFileOrigin = modelFileOrigin.concat(this.dataTrees.current.state.activeData.children[2].children[ref.current.value.substring(1)]);
                         break;
                       case "D":
-                        this.FM.writeDistances(this.datasList.datas[this.datasList.active].children[3].children[ref.current.value.substring(1)],"files/"+fileUsed+".temp")
-                        discribeAux += "Distance: " + this.datasList.datas[this.datasList.active].children[3].children[ref.current.value.substring(1)].title + "\n";
+                        this.FM.writeDistances(this.dataTrees.current.state.activeData.children[3].children[ref.current.value.substring(1)],"files/"+fileUsed+".temp")
+                        discribeAux += "Distance: " + this.dataTrees.current.state.activeData.children[3].children[ref.current.value.substring(1)].title + "\n";
                         break;
                       case "C":
-                        this.FM.writeClassification(this.datasList.datas[this.datasList.active].children[4].children[ref.current.value.substring(1)],"files/"+fileUsed+".temp")
-                        discribeAux += "Classification: " + this.datasList.datas[this.datasList.active].children[4].children[ref.current.value.substring(1)].title + "\n";
+                        this.FM.writeClassification(this.dataTrees.current.state.activeData.children[4].children[ref.current.value.substring(1)],"files/"+fileUsed+".temp")
+                        discribeAux += "Classification: " + this.dataTrees.current.state.activeData.children[4].children[ref.current.value.substring(1)].title + "\n";
                         break;
                       case "":
                         return -1;
@@ -264,7 +261,6 @@ export class FunctionManager{
                     values = values.concat("files/"+fileUsed+".temp");
                     fileUsed += 1;
                   }
-                  console.log(values);
                   return -1;
                 });
                 this.FM.runOPFFunction(this.functionDetails[index].function,values, "Created by the function "+this.functionDetails[index].function+" using the paramters: \n"+ discribeAux,subGraphOrigin,modelFileOrigin);
