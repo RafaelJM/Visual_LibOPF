@@ -16,6 +16,7 @@ export default class TreeData extends React.Component {
             title: "Data " + (this.state.treeData.length + 1),
             description: "",
             open: true,
+            isData: true,
             children: [
                 data,
             {
@@ -50,9 +51,11 @@ export default class TreeData extends React.Component {
             activeData: auxData
         })
     }
+
     addBuffer(buffer){
         this.setState( prevState => { //arrumar //usar addnodeunderpath?????
-            for(var i = 0; i < (buffer.length-1); i++){
+            for(var i = 1; i < (buffer.length-1); i++){
+                console.log("buffer",buffer,prevState)
                 prevState.activeData.children[i].children = prevState.activeData.children[i].children.concat(buffer[i])
             }
             return {
@@ -80,13 +83,37 @@ export default class TreeData extends React.Component {
         verticalAlign: 'middle'
     } 
 
-    generateTree(data) {
-        console.log(this)
+    generateNodeLoad(data){
+        return(
+            <Tree content="" type={<span style={this.typeStyles}>
+                <select onChange={(e) => {
+                    this.props.parent.loadNodeDetails(data.nodes[e.target.value])
+                    this.props.parent.state.CSigma.current.focousInXY(data.nodes[e.target.value].id)
+                }}>
+                    {data.nodes.map((node) => {
+                        return(<option value={node.id}>Node {node.id}</option>)
+                    })}
+                </select>
+            </span>} open style={this.treeStyles}>
+            </Tree>
+        )
+    }
+
+    generateTree(data) {//problem with so many nodes
         var type = 
         (<span style={this.typeStyles}>
             {data.title+"       "}
+            {data.isData ? <button style={this.buttonStyles} onClick={() => {
+                this.setState({activeData: data})
+                this.props.parent.loadCSigma(data["Graph Data"])
+            }}>Load</button> : null}
+
             {data.hasOwnProperty("nodes") ? <button style={this.buttonStyles} onClick={() => {this.props.parent.loadCSigma(data)}}>O</button> : null}
-            {data.hasOwnProperty("infoKeys") ? <button style={this.buttonStyles} onClick={() => {this.props.parent.loadNodeDetails(data)}}>i</button> : null}
+
+            {data.hasOwnProperty("infoKeys") ? <button style={this.buttonStyles} onClick={() => {
+                this.props.parent.loadNodeDetails(data);
+            }}>i</button> : null}
+            
             {data.hasOwnProperty("addFunction") ? <button style={this.buttonStyles} onClick={() => {}}>+</button> : null}
             {data.hasOwnProperty("delFunction") ? <button style={this.buttonStyles} onClick={() => {}}>L</button> : null}
         </span>)
@@ -94,22 +121,23 @@ export default class TreeData extends React.Component {
             (data["open"] ? 
                 <Tree content="" type={type} open style={this.treeStyles}>
                     {data['children'] ? data.children.map((children) => this.generateTree(children)) : null}
+                    {data['nodes'] ? this.generateNodeLoad(data) : null}
                 </Tree>
             : 
                 <Tree content="" type={type}  style={this.treeStyles}>
                     {data['children'] ? data.children.map((children) => this.generateTree(children)) : null}
+                    {data['nodes'] ? this.generateNodeLoad(data) : null}
                 </Tree>)
         )
     }
     
     render() {         
         var html = []
-        console.log(this.state.treeData)
         this.state.treeData.map((data) => {//make it automatic | selfcall
             html = html.concat(this.generateTree(data))
         })
         return (
-            <spam>{html}</spam>
+            <div>{html}</div>
         );
     }
 }

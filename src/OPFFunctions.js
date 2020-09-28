@@ -90,7 +90,7 @@ export default class FunctionManager{
 
             {function: "opf_split", description: "Generates training, evaluation and test sets for the OPF classifier",
             entraces: () => 
-            [this.entrace_Graph("S","The data (subGraph object)"),
+            [this.entrace_Graph("S","The data (subGraph ou graph object)"),
             this.entrace_Number("0","100","1","training_p","","Percentage for the training set size [0-100]",true),
             this.entrace_Number("0","100","1","evaluating_p","","Percentage for the evaluation set size [0-100] (leave 0 in the case of no learning)",true),
             this.entrace_Number("0","100","1","testing_p","","Percentage for the test set sizee [0-100]",true),
@@ -219,8 +219,8 @@ export default class FunctionManager{
             </InputGroup>
             <button class="functions" onClick={() => {
                 var values = [];
-                var subGraphOrigin = [];
-                var modelFileOrigin = [];
+                var subGraphOrigin = null;
+                var modelFileOrigin = null;
                 var discribeAux = "";
                 var fileUsed = 0;
                 this.refs.map((ref, index) => {
@@ -232,16 +232,17 @@ export default class FunctionManager{
                       case "d":
                         this.FM.writeGraph(this.dataTrees.current.state.activeData.children[0],"files/"+fileUsed+".temp")
                         discribeAux += "Data Graph: " + this.dataTrees.current.state.activeData.children[0].title + "\n";
+                        subGraphOrigin = this.dataTrees.current.state.activeData.children[0];
                         break;
                       case "S":
                         this.FM.writeGraph(this.dataTrees.current.state.activeData.children[1].children[ref.current.value.substring(1)],"files/"+fileUsed+".temp")
                         discribeAux += "SubGraph: " + this.dataTrees.current.state.activeData.children[1].children[ref.current.value.substring(1)].title + "\n";
-                        subGraphOrigin = subGraphOrigin.concat(this.dataTrees.current.state.activeData.children[1].children[ref.current.value.substring(1)]);
+                        subGraphOrigin = this.dataTrees.current.state.activeData.children[1].children[ref.current.value.substring(1)];
                         break;
                       case "M":
                         this.FM.writeModelFile(this.dataTrees.current.state.activeData.children[2].children[ref.current.value.substring(1)],"files/"+fileUsed+".temp")
                         discribeAux += "ModelFile: " + this.dataTrees.current.state.activeData.children[2].children[ref.current.value.substring(1)].title + "\n";
-                        modelFileOrigin = modelFileOrigin.concat(this.dataTrees.current.state.activeData.children[2].children[ref.current.value.substring(1)]);
+                        modelFileOrigin = this.dataTrees.current.state.activeData.children[2].children[ref.current.value.substring(1)];
                         break;
                       case "D":
                         this.FM.writeDistances(this.dataTrees.current.state.activeData.children[3].children[ref.current.value.substring(1)],"files/"+fileUsed+".temp")

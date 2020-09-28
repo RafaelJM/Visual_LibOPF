@@ -74,59 +74,71 @@ export default class FileManager{
   }
 
   readGraph(dv, title, description){
-    var subGraph= {
-      nnodes: -1, nlabels: -1, nfeats: -1, title: title, description:description, open: false, children:[], 
+    var graph= {
+      nnodes: -1, nlabels: -1, nfeats: -1, title: title, description:description, open: false,
       infoKeys: ["title","description","nnodes","nlabels","nfeats"],
       nodes: [],
       edges:[],
     };
 
     var cont = 0;
-    subGraph.nnodes = dv.getInt32(cont,true);//nnodes
-    subGraph.nlabels = dv.getInt32(cont=cont+4,true);//nlabels
-    subGraph.nfeats = dv.getInt32(cont=cont+4,true);//nfeats
-    for(var i = 0; i < subGraph.nnodes; i++){
-      subGraph.nodes[i] = {
+    graph.nnodes = dv.getInt32(cont,true);//nnodes
+    graph.nlabels = dv.getInt32(cont=cont+4,true);//nlabels
+    graph.nfeats = dv.getInt32(cont=cont+4,true);//nfeats
+    for(var i = 0; i < graph.nnodes; i++){
+      graph.nodes[i] = {
       infoKeys: ["title","id","truelabel","feat"],
       feat: [  ],
       id: dv.getInt32(cont=cont+4,true),//position
       truelabel: dv.getInt32(cont=cont+4,true),//truelabel
       x:0, y:0, size:0.5, color:null, title:"", label:""};
-      subGraph.nodes[i].color = this.colors[subGraph.nodes[i].truelabel]
-      subGraph.nodes[i].title = "Node "+subGraph.nodes[i].id.toString();
-      subGraph.nodes[i].label = subGraph.nodes[i].title;
-      for(var j = 0; j < subGraph.nfeats; j++){
-        subGraph.nodes[i].feat[j] = dv.getFloat32(cont=cont+4,true);//feat
+      graph.nodes[i].color = this.colors[graph.nodes[i].truelabel]
+      graph.nodes[i].title = "Node "+graph.nodes[i].id.toString();
+      graph.nodes[i].label = graph.nodes[i].title;
+      for(var j = 0; j < graph.nfeats; j++){
+        graph.nodes[i].feat[j] = dv.getFloat32(cont=cont+4,true);//feat
       }
-      subGraph.nodes[i].x = subGraph.nodes[i].feat[0];
-      subGraph.nodes[i].y = subGraph.nodes[i].feat[1];
+      graph.nodes[i].x = graph.nodes[i].feat[0];
+      graph.nodes[i].y = graph.nodes[i].feat[1];
     }
      //temp, se existir ponteiro seria bom //testar ponteiro // arrumar
-    subGraph.nodes = this.quick_Sort(subGraph.nodes);
-    subGraph.children = subGraph.nodes;
-    return(subGraph);
+    graph.nodes = this.quick_Sort(graph.nodes);
+    return(graph);
   }
 
-  writeGraph(subGraph, file){
-    const buf = Buffer.allocUnsafe((3 + subGraph.nnodes*(2+subGraph.nfeats))*4);
+  writeGraph(graph, file){
+    const buf = Buffer.allocUnsafe((3 + graph.nnodes*(2+graph.nfeats))*4);
     
     var cont = 0;
-    buf.writeInt32LE(subGraph.nnodes,cont);
-    buf.writeInt32LE(subGraph.nlabels,cont=cont+4);
-    buf.writeInt32LE(subGraph.nfeats,cont=cont+4);
-    for(var i = 0; i < subGraph.nnodes; i++){
-      buf.writeInt32LE(subGraph.nodes[i].id,cont=cont+4);
-      buf.writeInt32LE(subGraph.nodes[i].truelabel,cont=cont+4);
-      for(var j = 0; j < subGraph.nfeats; j++){
-        buf.writeFloatLE(subGraph.nodes[i].feat[j],cont=cont+4);
+    buf.writeInt32LE(graph.nnodes,cont);
+    buf.writeInt32LE(graph.nlabels,cont=cont+4);
+    buf.writeInt32LE(graph.nfeats,cont=cont+4);
+    for(var i = 0; i < graph.nnodes; i++){
+      buf.writeInt32LE(graph.nodes[i].id,cont=cont+4);
+      buf.writeInt32LE(graph.nodes[i].truelabel,cont=cont+4);
+      for(var j = 0; j < graph.nfeats; j++){
+        buf.writeFloatLE(graph.nodes[i].feat[j],cont=cont+4);
       }
     }
-    
     this.FS.writeFile(file,Buffer.from(buf));
+  }
+  
+  readSubGraph(dv, title, description, graphOrigin){ //definition: !id = array index!
+    var subGraph = {title: title, description:description, nodes:[], edges:[], graphOrigin:graphOrigin}
+    var nnodes = dv.getInt32(0,true);//nfeats
+    var nfeats = dv.getInt32(8,true);//nfeats
+    var cont = 8;
+    var id;
+    for(var i = 0; i < nnodes; i++){
+      id = dv.getInt32(cont=cont+4,true);
+      subGraph.nodes[id] = this.dataTrees.current.state.activeData.children[0].nodes[id] //arrumar children
+      cont += 4 + nfeats * 4
+    }
+    return(subGraph)
   }
 
   readModelFile(dv, title, description){
-    var subGraph= {
+    var modelFile= {
       nnodes: -1, nlabels: -1, nfeats: -1, df: -1, bestk: -1, K: -1, mindens: -1, maxdens: -1, title: title, open: false, description:description, ordered_list_of_nodes: [],
       infoKeys: ["title","description","nnodes","nlabels","nfeats","df","bestk","K","mindens","maxdens","ordered_list_of_nodes"],
       nodes: [],
@@ -134,16 +146,16 @@ export default class FileManager{
     };
     
     var cont = 0;
-    subGraph.nnodes = dv.getInt32(cont,true);
-    subGraph.nlabels = dv.getInt32(cont=cont+4,true);
-    subGraph.nfeats = dv.getInt32(cont=cont+4,true);
-    subGraph.df = dv.getFloat32(cont=cont+4,true);
-    subGraph.bestk = dv.getInt32(cont=cont+4,true);
-    subGraph.K = dv.getFloat32(cont=cont+4,true);
-    subGraph.mindens = dv.getFloat32(cont=cont+4,true);
-    subGraph.maxdens = dv.getFloat32(cont=cont+4,true);
-    for(var i = 0; i < subGraph.nnodes; i++){
-      subGraph.nodes[i] = {
+    modelFile.nnodes = dv.getInt32(cont,true);
+    modelFile.nlabels = dv.getInt32(cont=cont+4,true);
+    modelFile.nfeats = dv.getInt32(cont=cont+4,true);
+    modelFile.df = dv.getFloat32(cont=cont+4,true);
+    modelFile.bestk = dv.getInt32(cont=cont+4,true);
+    modelFile.K = dv.getFloat32(cont=cont+4,true);
+    modelFile.mindens = dv.getFloat32(cont=cont+4,true);
+    modelFile.maxdens = dv.getFloat32(cont=cont+4,true);
+    for(var i = 0; i < modelFile.nnodes; i++){
+      modelFile.nodes[i] = {
       infoKeys: ["title","id","truelabel","pred","nodelabel","pathval","radius","dens","feat"],
       feat: [  ],
       id: dv.getInt32(cont=cont+4,true),//position
@@ -154,59 +166,58 @@ export default class FileManager{
       radius: dv.getFloat32(cont=cont+4,true),
       dens: dv.getFloat32(cont=cont+4,true),
       x:0, y:0, size:0.5, color:null, title:"", label:""}; //nodelabel == LABEL FROM OPF
-      subGraph.nodes[i].color = this.colors[subGraph.nodes[i].truelabel]
-      subGraph.nodes[i].title = "Node "+subGraph.nodes[i].id.toString();
-      subGraph.nodes[i].label = subGraph.nodes[i].title;
-      for(var j = 0; j < subGraph.nfeats; j++){
-        subGraph.nodes[i].feat[j] = dv.getFloat32(cont=cont+4,true);//feat
+      modelFile.nodes[i].color = this.colors[modelFile.nodes[i].truelabel]
+      modelFile.nodes[i].title = "Node "+modelFile.nodes[i].id.toString();
+      modelFile.nodes[i].label = modelFile.nodes[i].title;
+      for(var j = 0; j < modelFile.nfeats; j++){
+        modelFile.nodes[i].feat[j] = dv.getFloat32(cont=cont+4,true);//feat
       }
-      subGraph.nodes[i].x = subGraph.nodes[i].feat[0];
-      subGraph.nodes[i].y = subGraph.nodes[i].feat[1];
+      modelFile.nodes[i].x = modelFile.nodes[i].feat[0];
+      modelFile.nodes[i].y = modelFile.nodes[i].feat[1];
     }
-    for(i = 0; i < subGraph.nnodes; i++){
-      subGraph.ordered_list_of_nodes[i] = dv.getInt32(cont=cont+4,true);
+    for(i = 0; i < modelFile.nnodes; i++){
+      modelFile.ordered_list_of_nodes[i] = dv.getInt32(cont=cont+4,true);
     }
-    //subGraph.nodes = this.quick_Sort(subGraph.nodes);
-    for(var ID in subGraph.ordered_list_of_nodes){
-      if(subGraph.nodes[ID].pred !== -1){
-        subGraph.edges = subGraph.edges.concat({
-          id: subGraph.edges.length,
-          source: subGraph.nodes[subGraph.nodes[ID].pred].id,
-          target: subGraph.nodes[ID].id,
+    //modelFile.nodes = this.quick_Sort(modelFile.nodes);
+    for(var ID in modelFile.ordered_list_of_nodes){
+      if(modelFile.nodes[ID].pred !== -1){
+        modelFile.edges = modelFile.edges.concat({
+          id: modelFile.edges.length,
+          source: modelFile.nodes[ID].id,
+          target: modelFile.nodes[modelFile.nodes[ID].pred].id,
           type: "arrow",
         })
       }
     }
-    subGraph.children = subGraph.nodes;
-    return(subGraph);
+    return(modelFile);
   }
 
-  writeModelFile(subGraph, file){
-    const buf = Buffer.allocUnsafe((8 + subGraph.nnodes*(7+subGraph.nfeats) + subGraph.ordered_list_of_nodes.length)*4);
+  writeModelFile(modelFile, file){
+    const buf = Buffer.allocUnsafe((8 + modelFile.nnodes*(7+modelFile.nfeats) + modelFile.ordered_list_of_nodes.length)*4);
     
     var cont = 0;
-    buf.writeInt32LE(subGraph.nnodes,cont);
-    buf.writeInt32LE(subGraph.nlabels,cont=cont+4);
-    buf.writeInt32LE(subGraph.nfeats,cont=cont+4);
-    buf.writeFloatLE(subGraph.df,cont=cont+4);
-    buf.writeInt32LE(subGraph.bestk,cont=cont+4);
-    buf.writeFloatLE(subGraph.K,cont=cont+4);
-    buf.writeFloatLE(subGraph.mindens,cont=cont+4);
-    buf.writeFloatLE(subGraph.maxdens,cont=cont+4);
-    for(var i = 0; i < subGraph.nnodes; i++){
-      buf.writeInt32LE(subGraph.nodes[i].id,cont=cont+4);//position
-      buf.writeInt32LE(subGraph.nodes[i].truelabel,cont=cont+4);
-      buf.writeInt32LE(subGraph.nodes[i].pred,cont=cont+4);
-      buf.writeInt32LE(subGraph.nodes[i].nodelabel,cont=cont+4);
-      buf.writeFloatLE(subGraph.nodes[i].pathval,cont=cont+4);
-      buf.writeFloatLE(subGraph.nodes[i].radius,cont=cont+4);
-      buf.writeFloatLE(subGraph.nodes[i].dens,cont=cont+4);
-      for(var j = 0; j < subGraph.nfeats; j++){
-        buf.writeFloatLE(subGraph.nodes[i].feat[j],cont=cont+4);
+    buf.writeInt32LE(modelFile.nnodes,cont);
+    buf.writeInt32LE(modelFile.nlabels,cont=cont+4);
+    buf.writeInt32LE(modelFile.nfeats,cont=cont+4);
+    buf.writeFloatLE(modelFile.df,cont=cont+4);
+    buf.writeInt32LE(modelFile.bestk,cont=cont+4);
+    buf.writeFloatLE(modelFile.K,cont=cont+4);
+    buf.writeFloatLE(modelFile.mindens,cont=cont+4);
+    buf.writeFloatLE(modelFile.maxdens,cont=cont+4);
+    for(var i = 0; i < modelFile.nnodes; i++){
+      buf.writeInt32LE(modelFile.nodes[i].id,cont=cont+4);//position
+      buf.writeInt32LE(modelFile.nodes[i].truelabel,cont=cont+4);
+      buf.writeInt32LE(modelFile.nodes[i].pred,cont=cont+4);
+      buf.writeInt32LE(modelFile.nodes[i].nodelabel,cont=cont+4);
+      buf.writeFloatLE(modelFile.nodes[i].pathval,cont=cont+4);
+      buf.writeFloatLE(modelFile.nodes[i].radius,cont=cont+4);
+      buf.writeFloatLE(modelFile.nodes[i].dens,cont=cont+4);
+      for(var j = 0; j < modelFile.nfeats; j++){
+        buf.writeFloatLE(modelFile.nodes[i].feat[j],cont=cont+4);
       }
     }
-    for(i = 0; i < subGraph.nnodes; i++){
-      buf.writeInt32LE(subGraph.ordered_list_of_nodes[i],cont=cont+4);
+    for(i = 0; i < modelFile.nnodes; i++){
+      buf.writeInt32LE(modelFile.ordered_list_of_nodes[i],cont=cont+4);
     }
     this.FS.writeFile(file,Buffer.from(buf));
   }
@@ -255,7 +266,7 @@ export default class FileManager{
     this.FS.writeFile(file,Buffer.from(buf));
   }
 
-  runOPFFunction(opfFunction, variables, description, subGraphOrigin, modelFileOrigin = null){
+  runOPFFunction(opfFunction, variables, description, graphOrigin, modelFileOrigin = null){
     const cwrap = this.Module.cwrap("c_"+opfFunction,null,['number', 'number']);
   
     variables = [""].concat(variables);  //  ["","files/auxone.dat","0.5","0","0.5","0"];
@@ -288,7 +299,7 @@ export default class FileManager{
             this.FS.unlink("files/"+dir[i]);
             break;
           case ".dat": //subGraph
-            buffer[1] = buffer[1].concat(this.readGraph(new DataView(this.FS.readFile("files/"+dir[i], null).buffer),dir[i].substring(7).replace(".dat",""),description));
+            buffer[1] = buffer[1].concat(this.readSubGraph(new DataView(this.FS.readFile("files/"+dir[i], null).buffer),dir[i].substring(7).replace(".dat",""), description, graphOrigin));
             this.FS.unlink("files/"+dir[i]);
             break;
           case ".cla": //modelFile
@@ -325,11 +336,11 @@ export default class FileManager{
     }
 		//discover who is the subgraph father to add the pred!!!!
     if(buffer[5].length){
-      for(i = 0; i < subGraphOrigin[0].nnodes; i++){
-        subGraphOrigin[0].nodes[i].pred = buffer[5][0][i]
+      for(i = 0; i < graphOrigin.nnodes; i++){
+        graphOrigin.nodes[i].pred = buffer[5][0][i]
       }
-      subGraphOrigin[0].modelFileClassificator = modelFileOrigin[0]
-      console.log("buffer",subGraphOrigin,buffer);
+      graphOrigin.modelFileClassificator = modelFileOrigin
+      console.log("buffer",graphOrigin,buffer);
     }
     this.dataTrees.current.addBuffer(buffer);
   }

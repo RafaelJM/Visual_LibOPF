@@ -3,6 +3,7 @@ import './App.css';
 import FileManager from './FileManager.js';
 import FunctionManager from './OPFFunctions.js';
 import TreeData from './Tree.js';
+import CustomSigma from './CustomSigma.js';
 import {Sigma} from 'react-sigma';
 
 import SplitPane, { Pane } from 'react-split-pane';
@@ -54,10 +55,11 @@ class MyFirstGrid extends React.Component {
         if(temp.nodes[ID].pred !== -1){
           temp.edges = temp.edges.concat({
             id: temp.edges.length,
-            source: graph.modelFileClassificator.nodes[temp.nodes[ID].pred].id,
-            target: temp.nodes[ID].id,
+            source: temp.nodes[ID].id,
+            target: graph.modelFileClassificator.nodes[temp.nodes[ID].pred].id,
             type: "arrow",
           })
+
         }
       }
 
@@ -65,13 +67,17 @@ class MyFirstGrid extends React.Component {
 
       console.log("temp",temp)
 
-      this.state.CSigma.current.loadSugGraph(temp, (id) => this.loadNodeDetails(id));
+      this.state.CSigma.current.loadSugGraph(temp);
       return;
     }
-    this.state.CSigma.current.loadSugGraph(graph, (id) => this.loadNodeDetails(id));
+    this.state.CSigma.current.loadSugGraph(graph);
   }
 
   loadNodeDetails(node){
+    const handleChange = (event) => {
+      console.log(event)
+    }
+
     this.setState({ details:[]}, () => {
     this.setState({ details:[
       <div>
@@ -90,7 +96,7 @@ class MyFirstGrid extends React.Component {
                   <InputGroup.Prepend>
                     <InputGroup.Text id={"feat"+indexFeat}>Feat {indexFeat}</InputGroup.Text>
                   </InputGroup.Prepend>
-                  <FormControl defaultValue={feat} placeholder="Feats" aria-label="Feats" aria-describedby="basic-addon1"/>
+                  <FormControl defaultValue={feat} placeholder="Feats" aria-label="Feats" onChange={(event) => {event.persist();handleChange(event)}} aria-describedby="basic-addon1"/>
                 </div>
               ))
             }
@@ -98,7 +104,6 @@ class MyFirstGrid extends React.Component {
         ))}
       </div>
     ]},() => {console.log(this.state.details)})});
-    
   }
 
   render() {   
@@ -118,6 +123,8 @@ class MyFirstGrid extends React.Component {
               reader.readAsArrayBuffer(this.fileUploader.current.files[0]);//arrumar
               reader.onload = function() {     
                 var loadedFile = scope.FM.readGraph(new DataView(reader.result),"Graph Data", "Loaded by the user");
+                //console.log("adsad",loadedFile,scope.FM.readSubGraphOnlyIds(new DataView(reader.result),"Graph Data", "Loaded by the user"));
+                
 
                 scope.state.Tree.current.addNewData(loadedFile);
                 scope.loadCSigma(loadedFile);
@@ -193,7 +200,7 @@ class MyFirstGrid extends React.Component {
               <SplitPane split="horizontal" defaultSize="80%">
                 <Pane style={{width:"100%", height:"100%"}}>
                   <Sigma ref={this.state.Sigma} renderer="canvas" container= 'container' settings={this.LoadedCookies.SigmaSettings} style={{width:"100%", height:"100%", position: "relative", outline: "none"}}> 
-                    <CustomSigma ref={this.state.CSigma}/>
+                    <CustomSigma ref={this.state.CSigma} loadNodeInfo={(node) => this.loadNodeDetails(node)}/>
                   </Sigma>
                 </Pane>
                 <Pane>
@@ -212,51 +219,6 @@ class MyFirstGrid extends React.Component {
           </SplitPane>
       </div>
     )
-  }
-}
-
-class CustomSigma extends React.Component {  
-  someMethod() {
-    return 'bar';
-  }
-
-  loadSugGraph(Graph, loadNodeInfo){
-    this.props.sigma.bind('clickNode',(e) => {
-      console.log(e);
-      loadNodeInfo(e.data.node)//.id) //arrumar, work better with hash, id, i need to work without pointers
-    })
-    this.props.sigma.graph.clear();
-    this.props.sigma.graph.read(Graph);
-    this.props.sigma.refresh();
-  }
-
-  refresh(){
-    this.props.sigma.refresh();
-  }
-
-  focousInXY(id){ //setTimeout
-    var node;
-    var nodes = this.props.sigma.graph.nodes();
-    for(var i = 0; i < nodes.length; i++){ //arrumar, work with hash or something like that
-      if(id === nodes[i].id){
-        node = nodes[i];
-        break;
-      }
-    }
-    var c = this.props.sigma.camera;
-    c.goTo({
-      x:node['read_cam0:x'],
-      y:node['read_cam0:y']
-    });
-    var aux = node.color;
-    node.color = "#000000";
-    console.log("node",this.props.sigma)
-    this.props.sigma.refresh();
-    setTimeout(() => {node.color = aux; console.log("b");this.props.sigma.refresh();}, 1000);
-  }
-  
-  render(){
-    return([])
   }
 }
 
