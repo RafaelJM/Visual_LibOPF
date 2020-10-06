@@ -73,12 +73,22 @@ export default class FileManager{
     }
   }
 
+  graphKeys = {keys: ["title","description","nnodes","nlabels","nfeats"]}
+  graphNodeKeys = {keys: ["title","id","truelabel","feat"],
+                  disabled: [true,false,true,true],
+                  onChange: [(title,node) => {node.self.title = title},() => {},(newLabel,node) => {node.self.truelabel = newLabel; node.self.color = this.colors[newLabel]},
+                  (newfeat,indexFeat,node) => {
+                    node.self.feat[indexFeat] = newfeat; 
+                    node.self.x = node.feat[0];
+                    node.self.y = node.feat[1];}]}
+
   readGraph(dv, title, description){
     var graph= {
       nnodes: -1, nlabels: -1, nfeats: -1, title: title, description:description, open: false,
-      infoKeys: ["title","description","nnodes","nlabels","nfeats"],
+      infoKeys: this.graphKeys,
       nodes: [],
       edges:[],
+      nodeInfoKeys: this.graphNodeKeys,
     };
 
     var cont = 0;
@@ -87,21 +97,21 @@ export default class FileManager{
     graph.nfeats = dv.getInt32(cont=cont+4,true);//nfeats
     for(var i = 0; i < graph.nnodes; i++){
       graph.nodes[i] = {
-      infoKeys: ["title","id","truelabel","feat"],
+      infoKeys: graph.nodeInfoKeys,
       feat: [  ],
       id: dv.getInt32(cont=cont+4,true),//position
       truelabel: dv.getInt32(cont=cont+4,true),//truelabel
-      x:0, y:0, size:0.5, color:null, title:"", label:""};
+      x:0, y:0, size:0.5, color:null, title:"", label:"", self:null};
       graph.nodes[i].color = this.colors[graph.nodes[i].truelabel]
       graph.nodes[i].title = "Node "+graph.nodes[i].id.toString();
       graph.nodes[i].label = graph.nodes[i].title;
+      graph.nodes[i].self = graph.nodes[i];
       for(var j = 0; j < graph.nfeats; j++){
         graph.nodes[i].feat[j] = dv.getFloat32(cont=cont+4,true);//feat
       }
       graph.nodes[i].x = graph.nodes[i].feat[0];
       graph.nodes[i].y = graph.nodes[i].feat[1];
     }
-     //temp, se existir ponteiro seria bom //testar ponteiro // arrumar
     graph.nodes = this.quick_Sort(graph.nodes);
     return(graph);
   }
@@ -131,18 +141,41 @@ export default class FileManager{
     var id;
     for(var i = 0; i < nnodes; i++){
       id = dv.getInt32(cont=cont+4,true);
-      subGraph.nodes[id] = this.dataTrees.current.state.activeData.children[0].nodes[id] //arrumar children
+      subGraph.nodes = subGraph.nodes.concat(this.dataTrees.current.state.activeData.graph.nodes[id])
       cont += 4 + nfeats * 4
     }
+    subGraph.nodes = this.quick_Sort(subGraph.nodes);
     return(subGraph)
   }
+
+  writeSubGraph(graph, file){
+    console.log("g",graph)
+    const buf = Buffer.allocUnsafe((3 + graph.nodes.length*(2+graph.graphOrigin.nfeats))*4);
+    
+    var cont = 0;
+    buf.writeInt32LE(graph.nodes.length,cont);
+    buf.writeInt32LE(graph.graphOrigin.nlabels,cont=cont+4);
+    buf.writeInt32LE(graph.graphOrigin.nfeats,cont=cont+4);
+    for(var i = 0; i < graph.nodes.length; i++){
+      buf.writeInt32LE(graph.nodes[i].id,cont=cont+4);
+      buf.writeInt32LE(graph.nodes[i].truelabel,cont=cont+4);
+      for(var j = 0; j < graph.graphOrigin.nfeats; j++){
+        buf.writeFloatLE(graph.nodes[i].feat[j],cont=cont+4);
+      }
+    }
+    this.FS.writeFile(file,Buffer.from(buf));
+  }
+
+  modelKeys = {keys: ["title","description","nnodes","nlabels","nfeats","df","bestk","K","mindens","maxdens","ordered_list_of_nodes"]}
+  modelNodeKeys = {keys: ["title","id","truelabel","pred","nodelabel","pathval","radius","dens","feat"]}
 
   readModelFile(dv, title, description){
     var modelFile= {
       nnodes: -1, nlabels: -1, nfeats: -1, df: -1, bestk: -1, K: -1, mindens: -1, maxdens: -1, title: title, open: false, description:description, ordered_list_of_nodes: [],
-      infoKeys: ["title","description","nnodes","nlabels","nfeats","df","bestk","K","mindens","maxdens","ordered_list_of_nodes"],
+      infoKeys: this.modelKeys,
       nodes: [],
       edges:[],
+      nodeInfoKeys: this.modelNodeKeys
     };
     
     var cont = 0;
@@ -156,7 +189,7 @@ export default class FileManager{
     modelFile.maxdens = dv.getFloat32(cont=cont+4,true);
     for(var i = 0; i < modelFile.nnodes; i++){
       modelFile.nodes[i] = {
-      infoKeys: ["title","id","truelabel","pred","nodelabel","pathval","radius","dens","feat"],
+      infoKeys: modelFile.nodeInfoKeys,
       feat: [  ],
       id: dv.getInt32(cont=cont+4,true),//position
       truelabel: dv.getInt32(cont=cont+4,true),
@@ -232,12 +265,10 @@ export default class FileManager{
       aux = aux.concat(classification.toString()+"\n");
       return -1;
     });
-    console.log("aux",aux);
     this.FS.writeFile(file,aux,{encoding: 'utf8'});
   }
 
   readDistances(dv, title, description){
-    console.log(dv);
     var cont = 0;
     var nsamples = dv.getInt32(cont,true);
     var distances = new Array(nsamples);
@@ -270,7 +301,6 @@ export default class FileManager{
     const cwrap = this.Module.cwrap("c_"+opfFunction,null,['number', 'number']);
   
     variables = [""].concat(variables);  //  ["","files/auxone.dat","0.5","0","0.5","0"];
-    console.log("variables",variables);
     var ptrArr = this.Module._malloc(variables.length * 4);
     var ptrAux = []
     for (var i = 0; i < variables.length; i++) {
@@ -288,8 +318,7 @@ export default class FileManager{
     cwrap(ptrNum,ptrArr);
     var array = [];
     var dir = this.FS.readdir("files/");
-    console.log(dir);
-    var buffer = [[],[],[],[],[],[]]
+    var buffer = [[],[],[],[],[]]
     for(i in dir){
       if(dir[i].substring(6) !== ""){ //use function to know what will be back can be useful
         switch(dir[i].substr(-4)) {
@@ -299,15 +328,15 @@ export default class FileManager{
             this.FS.unlink("files/"+dir[i]);
             break;
           case ".dat": //subGraph
-            buffer[1] = buffer[1].concat(this.readSubGraph(new DataView(this.FS.readFile("files/"+dir[i], null).buffer),dir[i].substring(7).replace(".dat",""), description, graphOrigin));
+            buffer[0] = buffer[0].concat(this.readSubGraph(new DataView(this.FS.readFile("files/"+dir[i], null).buffer),dir[i].substring(7).replace(".dat",""), description, graphOrigin));
             this.FS.unlink("files/"+dir[i]);
             break;
           case ".cla": //modelFile
-            buffer[2] = buffer[2].concat(this.readModelFile(new DataView(this.FS.readFile("files/"+dir[i], null).buffer),"Model File " + this.dataTrees.current.state.activeData.children[2].children.length,description));
+            buffer[1] = buffer[1].concat(this.readModelFile(new DataView(this.FS.readFile("files/"+dir[i], null).buffer),"Model File " + this.dataTrees.current.state.activeData.ModelFiles.children.length,description));
             this.FS.unlink("files/"+dir[i]);
             break;
           case ".out": //classification
-            buffer[4] = buffer[4].concat(this.readClassification("files/"+dir[i],"classification "+this.dataTrees.current.state.activeData.children[4].children.length,description));
+            buffer[3] = buffer[3].concat(this.readClassification("files/"+dir[i],"classification "+this.dataTrees.current.state.activeData.Classifications.children.length,description));
             this.FS.unlink("files/"+dir[i]);
             break;
           case ".acc": //accuracy
@@ -316,7 +345,7 @@ export default class FileManager{
             this.FS.unlink("files/"+dir[i]);
             break;
           case ".dis": //distances
-            buffer[3] = buffer[3].concat(this.readDistances(new DataView(this.FS.readFile("files/"+dir[i], null).buffer),"distance "+this.dataTrees.current.state.activeData.children[3].children.length,description));
+            buffer[2] = buffer[2].concat(this.readDistances(new DataView(this.FS.readFile("files/"+dir[i], null).buffer),"distance "+this.dataTrees.current.state.activeData.Distances.children.length,description));
             this.FS.unlink("files/"+dir[i]);
             break;
             case ".pra": //pruning rate
@@ -325,8 +354,8 @@ export default class FileManager{
             this.FS.unlink("files/"+dir[i]);
             break;
           case ".pre": //pred file (classification)
-            buffer[5] = buffer[5].concat([this.FS.readFile("files/"+dir[i],{encoding: 'utf8'}).split("\n")]);
-            console.log(buffer[5]);
+            buffer[4] = buffer[4].concat([this.FS.readFile("files/"+dir[i],{encoding: 'utf8'}).split("\n")]);
+            console.log(buffer[4]);
             this.FS.unlink("files/"+dir[i]);
             break;
           default:
@@ -335,12 +364,11 @@ export default class FileManager{
       }
     }
 		//discover who is the subgraph father to add the pred!!!!
-    if(buffer[5].length){
+    if(buffer[4].length){
       for(i = 0; i < graphOrigin.nnodes; i++){
-        graphOrigin.nodes[i].pred = buffer[5][0][i]
+        graphOrigin.nodes[i].pred = buffer[4][0][i]
       }
       graphOrigin.modelFileClassificator = modelFileOrigin
-      console.log("buffer",graphOrigin,buffer);
     }
     this.dataTrees.current.addBuffer(buffer);
   }
