@@ -11,20 +11,20 @@ export default class FunctionManager extends React.Component {
             {function: "opf_accuracy", description: "Computes the OPF accuracy",
             entraces: () => 
             [this.entrace_Graph("S","Data object used in the opf_classify function, or similar, normaly is the testing object"),
-            this.entrace_Select(this.props.dataTrees.current.state.activeData.Classifications.children,"The output list, classified, produced by opf_classify function","C")]
+            this.entrace_Select(this.props.parent.Tree.current.state.activeData.Classifications.children,"The output list, classified, produced by opf_classify function","C")]
             },
 
             {function: "opf_accuracy4label", description: "Computes the OPF accuracy for each class of a given set",
             entraces: () => 
             [this.entrace_Graph("S","Data object used in the opf_classify function, or similar, normaly is the testing object"),
-            this.entrace_Select(this.props.dataTrees.current.state.activeData.Classifications.children,"The output list, classified, produced by opf_classify function","C")]
+            this.entrace_Select(this.props.parent.Tree.current.state.activeData.Classifications.children,"The output list, classified, produced by opf_classify function","C")]
             },
 
             {function: "opf_classify", description: "Executes the test phase of the OPF classifier",
             entraces: () => 
             [this.entrace_Graph("S","The testing data object produced by the opf_split function (subGraph object)"),
             this.entrace_Graph("M","The classifier object produced by one of the classification functions (model object)"),
-            this.entrace_Select(this.props.dataTrees.current.state.activeData.Distances.children,"The precomputed distance matrix produced by the opf_distance","D",true)]
+            this.entrace_Select(this.props.parent.Tree.current.state.activeData.Distances.children,"The precomputed distance matrix produced by the opf_distance","D",true)]
             },
 
             {function: "opf_cluster", description: "Computes clusters by unsupervised OPF",
@@ -33,7 +33,7 @@ export default class FunctionManager extends React.Component {
             this.entrace_Number("1","","1","kmax","","The kmax (maximum degree for the knn graph) [greater than 0]"),
             this.entrace_Select([{title:"Height"},{title:"Area"},{title:"Volume"}],"Clusters by: height, area or volume"),
             this.entrace_Number("0","100","1","parameter of the cluster","","Value of parameter cluster [0-100]",true),
-            this.entrace_Select(this.props.dataTrees.current.state.activeData.Distances.children,"The precomputed distance matrix produced by the opf_distance","D",true)]
+            this.entrace_Select(this.props.parent.Tree.current.state.activeData.Distances.children,"The precomputed distance matrix produced by the opf_distance","D",true)]
             },
 
             {function: "opf_distance", description: "Generates the precomputed distance file for the OPF classifier",
@@ -56,7 +56,7 @@ export default class FunctionManager extends React.Component {
             entraces: () => 
             [this.entrace_Graph("S","A subGraph object, can be the training object produced by the opf_split"),
             this.entrace_Graph("S","A subGraph object, can be the evaluation produced object by the opf_split"),
-            this.entrace_Select(this.props.dataTrees.current.state.activeData.Distances.children,"The precomputed distance matrix produced by the opf_distance","D",true)]
+            this.entrace_Select(this.props.parent.Tree.current.state.activeData.Distances.children,"The precomputed distance matrix produced by the opf_distance","D",true)]
             },
 
             {function: "opf_merge", description: "Merge subGraphs", //can be changed to add more (a func that add more entraces)
@@ -75,7 +75,7 @@ export default class FunctionManager extends React.Component {
             [this.entrace_Graph("S","A subGraph object, can be the training object produced by the opf_split"),
             this.entrace_Graph("S","A subGraph object, can be the evaluation produced object by the opf_split"),
             this.entrace_Number("0","100","1","percentageAccuracy","","Max percentage of lost accuracy [0-100]",true),
-            this.entrace_Select(this.props.dataTrees.current.state.activeData.Distances.children,"The precomputed distance matrix produced by the opf_distance","D",true)]
+            this.entrace_Select(this.props.parent.Tree.current.state.activeData.Distances.children,"The precomputed distance matrix produced by the opf_distance","D",true)]
             },
 
             {function: "opf_semi", description: "Executes the semi supervised training phase",
@@ -83,7 +83,7 @@ export default class FunctionManager extends React.Component {
             [this.entrace_Graph("S","A subGraph object, labeled training object"),
             this.entrace_Graph("S","A subGraph object, unlabeled training object"),
             this.entrace_Graph("S","A subGraph object, can be the evaluation produced object by the opf_split",true),
-            this.entrace_Select(this.props.dataTrees.current.state.activeData.Distances.children,"The precomputed distance matrix produced by the opf_distance","D",true)]
+            this.entrace_Select(this.props.parent.Tree.current.state.activeData.Distances.children,"The precomputed distance matrix produced by the opf_distance","D",true)]
             },
 
             {function: "opf_split", description: "Generates training, evaluation and test sets for the OPF classifier",
@@ -98,14 +98,14 @@ export default class FunctionManager extends React.Component {
             {function: "opf_train", description: "Executes the training phase of the OPF classifier",
             entraces: () => 
             [this.entrace_Graph("S","A subGraph object, can be the training object produced by the opf_split"),
-            this.entrace_Select(this.props.dataTrees.current.state.activeData.Distances.children,"The precomputed distance matrix produced by the opf_distance","D",true)]
+            this.entrace_Select(this.props.parent.Tree.current.state.activeData.Distances.children,"The precomputed distance matrix produced by the opf_distance","D",true)]
             },
 
             {function: "opfknn_classify", description: "Executes the test phase of the OPF classifier with knn adjacency",
             entraces: () => 
             [this.entrace_Graph("S","The testing data object produced by the opf_split function (subGraph object)"),
             this.entrace_Graph("M","The classifier object produced by one of the classification functions (model object)"),
-            this.entrace_Select(this.props.dataTrees.current.state.activeData.Distances.children,"The precomputed distance matrix produced by the opf_distance","D",true)]
+            this.entrace_Select(this.props.parent.Tree.current.state.activeData.Distances.children,"The precomputed distance matrix produced by the opf_distance","D",true)]
             },
 
             {function: "opfknn_train", description: "Executes the training phase of the OPF classifier with knn adjacency",
@@ -113,7 +113,7 @@ export default class FunctionManager extends React.Component {
             [this.entrace_Graph("S","The training subGraph object, produced by the opf_split function, for example"),
             this.entrace_Graph("S","The evaluation object, produced by the opf_split function, for example"),
             this.entrace_Number("1","","1","kmax","","The kmax (maximum degree for the knn graph) [greater than 0]"),
-            this.entrace_Select(this.props.dataTrees.current.state.activeData.Distances.children,"The precomputed distance matrix produced by the opf_distance","D",true)]
+            this.entrace_Select(this.props.parent.Tree.current.state.activeData.Distances.children,"The precomputed distance matrix produced by the opf_distance","D",true)]
             }
         ]
 
@@ -135,13 +135,13 @@ export default class FunctionManager extends React.Component {
             custom
             >
             {type !== "M" ? 
-                [<option value={"d"}>{this.props.dataTrees.current.state.activeData.graph.title}</option>,
-                this.props.dataTrees.current.state.activeData.SubGraphs.children.map((subGraph, index) => (
+                [<option value={"d"}>{this.props.parent.Tree.current.state.activeData.graph.title}</option>,
+                this.props.parent.Tree.current.state.activeData.SubGraphs.children.map((subGraph, index) => (
                   <option value={"S"+index}>{subGraph.title}</option>
                 ))]
             : null }
             {type !== "S" ? 
-                this.props.dataTrees.current.state.activeData.ModelFiles.children.map((modelFile, index) => (
+                this.props.parent.Tree.current.state.activeData.ModelFiles.children.map((modelFile, index) => (
                 <option value={"M"+index}>{modelFile.title}</option>
                 ))
             : null }
@@ -231,27 +231,27 @@ export default class FunctionManager extends React.Component {
                   } else {
                     switch (ref.current.value.substring(0,1)) {
                       case "d":
-                        this.props.FM.writeGraph(this.props.dataTrees.current.state.activeData.graph,"files/"+fileUsed+".temp")
-                        discribeAux += "Data Graph: " + this.props.dataTrees.current.state.activeData.graph.title + "\n";
-                        subGraphOrigin = this.props.dataTrees.current.state.activeData.graph;
+                        this.props.parent.FM.writeGraph(this.props.parent.Tree.current.state.activeData.graph,"files/"+fileUsed+".temp")
+                        discribeAux += "Data Graph: " + this.props.parent.Tree.current.state.activeData.graph.title + "\n";
+                        subGraphOrigin = this.props.parent.Tree.current.state.activeData.graph;
                         break;
                       case "S":
-                        this.props.FM.writeSubGraph(this.props.dataTrees.current.state.activeData.SubGraphs.children[ref.current.value.substring(1)],"files/"+fileUsed+".temp")
-                        discribeAux += "SubGraph: " + this.props.dataTrees.current.state.activeData.SubGraphs.children[ref.current.value.substring(1)].title + "\n";
-                        subGraphOrigin = this.props.dataTrees.current.state.activeData.SubGraphs.children[ref.current.value.substring(1)];
+                        this.props.parent.FM.writeSubGraph(this.props.parent.Tree.current.state.activeData.SubGraphs.children[ref.current.value.substring(1)],"files/"+fileUsed+".temp")
+                        discribeAux += "SubGraph: " + this.props.parent.Tree.current.state.activeData.SubGraphs.children[ref.current.value.substring(1)].title + "\n";
+                        subGraphOrigin = this.props.parent.Tree.current.state.activeData.SubGraphs.children[ref.current.value.substring(1)];
                         break;
                       case "M":
-                        this.props.FM.writeModelFile(this.props.dataTrees.current.state.activeData.ModelFiles.children[ref.current.value.substring(1)],"files/"+fileUsed+".temp")
-                        discribeAux += "ModelFile: " + this.props.dataTrees.current.state.activeData.ModelFiles.children[ref.current.value.substring(1)].title + "\n";
-                        modelFileOrigin = this.props.dataTrees.current.state.activeData.ModelFiles.children[ref.current.value.substring(1)];
+                        this.props.parent.FM.writeModelFile(this.props.parent.Tree.current.state.activeData.ModelFiles.children[ref.current.value.substring(1)],"files/"+fileUsed+".temp")
+                        discribeAux += "ModelFile: " + this.props.parent.Tree.current.state.activeData.ModelFiles.children[ref.current.value.substring(1)].title + "\n";
+                        modelFileOrigin = this.props.parent.Tree.current.state.activeData.ModelFiles.children[ref.current.value.substring(1)];
                         break;
                       case "D":
-                        this.props.FM.writeDistances(this.props.dataTrees.current.state.activeData.Distances.children[ref.current.value.substring(1)],"files/"+fileUsed+".temp")
-                        discribeAux += "Distance: " + this.props.dataTrees.current.state.activeData.Distances.children[ref.current.value.substring(1)].title + "\n";
+                        this.props.parent.FM.writeDistances(this.props.parent.Tree.current.state.activeData.Distances.children[ref.current.value.substring(1)],"files/"+fileUsed+".temp")
+                        discribeAux += "Distance: " + this.props.parent.Tree.current.state.activeData.Distances.children[ref.current.value.substring(1)].title + "\n";
                         break;
                       case "C":
-                        this.props.FM.writeClassification(this.props.dataTrees.current.state.activeData.Classifications.children[ref.current.value.substring(1)],"files/"+fileUsed+".temp")
-                        discribeAux += "Classification: " + this.props.dataTrees.current.state.activeData.Classifications.children[ref.current.value.substring(1)].title + "\n";
+                        this.props.parent.FM.writeClassification(this.props.parent.Tree.current.state.activeData.Classifications.children[ref.current.value.substring(1)],"files/"+fileUsed+".temp")
+                        discribeAux += "Classification: " + this.props.parent.Tree.current.state.activeData.Classifications.children[ref.current.value.substring(1)].title + "\n";
                         break;
                       case "":
                         return -1;
@@ -265,7 +265,7 @@ export default class FunctionManager extends React.Component {
                   }
                   return -1;
                 });
-                this.props.FM.runOPFFunction(this.functionDetails[index].function,values, "Created by the function "+this.functionDetails[index].function+" using the paramters: \n"+ discribeAux,subGraphOrigin,modelFileOrigin);
+                this.props.parent.FM.runOPFFunction(this.functionDetails[index].function,values, "Created by the function "+this.functionDetails[index].function+" using the paramters: \n"+ discribeAux,subGraphOrigin,modelFileOrigin);
                 return;
               }}>Run</button>
             <button onClick={() => {this.activeFunction = null; this.setState({return: this.loadFunctions()})}}>Back</button>

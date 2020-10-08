@@ -7,12 +7,10 @@ import Cookies from 'universal-cookie';
 import './App.css';
 import Menu from './Menu.js';
 import OPFFunctions from './OPFFunctions.js';
-import ObjDetails from './objDetails.js';
+import ObjDetails from './ObjDetails.js';
 import FileManager from './FileManager.js';
 import TreeData from './Tree.js';
 import CustomSigma from './CustomSigma.js';
-const cookies = new Cookies();
-
 function App() {
   return (
     <div className="App">
@@ -27,21 +25,21 @@ class MyFirstGrid extends React.Component {
   constructor(props) {
     super(props);
 
-    if(cookies.get("SigmaSettings") === undefined)
-      cookies.set('SigmaSettings', {labelThreshold: 999999999, minArrowSize:10, maxNodeSize:9, drawEdges:true, zoomMin:0.000001}, { path: '/' });
-    this.LoadedCookies = {SigmaSettings:cookies.get("SigmaSettings")}
+    this.cookies = new Cookies();
 
-    this.state = {
-        Menu: React.createRef(),
-        Tree: React.createRef(),
-        CSigma: React.createRef(),
-        Sigma: React.createRef(),
-        ObjDetails: React.createRef(),
-        OPFFunctions: React.createRef(), 
-    };
-    
-    this.FM = new FileManager(this.state.Tree, (stateUpdate) => this.setState(stateUpdate))
+    if(this.cookies.get("SigmaSettings") === undefined)
+      this.cookies.set('SigmaSettings', {labelThreshold: 999999999, minArrowSize:10, maxNodeSize:9, drawEdges:true, zoomMin:0.000001}, { path: '/' });
+    this.LoadedCookies = {SigmaSettings:this.cookies.get("SigmaSettings")}
+
+    this.Menu = React.createRef()
+    this.Tree = React.createRef()
+    this.CSigma = React.createRef()
+    this.Sigma = React.createRef()
+    this.ObjDetails = React.createRef()
+    this.OPFFunctions = React.createRef()
+    this.FM = new FileManager(this, (stateUpdate) => this.setState(stateUpdate))
     this.fileUploader = React.createRef();
+
   }
 
   loadCSigma(graph){
@@ -63,14 +61,12 @@ class MyFirstGrid extends React.Component {
 
       temp.nodes = temp.nodes.concat(graph.modelFileClassificator.nodes);
 
-      this.state.CSigma.current.loadSugGraph(temp);
+      this.CSigma.current.loadSugGraph(temp);
       return;
     }
 
-    console.log(this.state)
-
-    this.state.ObjDetails.current.loadNodeSelect(graph);
-    this.state.CSigma.current.loadSugGraph(graph);
+    this.ObjDetails.current.loadNodeSelect(graph);
+    this.CSigma.current.loadSugGraph(graph);
   }
 
   render() {   
@@ -78,7 +74,7 @@ class MyFirstGrid extends React.Component {
       <div>
         <SplitPane split="horizontal">
             <Pane defaultSize ="10%">
-              <Menu ref={this.state.Menu} cookies={cookies} fileUploader={this.fileUploader} FM={this.FM} dataTrees={this.state.Tree} OPFFunctions={this.state.OPFFunctions} Sigma={this.state.Sigma} parent={this}/>
+              <Menu ref={this.Menu} parent={this}/>
             </Pane>
             <SplitPane split="vertical" defaultSize="80%"
               onDragFinished={(size) => { //https://github.com/tomkp/react-split-pane/issues/57
@@ -87,20 +83,20 @@ class MyFirstGrid extends React.Component {
             >
               <SplitPane split="horizontal" defaultSize="80%">
                 <Pane style={{width:"100%", height:"100%"}}>
-                  <Sigma ref={this.state.Sigma} renderer="canvas" container= 'container' settings={this.LoadedCookies.SigmaSettings} style={{width:"100%", height:"100%", position: "relative", outline: "none"}}> 
-                    <CustomSigma ref={this.state.CSigma} loadNodeInfo={(node) => this.state.ObjDetails.current.loadDetails(node)}/>
+                  <Sigma ref={this.Sigma} renderer="canvas" container= 'container' settings={this.LoadedCookies.SigmaSettings} style={{width:"100%", height:"100%", position: "relative", outline: "none"}}> 
+                    <CustomSigma ref={this.CSigma} parent={this}/>
                   </Sigma>
                 </Pane>
                 <Pane>
-                  <OPFFunctions ref={this.state.OPFFunctions} FM={this.FM} dataTrees={this.state.Tree}/>
+                  <OPFFunctions ref={this.OPFFunctions} parent={this}/>
                 </Pane>
               </SplitPane>
               <SplitPane split="horizontal" defaultSize="70%">
                 <Pane>
-                  <ObjDetails ref={this.state.ObjDetails} CSigma={this.state.CSigma}/>
+                  <ObjDetails ref={this.ObjDetails} parent={this}/>
                 </Pane>
                 <Pane>
-                  <TreeData ref={this.state.Tree} parent={this}/>
+                  <TreeData ref={this.Tree} parent={this}/>
                 </Pane>
               </SplitPane>
             </SplitPane>

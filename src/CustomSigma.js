@@ -4,7 +4,7 @@ export default class CustomSigma extends React.Component {
     constructor(props){
       super(props)
       props.sigma.bind('clickNode',(e) => {
-        props.loadNodeInfo(e.data.node)
+        props.parent.ObjDetails.current.loadDetails(e.data.node)
       })
     }
 

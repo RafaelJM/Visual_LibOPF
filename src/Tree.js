@@ -9,12 +9,12 @@ export default class TreeData extends React.Component {
             treeData: []
         };
     }
-  
+
     addNewData(data){
+
+        data.title = "Data " + (this.state.treeData.length + 1);
+
         var auxData = {
-            infoKeys: ["title","description"],
-            title: "Data " + (this.state.treeData.length + 1),
-            description: "",
             open: true,
             graph: data,
             children:
@@ -80,7 +80,60 @@ export default class TreeData extends React.Component {
     buttonStyles = {
         verticalAlign: 'middle'
     } 
-    /*
+
+    generateSpamData(c){
+        return(<span style={this.typeStyles}>
+            {c.graph.title+"       "}
+            <button style={this.buttonStyles} onClick={() => {
+                this.setState({activeData: c})
+                this.props.parent.loadCSigma(c.graph)
+            }}>Load</button>
+            <button style={this.buttonStyles} onClick={() => {console.log(this); this.props.parent.ObjDetails.current.loadDetails(c.graph);}}>i</button>
+        </span>)
+    }
+
+    generateSpamClass(c){
+        return(<span style={this.typeStyles}>
+            {c.title+"       "}
+        </span>)
+    }
+
+    generateSpamChildren(c){
+        return(<span style={this.typeStyles}>
+            {c.title+"       "}
+            <button style={this.buttonStyles} onClick={() => {this.props.parent.loadCSigma(c)}}>O</button>
+            {c.hasOwnProperty("infoKeys") ? <button style={this.buttonStyles} onClick={() => {this.props.parent.ObjDetails.current.loadDetails(c);}}>i</button>: null}
+        </span>)
+    }
+    
+    generateTree(data){
+        return(
+            <Tree content="" type={this.generateSpamData(data)} open style={this.treeStyles}>
+                {data.children.map((c) => 
+                    (c.children.length ? 
+                        <Tree content="" type={this.generateSpamClass(c)} open style={this.treeStyles}>
+                            {c.children.map((c2) => 
+                                <Tree content="" type={this.generateSpamChildren(c2)} style={this.treeStyles}/>
+                            )}
+                        </Tree> 
+                    : null)
+                )}
+            </Tree>
+        )
+    }
+
+    render() {         
+        var html = []
+        this.state.treeData.map((data) => {
+            html = html.concat(this.generateTree(data))
+        })
+        return (
+            <div>{html}</div>
+        );
+    }
+}
+
+/*
     generateNodeLoad(data){
         return(
             <Tree content="" type={<span style={this.typeStyles}>
@@ -129,54 +182,3 @@ export default class TreeData extends React.Component {
         )
     }
     */
-
-    generateSpamData(c){
-        return(<span style={this.typeStyles}>
-            {c.title+"       "}
-            <button style={this.buttonStyles} onClick={() => {
-                this.setState({activeData: c})
-                this.props.parent.loadCSigma(c.graph)
-            }}>Load</button>
-        </span>)
-    }
-
-    generateSpamClass(c){
-        return(<span style={this.typeStyles}>
-            {c.title+"       "}
-        </span>)
-    }
-
-    generateSpamChildren(c){
-        return(<span style={this.typeStyles}>
-            {c.title+"       "}
-            <button style={this.buttonStyles} onClick={() => {this.props.parent.loadCSigma(c)}}>O</button>
-            
-        </span>)
-    }
-    //<button style={this.buttonStyles} onClick={() => {this.props.parent.loadSubGraphDetails(c);}}>i</button>
-    generateTree(data){
-        return(
-            <Tree content="" type={this.generateSpamData(data)} open style={this.treeStyles}>
-                {data.children.map((c) => 
-                    (c.children.length ? 
-                        <Tree content="" type={this.generateSpamClass(c)} open style={this.treeStyles}>
-                            {c.children.map((c2) => 
-                                <Tree content="" type={this.generateSpamChildren(c2)} style={this.treeStyles}/>
-                            )}
-                        </Tree> 
-                    : null)
-                )}
-            </Tree>
-        )
-    }
-
-    render() {         
-        var html = []
-        this.state.treeData.map((data) => {//make it automatic | selfcall
-            html = html.concat(this.generateTree(data))
-        })
-        return (
-            <div>{html}</div>
-        );
-    }
-}

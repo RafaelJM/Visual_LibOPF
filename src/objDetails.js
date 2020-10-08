@@ -12,7 +12,7 @@ export default class ObjDetails extends React.Component {
         this.setState({ nodeSelect:[
         <select onChange={(e) => {
             this.loadDetails(data.nodes[e.target.value])
-            this.props.CSigma.current.focousInXY(data.nodes[e.target.value])
+            this.props.parent.CSigma.current.focousInXY(data.nodes[e.target.value])
         }}>
             <option selected disabled hidden>Select node</option>
             {data.nodes.map((node,index) => {
@@ -24,30 +24,27 @@ export default class ObjDetails extends React.Component {
     }
 
 
-    loadDetails(node){
-        const handleChange = (event) => {
-        console.log(event)
-        }
-
+    loadDetails(obj){
+        console.log(obj)
         this.setState({ details:[]}, () => {
         this.setState({ details:[
         <div>
-            {node.infoKeys.keys.map((key, index) => (
+            {obj.infoKeys.keys.map((key, index) => (
             <div>
                 {key !== 'feat' ? 
                 <div>
                     <InputGroup.Prepend>
                     <InputGroup.Text id={key}>{key}</InputGroup.Text>
                     </InputGroup.Prepend>
-                    <FormControl defaultValue={node[key]} onChange={(e) => {node.infoKeys.onChange[index](e.target.value,node);this.props.CSigma.current.updateNode(node);}}/>
+                    <FormControl defaultValue={obj[key]} onChange={(e) => {obj.infoKeys.onChange[index](e.target.value,obj);this.props.parent.CSigma.current.updateNode(obj);}}/>
                 </div>
                 : 
-                node[key].map((feat, indexFeat) => (
+                obj[key].map((feat, indexFeat) => (
                     <div>
                     <InputGroup.Prepend>
                         <InputGroup.Text id={"feat"+indexFeat}>Feat {indexFeat}</InputGroup.Text>
                     </InputGroup.Prepend>
-                    <FormControl defaultValue={feat} onChange={(e) => {node.infoKeys.onChange[index](e.target.value,indexFeat,node);this.props.CSigma.current.updateNode(node);}}/>
+                    <FormControl defaultValue={feat} onChange={(e) => {obj.infoKeys.onChange[index](e.target.value,indexFeat,obj);this.props.parent.CSigma.current.updateNode(obj);}}/>
                     </div>
                 ))
                 }
