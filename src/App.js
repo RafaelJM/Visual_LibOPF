@@ -19,8 +19,6 @@ function App() {
   );
 }
 
-//--------------------------------------
-
 class MyFirstGrid extends React.Component {
   constructor(props) {
     super(props);
@@ -40,33 +38,6 @@ class MyFirstGrid extends React.Component {
     this.FM = new FileManager(this, (stateUpdate) => this.setState(stateUpdate))
     this.fileUploader = React.createRef();
 
-  }
-
-  loadCSigma(graph){
-    if(graph.hasOwnProperty("modelFileClassificator")){ //temp
-      var temp = {nodes:graph.nodes, edges: []};
-
-      temp.edges = temp.edges.concat(graph.modelFileClassificator.edges);
-
-      for(var ID in graph.nodes){
-        if(temp.nodes[ID].pred !== -1){
-          temp.edges = temp.edges.concat({
-            id: temp.edges.length,
-            source: temp.nodes[ID].id,
-            target: graph.modelFileClassificator.nodes[temp.nodes[ID].pred].id,
-            type: "arrow",
-          })
-        }
-      }
-
-      temp.nodes = temp.nodes.concat(graph.modelFileClassificator.nodes);
-
-      this.CSigma.current.loadSugGraph(temp);
-      return;
-    }
-
-    this.ObjDetails.current.loadNodeSelect(graph);
-    this.CSigma.current.loadSugGraph(graph);
   }
 
   render() {   
@@ -108,21 +79,6 @@ class MyFirstGrid extends React.Component {
 
 export default App;
 
-
-// zoom sigma https://github.com/jacomyal/sigma.js/issues/227
-
-//sigma alterar tamanho canvas se alterar size do div
-
-//sigma zoom = tamanho dos nos! ai da para ver exatamente as ligações sem ter q dar tanto zoom
-
 //https://icon-icons.com/pt/icone/adicionar-mais-bot%C3%A3o/72878
 //https://icon-icons.com/pt/icone/lixo/48207
 ///https://icon-icons.com/pt/icone/olho/128870
-
-
-//TODO: node vinculation, work with pointers, same node "diferent" subgraph
-//TODO: node details by function or list [[key,type],....]
-//TODO: sigma animation, sigma focous on point, edges (arrows) [not realtime]
-//TODO: fix list expension / buttons (function or array of buttons)
-//TODO: sigma zoom / size node
-//TODO: add info to infoKeys about what can be changed

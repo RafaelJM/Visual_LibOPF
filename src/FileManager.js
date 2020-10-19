@@ -7,6 +7,29 @@ export default class FileManager{
     
     this.Module = require('./libopf.js')(); // Your Emscripten JS output file
     this.FS = this.Module.FS;
+    this.isDv={dat:"",cla:"",dis:""}
+    this.outInfo = {
+      dat: (dv, title, description, graphOrigin) => {return(this.readSubGraph(dv, title, description, graphOrigin))},
+      cla: (dv, title, description) => {return(this.readModelFile(dv, title, description))},
+      dis: (dv, title, description, graph) => {return(this.readDistances(dv, title, description, graph))},
+      //-----
+      out: (file, title, description, subGraph, modelFileClassificator,extraInfo) => {return(this.readClassification(file, title, description, subGraph, modelFileClassificator,extraInfo))},
+      acc: (file) => {return({accuracy: this.FS.readFile(file,{encoding: 'utf8'}).split("\n")})},//this.readAccuracy(file))},
+      pra: (file) => {return({pruningRate: this.FS.readFile(file,{encoding: 'utf8'}).split("\n")[0]})},
+      pre: (file) => {return({predList: this.FS.readFile(file,{encoding: 'utf8'}).split("\n")})},
+      tim: (file) => {return({time:this.FS.readFile(file,{encoding: 'utf8'}).split("\n")[0]})},
+    }
+    this.cont = [0,0,0,0]
+    this.getName ={
+      dat: (file) => {return(file.substring(7).replace(".dat",""))},//+" "+(this.cont[0]))},
+      cla: () => {return("ModelFile "+(this.cont[1]+=1))},
+      dis: () => {return("Distances "+(this.cont[2]+=1))},
+      out: () => {return("Classification "+(this.cont[3]+=1))},
+      acc: () => {},
+      pra: () => {},
+      pre: () => {},
+      tim: () => {}
+    }
     this.colors = [
       "#63b598", "#ce7d78", "#ea9e70", "#a48a9e", "#c6e1e8", "#648177" ,"#0d5ac1" ,
       "#f205e6" ,"#1c0365" ,"#14a9ad" ,"#4ca2f9" ,"#a4e43f" ,"#d298e2" ,"#6119d0",
@@ -50,23 +73,8 @@ export default class FileManager{
       "#dba2e6", "#76fc1b", "#608fa4", "#20f6ba", "#07d7f6", "#dce77a", "#77ecca"]
   }
 
-  graphKeys = {keys: ["title","description","nnodes","nlabels","nfeats"],
-              disabled: [true,true,false,true,true],
-              onChange: [(title,node) => {node.title = title; this.parent.Tree.current.setState({})},() => {},() => {},() => {},() => {}]}
-  graphNodeKeys = {keys: ["title","id","truelabel","feat"],
-                  disabled: [true,false,true,true],
-                  onChange: [(title,node) => {node.self.title = title},() => {},(newLabel,node) => {node.self.truelabel = newLabel; node.self.color = this.colors[newLabel]},
-                  (newfeat,indexFeat,node) => {
-                    node.self.feat[indexFeat] = newfeat; 
-                    node.self.x = node.feat[0];
-                    node.self.y = node.feat[1];}]}
-
-  subGraphKeys = {keys: ["title","description","nnodes","nlabels","nfeats"],
-                  disabled: [true,true,false,true,true],
-                  onChange: [(title,node) => {node.title = title; this.parent.Tree.current.setState({})},() => {},() => {},() => {},() => {}]}
-                    
-  modelKeys = {keys: ["title","description","nnodes","nlabels","nfeats","df","bestk","K","mindens","maxdens","ordered_list_of_nodes"]}
-  modelNodeKeys = {keys: ["title","id","truelabel","pred","nodelabel","pathval","radius","dens","feat"]}
+//arrumar os console.log("erro")
+//ARRUMAR PARA MOSTRAR ALTERAÇÃO NA DISTANCIA SE ALTERAR FEAT
 
   quick_Sort(origArray) {
     if (origArray.length <= 1) { 
@@ -91,110 +99,99 @@ export default class FileManager{
     }
   }
 
-  runOPFFunction(opfFunction, variables, description, graphOrigin, modelFileOrigin = null){
-    const cwrap = this.Module.cwrap("c_"+opfFunction,null,['number', 'number']);
-  
-    variables = [""].concat(variables);  //  ["","files/auxone.dat","0.5","0","0.5","0"];
+  getFunctionParamters(functionInfo){
+    var variables = [""]
+    var fileUsed = -1;
+    for (var i = 0; i < functionInfo.objs.length; i++) {
+      if(functionInfo.objs[i].hasOwnProperty("saveInFile")){
+        functionInfo.objs[i].saveInFile(functionInfo.objs[i],"files/"+(fileUsed=fileUsed+1)+".temp")
+        variables = variables.concat("files/"+fileUsed+".temp");
+      }
+      else
+        if(functionInfo.objs[i].value.toString() != "")
+          variables = variables.concat(functionInfo.objs[i].value.toString());
+    }
+    return(variables)
+  }
+
+  runOPFFunction(functionInfo, description){//,graphOrigin = null, modelFileOrigin = null){
+    const cwrap = this.Module.cwrap("c_"+functionInfo.opfFunction.function,null,['number', 'number']);
+    
+    var variables = this.getFunctionParamters(functionInfo)
+
     var ptrArr = this.Module._malloc(variables.length * 4);
     var ptrAux = []
     for (var i = 0; i < variables.length; i++) {
-        var len = variables[i].length + 1;
-        var ptr = this.Module._malloc(len);
-        ptrAux = ptrAux.concat(ptr);
-        this.Module.stringToUTF8(variables[i].toString(), ptr, len);
-  
-        this.Module.setValue(ptrArr + i * 4, ptr, "i32");      
+      var len = variables[i].length + 1;
+      var ptr = this.Module._malloc(len);
+      ptrAux = ptrAux.concat(ptr);
+      this.Module.stringToUTF8(variables[i].toString(), ptr, len);
+
+      this.Module.setValue(ptrArr + i * 4, ptr, "i32");      
     }
-  
     var ptrNum = this.Module._malloc(4);
     this.Module.setValue(ptrNum, variables.length, 'i32');
-  
-    cwrap(ptrNum,ptrArr);
-    var array = [];
-    var dir = this.FS.readdir("files/");
-    var buffer = [[],[],[],[],[]]
-    for(i in dir){
-      if(dir[i].substring(6) !== ""){ //use function to know what will be back can be useful
-        switch(dir[i].substr(-4)) {
-          case ".tim": //execucion time
-            array = this.FS.readFile("files/"+dir[i],{encoding: 'utf8'});
-            console.log("tim",array);
-            this.FS.unlink("files/"+dir[i]);
-            break;
-          case ".dat": //subGraph
-            buffer[0] = buffer[0].concat(this.readSubGraph(new DataView(this.FS.readFile("files/"+dir[i], null).buffer),dir[i].substring(7).replace(".dat",""), description, graphOrigin));
-            this.FS.unlink("files/"+dir[i]);
-            break;
-          case ".cla": //modelFile
-            buffer[1] = buffer[1].concat(this.readModelFile(new DataView(this.FS.readFile("files/"+dir[i], null).buffer),"Model File " + this.parent.Tree.current.state.activeData.ModelFiles.children.length,description));
-            this.FS.unlink("files/"+dir[i]);
-            break;
-          case ".out": //classification
-            buffer[3] = buffer[3].concat(this.readClassification("files/"+dir[i],"classification "+this.parent.Tree.current.state.activeData.Classifications.children.length,description));
-            this.FS.unlink("files/"+dir[i]);
-            break;
-          case ".acc": //accuracy
-            array = this.FS.readFile("files/"+dir[i],{encoding: 'utf8'}).split("\n");
-            console.log(array);
-            this.FS.unlink("files/"+dir[i]);
-            break;
-          case ".dis": //distances
-            buffer[2] = buffer[2].concat(this.readDistances(new DataView(this.FS.readFile("files/"+dir[i], null).buffer),"distance "+this.parent.Tree.current.state.activeData.Distances.children.length,description));
-            this.FS.unlink("files/"+dir[i]);
-            break;
-            case ".pra": //pruning rate
-            array = this.FS.readFile("files/"+dir[i],{encoding: 'utf8'}).split("\n");
-            console.log(array);
-            this.FS.unlink("files/"+dir[i]);
-            break;
-          case ".pre": //pred file (classification)
-            buffer[4] = buffer[4].concat([this.FS.readFile("files/"+dir[i],{encoding: 'utf8'}).split("\n")]);
-            console.log(buffer[4]);
-            this.FS.unlink("files/"+dir[i]);
-            break;
-          default:
-            break;
-        }
-      }
-    }
-		//discover who is the subgraph father to add the pred!!!!
-    if(buffer[4].length){
-      for(i = 0; i < graphOrigin.nnodes; i++){
-        graphOrigin.nodes[i].pred = buffer[4][0][i]
-      }
-      graphOrigin.modelFileClassificator = modelFileOrigin
-    }
-    this.parent.Tree.current.addBuffer(buffer);
+
+    cwrap(ptrNum,ptrArr); //testar, will wait?
+
+    var graphOrigin = functionInfo.objs.find(e => e.isGraph || e.isSubGraph)
+    var modelFileOrigin = functionInfo.objs.find(e => e.isModelFile)
+    console.log(graphOrigin,modelFileOrigin)
+    
+    var buffer = {dat: [],cla: [],dis: [],out: []}
+
+    var extraInfo = {}
+    functionInfo.opfFunction.extraOutInfo.map((out, index) => {
+      var dir = this.FS.readdir("files/");
+      var file = dir.find(e => e.substr(-3) === out)
+      if(!file) return;
+      extraInfo = Object.assign({}, extraInfo, this.outInfo[out]((this.isDv.hasOwnProperty(out)?new DataView(this.FS.readFile("files/"+file, null).buffer):"files/"+file),this.getName[out](file),description,graphOrigin,modelFileOrigin))
+      this.FS.unlink("files/"+file);
+    })
+
+    functionInfo.opfFunction.out.map((out, index) => {
+      var dir = this.FS.readdir("files/");
+      var file = dir.find(e => e.substr(-3) === out)
+      if(!file) return;
+      buffer[out][buffer[out].length] =  Object.assign({}, extraInfo, this.outInfo[out]((this.isDv.hasOwnProperty(out)?new DataView(this.FS.readFile("files/"+file, null).buffer):"files/"+file),this.getName[out](file),description,graphOrigin,modelFileOrigin,extraInfo = extraInfo))
+      this.FS.unlink("files/"+file);
+    })
+
+    console.log("error! files > 6",this.FS.readdir("files/").find(e => e.length > 6))
+
+    return(buffer);
   }
 
   readGraph(dv, title, description){
     var graph= {
-      nnodes: -1, nlabels: -1, nfeats: -1, title: title, description:description, open: false,
-      infoKeys: this.graphKeys,
+      nnodes: -1, nlabels: -1, nfeats: -1, title: title, description:description, open: false, inicial_nlabels: -1, inicial_nfeats: -1, isGraph: true,
       nodes: [],
       edges:[]
     };
+    graph.getDetails = (obj) => this.parent.ObjDetails.current.detailsGraph(obj)
+    graph.saveInFile = (obj,file) => this.writeGraph(obj,file)
 
     var cont = 0;
-    graph.nnodes = dv.getInt32(cont,true);//nnodes
-    graph.nlabels = dv.getInt32(cont=cont+4,true);//nlabels
-    graph.nfeats = dv.getInt32(cont=cont+4,true);//nfeats
+    graph.nnodes = dv.getInt32(cont,true);
+    graph.nlabels = dv.getInt32(cont=cont+4,true);
+    graph.nfeats = dv.getInt32(cont=cont+4,true);
     for(var i = 0; i < graph.nnodes; i++){
       graph.nodes[i] = {
-      infoKeys: this.graphNodeKeys,
+      graph: graph,
       feat: [  ],
-      id: dv.getInt32(cont=cont+4,true),//position
-      truelabel: dv.getInt32(cont=cont+4,true),//truelabel
+      id: dv.getInt32(cont=cont+4,true),
+      truelabel: dv.getInt32(cont=cont+4,true),
       x:0, y:0, size:0.5, color:null, title:"", label:"", self:null};
+      for(var j = 0; j < graph.nfeats; j++){
+        graph.nodes[i].feat[j] = dv.getFloat32(cont=cont+4,true);
+      }
+      graph.nodes[i].x = graph.nodes[i].feat[0];
+      graph.nodes[i].y = graph.nodes[i].feat[1];
       graph.nodes[i].color = this.colors[graph.nodes[i].truelabel]
       graph.nodes[i].title = "Node "+graph.nodes[i].id.toString();
       graph.nodes[i].label = graph.nodes[i].title;
       graph.nodes[i].self = graph.nodes[i];
-      for(var j = 0; j < graph.nfeats; j++){
-        graph.nodes[i].feat[j] = dv.getFloat32(cont=cont+4,true);//feat
-      }
-      graph.nodes[i].x = graph.nodes[i].feat[0];
-      graph.nodes[i].y = graph.nodes[i].feat[1];
+      graph.nodes[i].getDetails = (obj) => this.parent.ObjDetails.current.detailsGraphNode(obj.self)
     }
     graph.nodes = this.quick_Sort(graph.nodes);
     return(graph);
@@ -217,12 +214,15 @@ export default class FileManager{
     this.FS.writeFile(file,Buffer.from(buf));
   }
   
-  readSubGraph(dv, title, description, graphOrigin){ //definition: !id = array index!
-    var subGraph = {title: title, description:description, nodes:[], edges:[], graphOrigin:graphOrigin, infoKeys:this.subGraphKeys}
+  readSubGraph(dv, title, description, graphOrigin){
+    var subGraph = {title: title, description:description, nodes:[], edges:[], graphOrigin:graphOrigin, isSubGraph: true}
     var cont = 0;
-    subGraph.nnodes = dv.getInt32(cont,true);//nnodes
-    subGraph.nlabels = dv.getInt32(cont=cont+4,true);//nlabels
-    subGraph.nfeats = dv.getInt32(cont=cont+4,true);//nfeats
+    subGraph.getDetails = (obj) => this.parent.ObjDetails.current.detailsGraph(obj,true)
+    subGraph.saveInFile = (obj,file) => this.writeSubGraph(obj,file)
+
+    subGraph.nnodes = dv.getInt32(cont,true);
+    subGraph.nlabels = dv.getInt32(cont=cont+4,true);
+    subGraph.nfeats = dv.getInt32(cont=cont+4,true);
     var id;
     for(var i = 0; i < subGraph.nnodes; i++){
       id = dv.getInt32(cont=cont+4,true);
@@ -253,11 +253,13 @@ export default class FileManager{
 
   readModelFile(dv, title, description){
     var modelFile= {
-      nnodes: -1, nlabels: -1, nfeats: -1, df: -1, bestk: -1, K: -1, mindens: -1, maxdens: -1, title: title, open: false, description:description, ordered_list_of_nodes: [],
-      infoKeys: this.modelKeys,
+      nnodes: -1, nlabels: -1, nfeats: -1, df: -1, bestk: -1, K: -1, mindens: -1, maxdens: -1, title: title, open: false, description:description, ordered_list_of_nodes: [], isModelFile: true,
       nodes: [],
       edges:[]
     };
+
+    modelFile.getDetails = (obj) => this.parent.ObjDetails.current.detailsModelFile(obj)
+    modelFile.saveInFile = (obj,file) => this.writeModelFile(obj,file)
     
     var cont = 0;
     modelFile.nnodes = dv.getInt32(cont,true);
@@ -270,24 +272,27 @@ export default class FileManager{
     modelFile.maxdens = dv.getFloat32(cont=cont+4,true);
     for(var i = 0; i < modelFile.nnodes; i++){
       modelFile.nodes[i] = {
-      infoKeys: this.graphNodeKeys,
       feat: [  ],
-      id: dv.getInt32(cont=cont+4,true),//position
+      id: dv.getInt32(cont=cont+4,true),
       truelabel: dv.getInt32(cont=cont+4,true),
       pred: dv.getInt32(cont=cont+4,true),
       nodelabel: dv.getInt32(cont=cont+4,true),
       pathval: dv.getFloat32(cont=cont+4,true),
       radius: dv.getFloat32(cont=cont+4,true),
       dens: dv.getFloat32(cont=cont+4,true),
-      x:0, y:0, size:0.5, color:null, title:"", label:""}; //nodelabel == LABEL FROM OPF
-      modelFile.nodes[i].color = this.colors[modelFile.nodes[i].truelabel]
-      modelFile.nodes[i].title = "Node "+modelFile.nodes[i].id.toString();
-      modelFile.nodes[i].label = modelFile.nodes[i].title;
+      x:0, y:0, size:0.5, color:null, title:"", label:"", self:null}; //nodelabel == LABEL FROM OPF
       for(var j = 0; j < modelFile.nfeats; j++){
-        modelFile.nodes[i].feat[j] = dv.getFloat32(cont=cont+4,true);//feat
+        modelFile.nodes[i].feat[j] = dv.getFloat32(cont=cont+4,true);
       }
       modelFile.nodes[i].x = modelFile.nodes[i].feat[0];
       modelFile.nodes[i].y = modelFile.nodes[i].feat[1];
+      modelFile.nodes[i].color = this.colors[modelFile.nodes[i].truelabel]
+      modelFile.nodes[i].title = "Node "+modelFile.nodes[i].id.toString();
+      modelFile.nodes[i].borderColor = "#000000"
+      modelFile.nodes[i].type = "circle"
+      modelFile.nodes[i].label = modelFile.nodes[i].title;
+      modelFile.nodes[i].self = modelFile.nodes[i];
+      modelFile.nodes[i].getDetails = (obj) => this.parent.ObjDetails.current.detailsModelFileNode(obj.self)
     }
     for(i = 0; i < modelFile.nnodes; i++){
       modelFile.ordered_list_of_nodes[i] = dv.getInt32(cont=cont+4,true);
@@ -299,8 +304,11 @@ export default class FileManager{
           id: modelFile.edges.length,
           source: modelFile.nodes[ID].id,
           target: modelFile.nodes[modelFile.nodes[ID].pred].id,
-          type: "arrow",
+          type: "tapered", //arrow
         })
+      }
+      else{
+        modelFile.nodes[ID].type = "star"
       }
     }
     return(modelFile);
@@ -319,7 +327,7 @@ export default class FileManager{
     buf.writeFloatLE(modelFile.mindens,cont=cont+4);
     buf.writeFloatLE(modelFile.maxdens,cont=cont+4);
     for(var i = 0; i < modelFile.nnodes; i++){
-      buf.writeInt32LE(modelFile.nodes[i].id,cont=cont+4);//position
+      buf.writeInt32LE(modelFile.nodes[i].id,cont=cont+4);
       buf.writeInt32LE(modelFile.nodes[i].truelabel,cont=cont+4);
       buf.writeInt32LE(modelFile.nodes[i].pred,cont=cont+4);
       buf.writeInt32LE(modelFile.nodes[i].nodelabel,cont=cont+4);
@@ -336,8 +344,29 @@ export default class FileManager{
     this.FS.writeFile(file,Buffer.from(buf));
   }
 
-  readClassification(file, title, description){
-    return({classification: this.FS.readFile(file,{encoding: 'utf8'}).split("\n"), title: title, description:description})
+  readClassification(file, title, description, subGraph, modelFileClassificator,extraInfo){ //Arrumar: Test if is necessary to link node ids
+    if(extraInfo){
+      var classification = {isClassification: true, classification: this.FS.readFile(file,{encoding: 'utf8'}).split("\n"), title: title, description:description, subGraph: subGraph, modelFileClassificator: modelFileClassificator}
+      classification.getDetails = (obj) => this.parent.ObjDetails.current.detailsClassification(obj)
+      classification.saveInFile = (obj,file) => this.writeClassification(obj,file)
+      classification.nodes = classification.modelFileClassificator.nodes
+      classification.edges = classification.modelFileClassificator.edges
+
+      for(var i = 0; i < extraInfo.predList.length-1; i++){
+        if(extraInfo.predList[i] !== -1){
+          classification.edges = classification.edges.concat({
+            id: classification.edges.length,
+            source: classification.subGraph.nodes[i].id,
+            target: classification.modelFileClassificator.nodes[extraInfo.predList[i]].id,
+            type: "tapered", //arrow
+          })
+        }
+      }
+      classification.nodes = classification.nodes.concat(classification.subGraph.nodes)
+      return(classification)
+    }
+    else
+      return({classification: this.FS.readFile(file,{encoding: 'utf8'}).split("\n")})
   }
 
   writeClassification(classification, file){
@@ -349,7 +378,7 @@ export default class FileManager{
     this.FS.writeFile(file,aux,{encoding: 'utf8'});
   }
 
-  readDistances(dv, title, description){
+  readDistances(dv, title, description, graph){ //Arrumar: Test if is necessary to link node ids
     var cont = 0;
     var nsamples = dv.getInt32(cont,true);
     var distances = new Array(nsamples);
@@ -360,7 +389,13 @@ export default class FileManager{
       }
     }
 
-    return({"distances": distances, title: title, description:description});
+    var dists = {isDistances: true, "distances": distances, title: title, description:description, graph:graph}
+
+    dists.getDetails = (obj) => this.parent.ObjDetails.current.detailsDistances(obj)
+    dists.saveInFile = (obj,file) => this.writeDistances(obj,file)
+    dists.nodes = dists.graph.nodes
+
+    return(dists)
   }
 
   writeDistances(distances, file){

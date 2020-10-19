@@ -4,8 +4,14 @@ export default class CustomSigma extends React.Component {
     constructor(props){
       super(props)
       props.sigma.bind('clickNode',(e) => {
-        props.parent.ObjDetails.current.loadDetails(e.data.node)
+        if(this.state.loadedGraph.hasOwnProperty("distances")){
+          //props.parent.ObjDetails.current.loadDetails(e.data.node)
+          this.loadGraphDistance(e.data.node,this.state.loadedGraph)
+        }else{
+          props.parent.ObjDetails.current.loadDetails(e.data.node)
+        }
       })
+      this.state = {loadedGraph: {}}
     }
 
     someMethod() {
@@ -17,9 +23,16 @@ export default class CustomSigma extends React.Component {
     }
 
     loadSugGraph(Graph){
-      this.props.sigma.graph.clear();
-      this.props.sigma.graph.read(Graph);
-      this.props.sigma.refresh();
+      if(Graph.hasOwnProperty("nodes")){
+        this.props.parent.ObjDetails.current.loadNodeSelect(Graph);
+        this.props.sigma.graph.clear();
+        this.props.sigma.graph.read(Graph);
+        this.setState({loadedGraph: Graph})
+        this.props.sigma.refresh();
+      }
+      else{
+        console.log("erro")
+      }
     }
 
     updateNode(node){
@@ -28,8 +41,8 @@ export default class CustomSigma extends React.Component {
       this.props.sigma.refresh();
     }
   
-    focousInXY(node){ //setTimeout
-      node = this.props.sigma.graph.nodes().find(element => element.id == node.id)
+    focousInXY(node){
+      node = this.props.sigma.graph.nodes().find(element => element.id === node.id)
       /*
       var c = this.props.sigma.camera;
       c.goTo({
@@ -41,8 +54,28 @@ export default class CustomSigma extends React.Component {
       this.props.sigma.refresh();
       setTimeout(() => {node.color = aux; this.props.sigma.refresh();}, 1000);
     }
+
+    loadGraphDistance(node,distancesObj){
+      distancesObj.edges = []
+      for(var i = 0; i < distancesObj.nodes.length; i++){
+        if(distancesObj.nodes[i].id !== node.id){
+          distancesObj.edges = distancesObj.edges.concat({
+            id: distancesObj.edges.length,
+            source: node.id,
+            target: distancesObj.nodes[i].id,
+            type: "line", //arrow
+          })
+        }
+      }
+      console.log("d",distancesObj)
+      this.loadSugGraph(distancesObj)
+    }
     
     render(){
       return([])
     }
   }
+
+//https://stackoverflow.com/questions/31946242/recreating-the-zoom-in-out-buttons-in-a-non-leaflet-application-sigma-js
+//https://github.com/dunnock/react-sigma/blob/master/DOCS.md
+//https://stackoverflow.com/questions/48068353/adding-context-menu-or-dropdown-menu-in-sigma-js-graph

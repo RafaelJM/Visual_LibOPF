@@ -57,7 +57,7 @@ void c_opf_pruning(int *argc, char **argv)
 
 	fprintf(stdout, "\n\nWriting classifier's model file ...");
 	
-	sprintf(fileName, "%s.classifier.opf", argv[1]);
+	sprintf(fileName, "%s.cla", argv[1]);
 	opf_WriteModelFile(gTrain, fileName);
 	fprintf(stdout, " OK");
 	
@@ -71,7 +71,7 @@ void c_opf_pruning(int *argc, char **argv)
 	time = ((toc.tv_sec - tic.tv_sec) * 1000.0 + (toc.tv_usec - tic.tv_usec) * 0.001) / 1000.0;
 	fprintf(stdout, "\nPruning time: %f seconds\n", time);
 	
-	sprintf(fileName, "%s.time", argv[1]);
+	sprintf(fileName, "%s.tim", argv[1]);
 	f = fopen(fileName, "a");
 	fprintf(f, "%f\n", time);
 	fclose(f);

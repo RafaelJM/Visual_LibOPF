@@ -53,9 +53,9 @@ export default class TreeData extends React.Component {
 
     addBuffer(buffer){
         this.setState( prevState => {
-            for(var i = 0; i < (buffer.length-1); i++){
-                prevState.activeData.children[i].children = prevState.activeData.children[i].children.concat(buffer[i])
-            }
+            Object.keys(buffer).map((key, i) => {
+                prevState.activeData.children[i].children = prevState.activeData.children[i].children.concat(buffer[key])
+            })
             return {
                 prevState
             }
@@ -86,9 +86,9 @@ export default class TreeData extends React.Component {
             {c.graph.title+"       "}
             <button style={this.buttonStyles} onClick={() => {
                 this.setState({activeData: c})
-                this.props.parent.loadCSigma(c.graph)
+                this.props.parent.CSigma.current.loadSugGraph(c.graph)
             }}>Load</button>
-            <button style={this.buttonStyles} onClick={() => {console.log(this); this.props.parent.ObjDetails.current.loadDetails(c.graph);}}>i</button>
+            <button style={this.buttonStyles} onClick={() => {this.props.parent.ObjDetails.current.loadDetails(c.graph);}}>i</button>
         </span>)
     }
 
@@ -101,8 +101,8 @@ export default class TreeData extends React.Component {
     generateSpamChildren(c){
         return(<span style={this.typeStyles}>
             {c.title+"       "}
-            <button style={this.buttonStyles} onClick={() => {this.props.parent.loadCSigma(c)}}>O</button>
-            {c.hasOwnProperty("infoKeys") ? <button style={this.buttonStyles} onClick={() => {this.props.parent.ObjDetails.current.loadDetails(c);}}>i</button>: null}
+            <button style={this.buttonStyles} onClick={() => {this.props.parent.CSigma.current.loadSugGraph(c)}}>O</button>
+            <button style={this.buttonStyles} onClick={() => {this.props.parent.ObjDetails.current.loadDetails(c);}}>i</button>
         </span>)
     }
     
@@ -132,53 +132,3 @@ export default class TreeData extends React.Component {
         );
     }
 }
-
-/*
-    generateNodeLoad(data){
-        return(
-            <Tree content="" type={<span style={this.typeStyles}>
-                <select onChange={(e) => {
-                    this.props.parent.loadDetails(data.nodes[e.target.value])
-                    this.props.parent.state.CSigma.current.focousInXY(data.nodes[e.target.value].id)
-                }}>
-                    {data.nodes.map((node) => {
-                        return(<option value={node.id}>Node {node.id}</option>)
-                    })}
-                </select>
-            </span>} open style={this.treeStyles}>
-            </Tree>
-        )
-    }
-
-    generateTree(data) {//problem with so many nodes
-        var type = 
-        (<span style={this.typeStyles}>
-            {data.title+"       "}
-            {data.isData ? <button style={this.buttonStyles} onClick={() => {
-                this.setState({activeData: data})
-                this.props.parent.loadCSigma(data["Graph Data"])
-            }}>Load</button> : null}
-
-            {data.hasOwnProperty("nodes") ? <button style={this.buttonStyles} onClick={() => {this.props.parent.loadCSigma(data)}}>O</button> : null}
-
-            {data.hasOwnProperty("infoKeys") ? <button style={this.buttonStyles} onClick={() => {
-                this.props.parent.loadDetails(data);
-            }}>i</button> : null}
-            
-            {data.hasOwnProperty("addFunction") ? <button style={this.buttonStyles} onClick={() => {}}>+</button> : null}
-            {data.hasOwnProperty("delFunction") ? <button style={this.buttonStyles} onClick={() => {}}>L</button> : null}
-        </span>)
-        return(
-            (data["open"] ? 
-                <Tree content="" type={type} open style={this.treeStyles}>
-                    {data['children'] ? data.children.map((children) => this.generateTree(children)) : null}
-                    {data['nodes'] ? this.generateNodeLoad(data) : null}
-                </Tree>
-            : 
-                <Tree content="" type={type}  style={this.treeStyles}>
-                    {data['children'] ? data.children.map((children) => this.generateTree(children)) : null}
-                    {data['nodes'] ? this.generateNodeLoad(data) : null}
-                </Tree>)
-        )
-    }
-    */
