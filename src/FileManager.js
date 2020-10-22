@@ -1,5 +1,3 @@
-
-
 export default class FileManager{
   constructor(parent,stateUpdate) {
     this.parent = parent;
@@ -75,7 +73,7 @@ export default class FileManager{
 
 //arrumar os console.log("erro")
 //ARRUMAR PARA MOSTRAR ALTERAÇÃO NA DISTANCIA SE ALTERAR FEAT
-
+/*
   quick_Sort(origArray) {
     if (origArray.length <= 1) { 
       return origArray;
@@ -98,17 +96,17 @@ export default class FileManager{
       return newArray.concat(this.quick_Sort(left), pivot, this.quick_Sort(right));
     }
   }
-
+*/
   getFunctionParamters(functionInfo){
     var variables = [""]
     var fileUsed = -1;
     for (var i = 0; i < functionInfo.objs.length; i++) {
       if(functionInfo.objs[i].hasOwnProperty("saveInFile")){
-        functionInfo.objs[i].saveInFile(functionInfo.objs[i],"files/"+(fileUsed=fileUsed+1)+".temp")
+        this[functionInfo.objs[i].saveInFile](functionInfo.objs[i],"files/"+(fileUsed=fileUsed+1)+".temp")
         variables = variables.concat("files/"+fileUsed+".temp");
       }
       else
-        if(functionInfo.objs[i].value.toString() != "")
+        if(functionInfo.objs[i].value.toString() !== "")
           variables = variables.concat(functionInfo.objs[i].value.toString());
     }
     return(variables)
@@ -138,48 +136,52 @@ export default class FileManager{
     var modelFileOrigin = functionInfo.objs.find(e => e.isModelFile)
     console.log(graphOrigin,modelFileOrigin)
     
-    var buffer = {dat: [],cla: [],dis: [],out: []}
+    var buffer = {dat: [],cla: [],dis: [],out: [], acc:[]}
 
     var extraInfo = {}
     functionInfo.opfFunction.extraOutInfo.map((out, index) => {
       var dir = this.FS.readdir("files/");
       var file = dir.find(e => e.substr(-3) === out)
-      if(!file) return;
-      extraInfo = Object.assign({}, extraInfo, this.outInfo[out]((this.isDv.hasOwnProperty(out)?new DataView(this.FS.readFile("files/"+file, null).buffer):"files/"+file),this.getName[out](file),description,graphOrigin,modelFileOrigin))
-      this.FS.unlink("files/"+file);
+      if(file){
+        extraInfo = Object.assign({}, extraInfo, this.outInfo[out]((this.isDv.hasOwnProperty(out)?new DataView(this.FS.readFile("files/"+file, null).buffer):"files/"+file),this.getName[out](file),description,graphOrigin,modelFileOrigin))
+        this.FS.unlink("files/"+file);
+      }
     })
 
     functionInfo.opfFunction.out.map((out, index) => {
       var dir = this.FS.readdir("files/");
       var file = dir.find(e => e.substr(-3) === out)
-      if(!file) return;
-      buffer[out][buffer[out].length] =  Object.assign({}, extraInfo, this.outInfo[out]((this.isDv.hasOwnProperty(out)?new DataView(this.FS.readFile("files/"+file, null).buffer):"files/"+file),this.getName[out](file),description,graphOrigin,modelFileOrigin,extraInfo = extraInfo))
-      this.FS.unlink("files/"+file);
+      if(file){
+        buffer[out][buffer[out].length] =  Object.assign({}, extraInfo, this.outInfo[out]((this.isDv.hasOwnProperty(out)?new DataView(this.FS.readFile("files/"+file, null).buffer):"files/"+file),this.getName[out](file),description,graphOrigin,modelFileOrigin,extraInfo))
+        this.FS.unlink("files/"+file);
+      }
     })
 
-    console.log("error! files > 6",this.FS.readdir("files/").find(e => e.length > 6))
+    if(this.FS.readdir("files/").find(e => e.length > 6)) console.log("error! files > 6", this.FS.readdir("files/").find(e => e.length > 6))
 
     return(buffer);
   }
 
   readGraph(dv, title, description){
     var graph= {
-      nnodes: -1, nlabels: -1, nfeats: -1, title: title, description:description, open: false, inicial_nlabels: -1, inicial_nfeats: -1, isGraph: true,
+      nnodes: -1, nlabels: -1, nfeats: -1, title: title, description:description, open: false, inicial_nlabels: -1, inicial_nfeats: -1, isGraph: true, featTitle: [],
       nodes: [],
       edges:[]
     };
-    graph.getDetails = (obj) => this.parent.ObjDetails.current.detailsGraph(obj)
-    graph.saveInFile = (obj,file) => this.writeGraph(obj,file)
+    graph.getDetails = "detailsGraph"
+    graph.saveInFile = "writeGraph"
 
     var cont = 0;
     graph.nnodes = dv.getInt32(cont,true);
     graph.nlabels = dv.getInt32(cont=cont+4,true);
     graph.nfeats = dv.getInt32(cont=cont+4,true);
+    for(var i = 0; i < graph.nfeats; i++)
+      graph.featTitle[i] = "Feat "+(i+1)
     for(var i = 0; i < graph.nnodes; i++){
       graph.nodes[i] = {
       graph: graph,
       feat: [  ],
-      id: dv.getInt32(cont=cont+4,true),
+      id: dv.getInt32(cont=cont+4,true),//position
       truelabel: dv.getInt32(cont=cont+4,true),
       x:0, y:0, size:0.5, color:null, title:"", label:"", self:null};
       for(var j = 0; j < graph.nfeats; j++){
@@ -191,9 +193,9 @@ export default class FileManager{
       graph.nodes[i].title = "Node "+graph.nodes[i].id.toString();
       graph.nodes[i].label = graph.nodes[i].title;
       graph.nodes[i].self = graph.nodes[i];
-      graph.nodes[i].getDetails = (obj) => this.parent.ObjDetails.current.detailsGraphNode(obj.self)
+      graph.nodes[i].getDetails = "detailsGraphNode"
     }
-    graph.nodes = this.quick_Sort(graph.nodes);
+
     return(graph);
   }
 
@@ -217,8 +219,8 @@ export default class FileManager{
   readSubGraph(dv, title, description, graphOrigin){
     var subGraph = {title: title, description:description, nodes:[], edges:[], graphOrigin:graphOrigin, isSubGraph: true}
     var cont = 0;
-    subGraph.getDetails = (obj) => this.parent.ObjDetails.current.detailsGraph(obj,true)
-    subGraph.saveInFile = (obj,file) => this.writeSubGraph(obj,file)
+    subGraph.getDetails = "detailsGraph"
+    subGraph.saveInFile = "writeSubGraph"
 
     subGraph.nnodes = dv.getInt32(cont,true);
     subGraph.nlabels = dv.getInt32(cont=cont+4,true);
@@ -229,7 +231,7 @@ export default class FileManager{
       subGraph.nodes = subGraph.nodes.concat(this.parent.Tree.current.state.activeData.graph.nodes[id])
       cont += 4 + subGraph.nfeats * 4
     }
-    subGraph.nodes = this.quick_Sort(subGraph.nodes);
+
     return(subGraph)
   }
   
@@ -258,8 +260,8 @@ export default class FileManager{
       edges:[]
     };
 
-    modelFile.getDetails = (obj) => this.parent.ObjDetails.current.detailsModelFile(obj)
-    modelFile.saveInFile = (obj,file) => this.writeModelFile(obj,file)
+    modelFile.getDetails = "detailsModelFile"
+    modelFile.saveInFile = "writeModelFile"
     
     var cont = 0;
     modelFile.nnodes = dv.getInt32(cont,true);
@@ -292,12 +294,12 @@ export default class FileManager{
       modelFile.nodes[i].type = "circle"
       modelFile.nodes[i].label = modelFile.nodes[i].title;
       modelFile.nodes[i].self = modelFile.nodes[i];
-      modelFile.nodes[i].getDetails = (obj) => this.parent.ObjDetails.current.detailsModelFileNode(obj.self)
+      modelFile.nodes[i].getDetails = "detailsModelFileNode"
     }
     for(i = 0; i < modelFile.nnodes; i++){
       modelFile.ordered_list_of_nodes[i] = dv.getInt32(cont=cont+4,true);
     }
-    //modelFile.nodes = this.quick_Sort(modelFile.nodes);
+
     for(var ID in modelFile.ordered_list_of_nodes){
       if(modelFile.nodes[ID].pred !== -1){
         modelFile.edges = modelFile.edges.concat({
@@ -347,8 +349,8 @@ export default class FileManager{
   readClassification(file, title, description, subGraph, modelFileClassificator,extraInfo){ //Arrumar: Test if is necessary to link node ids
     if(extraInfo){
       var classification = {isClassification: true, classification: this.FS.readFile(file,{encoding: 'utf8'}).split("\n"), title: title, description:description, subGraph: subGraph, modelFileClassificator: modelFileClassificator}
-      classification.getDetails = (obj) => this.parent.ObjDetails.current.detailsClassification(obj)
-      classification.saveInFile = (obj,file) => this.writeClassification(obj,file)
+      classification.getDetails = "detailsClassification"
+      classification.saveInFile = "writeClassification"
       classification.nodes = classification.modelFileClassificator.nodes
       classification.edges = classification.modelFileClassificator.edges
 
@@ -391,8 +393,8 @@ export default class FileManager{
 
     var dists = {isDistances: true, "distances": distances, title: title, description:description, graph:graph}
 
-    dists.getDetails = (obj) => this.parent.ObjDetails.current.detailsDistances(obj)
-    dists.saveInFile = (obj,file) => this.writeDistances(obj,file)
+    dists.getDetails = "detailsDistances"
+    dists.saveInFile = "writeDistances"
     dists.nodes = dists.graph.nodes
 
     return(dists)

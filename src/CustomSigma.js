@@ -1,4 +1,5 @@
 import React from 'react';
+import {InputGroup, FormControl} from 'react-bootstrap';
 
 export default class CustomSigma extends React.Component {  
     constructor(props){
@@ -11,7 +12,7 @@ export default class CustomSigma extends React.Component {
           props.parent.ObjDetails.current.loadDetails(e.data.node)
         }
       })
-      this.state = {loadedGraph: {}}
+      this.state = {loadedGraph: {}, X: 0, Y: 1}
     }
 
     someMethod() {
@@ -72,7 +73,14 @@ export default class CustomSigma extends React.Component {
     }
     
     render(){
-      return([])
+      console.log(this.state.loadedGraph)
+      return([
+      <div class="graphInfo">
+        <p class="text">{this.props.parent.Tree.current.state.activeData.graph ? "Active data:  "+this.props.parent.Tree.current.state.activeData.graph.title : ""}</p>
+        <p class="text">{this.state.loadedGraph.title ? "Showing graph "+this.state.loadedGraph.title : ""}</p>
+        
+      </div>
+      ])
     }
   }
 

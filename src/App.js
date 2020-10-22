@@ -36,16 +36,91 @@ class MyFirstGrid extends React.Component {
     this.ObjDetails = React.createRef()
     this.OPFFunctions = React.createRef()
     this.FM = new FileManager(this, (stateUpdate) => this.setState(stateUpdate))
-    this.fileUploader = React.createRef();
 
+    this.lateralRef = React.createRef()
+    this.inferiorRef = React.createRef()
+    this.main = React.createRef()
   }
 
-  render() {   
+  lateralClick(num){
+    this.lateralRef.current.childNodes[1].childNodes[num].classList.add('show')
+    this.lateralRef.current.childNodes[1].childNodes[Math.abs(num-1)].classList.remove('show')
+  }
+
+  inferiorClick(num){
+    this.inferiorRef.current.childNodes[1].childNodes[num].classList.add('show')
+    this.inferiorRef.current.childNodes[1].childNodes[Math.abs(num-1)].classList.remove('show')
+  }
+
+  openMenu(num){ //0,1,2
+    for(var i in num){
+      this.main.current.childNodes[num[i]].classList.remove('clicked')
+    }
+  }
+
+  closeMenu(num){ //0,1,2
+    for(var i in num){
+      this.main.current.childNodes[num[i]].classList.add('clicked')
+    }
+  }
+
+  render() {  
     return (
-      <div>
+      <div ref={this.main}>
+        <div class="menu" aria-label="" aria-hidden="false" img-loaded="1">
+          <img class="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}}/>
+          <div class="panel scroll" id="panel" aria-label="" aria-hidden="false" img-loaded="1">
+            <Menu ref={this.Menu} parent={this}/>
+          </div>
+        </div>
+        <div class="lateral" aria-label="" aria-hidden="false" img-loaded="1">
+          <img class="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}}/>
+          <div class="panel scroll" id="panel" aria-label="" aria-hidden="false" img-loaded="1" ref={this.lateralRef}>
+            <div class="holder-tabs">
+                <button class="js-trigger-tabs tab__link" onClick={(e)=>this.lateralClick(0)}>Details</button>
+                <button class="js-trigger-tabs tab__link" onClick={(e)=>this.lateralClick(1)}>Objects</button>
+            </div>
+            <div class="tab-content">
+                <div id="conteudo-1" class="content show">
+                  <ObjDetails ref={this.ObjDetails} parent={this}/>
+                </div>
+                <div id="conteudo-2" class="content">
+                  <TreeData ref={this.Tree} parent={this}/>
+                </div>
+            </div>
+          </div>
+        </div>
+        <div class="inferior" aria-label="" aria-hidden="false" img-loaded="1">
+          <img class="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}} />
+          <div class="panel scroll" id="panel" aria-label="" aria-hidden="false" img-loaded="1" ref={this.inferiorRef}>
+            <div class="holder-tabs">
+                <button class="js-trigger-tabs tab__link" onClick={(e)=>this.inferiorClick(0)}>Functions</button>
+                <button class="js-trigger-tabs tab__link" onClick={(e)=>this.inferiorClick(1)}>C out</button>
+            </div>
+            <div class="tab-content">
+              <div id="conteudo-1" class="content show">
+                <OPFFunctions ref={this.OPFFunctions} parent={this}/>
+              </div>
+              <div id="conteudo-2" class="content">
+                <a>zzz</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <Sigma ref={this.Sigma} renderer="canvas" container= 'container' settings={this.LoadedCookies.SigmaSettings} style={{width:"100%", height:"100%", position: "absolute", outline: "none"}}> 
+          <CustomSigma ref={this.CSigma} parent={this}/>
+        </Sigma>
+      </div>
+    )
+  }
+}
+
+export default App;
+/*
+
         <SplitPane split="horizontal">
             <Pane defaultSize ="10%">
-              <Menu ref={this.Menu} parent={this}/>
+              
             </Pane>
             <SplitPane split="vertical" defaultSize="80%"
               onDragFinished={(size) => { //https://github.com/tomkp/react-split-pane/issues/57
@@ -54,31 +129,20 @@ class MyFirstGrid extends React.Component {
             >
               <SplitPane split="horizontal" defaultSize="80%">
                 <Pane style={{width:"100%", height:"100%"}}>
-                  <Sigma ref={this.Sigma} renderer="canvas" container= 'container' settings={this.LoadedCookies.SigmaSettings} style={{width:"100%", height:"100%", position: "relative", outline: "none"}}> 
-                    <CustomSigma ref={this.CSigma} parent={this}/>
-                  </Sigma>
+                  
                 </Pane>
                 <Pane>
-                  <OPFFunctions ref={this.OPFFunctions} parent={this}/>
                 </Pane>
               </SplitPane>
               <SplitPane split="horizontal" defaultSize="70%">
                 <Pane>
-                  <ObjDetails ref={this.ObjDetails} parent={this}/>
                 </Pane>
                 <Pane>
-                  <TreeData ref={this.Tree} parent={this}/>
                 </Pane>
               </SplitPane>
             </SplitPane>
           </SplitPane>
-      </div>
-    )
-  }
-}
-
-export default App;
-
+*/
 //https://icon-icons.com/pt/icone/adicionar-mais-bot%C3%A3o/72878
 //https://icon-icons.com/pt/icone/lixo/48207
 ///https://icon-icons.com/pt/icone/olho/128870

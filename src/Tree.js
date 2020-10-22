@@ -10,7 +10,14 @@ export default class TreeData extends React.Component {
         };
     }
 
-    addNewData(data){
+    addCompletData(fullData){
+        this.setState({
+            treeData: this.state.treeData.concat(fullData),
+            activeData: fullData
+        })
+    }
+
+    addNewEmptyData(data){
 
         data.title = "Data " + (this.state.treeData.length + 1);
 
@@ -54,12 +61,17 @@ export default class TreeData extends React.Component {
     addBuffer(buffer){
         this.setState( prevState => {
             Object.keys(buffer).map((key, i) => {
+                if(i >= 4) return;
                 prevState.activeData.children[i].children = prevState.activeData.children[i].children.concat(buffer[key])
             })
             return {
                 prevState
             }
+        }, () =>{
+            this.props.parent.lateralClick(1)
+            this.props.parent.openMenu([1])
         })
+        
     }
   
     updateTreeData(treeData) {

@@ -24,9 +24,11 @@ export default class ObjDetails extends React.Component {
     }
 
     loadDetails(obj){
+        this.props.parent.lateralClick(0)
+        this.props.parent.openMenu([1])
         console.log(obj)
         this.setState({ details:[]}, () => {
-            this.setState({ details:obj.getDetails(obj) })
+            this.setState({ details: this[obj.getDetails](obj)})
         });
     }
 
@@ -36,7 +38,7 @@ export default class ObjDetails extends React.Component {
                 <InputGroup.Prepend>
                     <InputGroup.Text>Title</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl defaultValue={obj.title} onChange={(e) => {obj.title = e.target.value; this.props.parent.Tree.current.setState({});}}/>
+                <FormControl defaultValue={obj.title} onChange={(e) => {obj.title = e.target.value; this.props.parent.Tree.current.setState({});this.props.parent.CSigma.current.setState({});}}/>
 
                 <InputGroup.Prepend>
                     <InputGroup.Text>Description</InputGroup.Text>
@@ -67,10 +69,10 @@ export default class ObjDetails extends React.Component {
                 <InputGroup.Prepend>
                     <InputGroup.Text>Title</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl defaultValue={obj.title} onChange={(e) => {obj.title = e.target.value; this.props.parent.Tree.current.setState({});}}/>
+                <FormControl defaultValue={obj.title} onChange={(e) => {obj.title = e.target.value; this.props.parent.Tree.current.setState({});this.props.parent.CSigma.current.setState({});}}/>
 
                 <InputGroup.Prepend>
-                    <InputGroup.Text>Node ID</InputGroup.Text>
+                    <InputGroup.Text>Node position (ID)</InputGroup.Text>
                 </InputGroup.Prepend>
                 <FormControl defaultValue={obj.id} disabled/>
 
@@ -143,10 +145,10 @@ export default class ObjDetails extends React.Component {
                 <InputGroup.Prepend>
                     <InputGroup.Text>Title</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl defaultValue={obj.title} onChange={(e) => {obj.title = e.target.value; this.props.parent.Tree.current.setState({});}}/>
+                <FormControl defaultValue={obj.title} onChange={(e) => {obj.title = e.target.value; this.props.parent.Tree.current.setState({});this.props.parent.CSigma.current.setState({});}}/>
 
                 <InputGroup.Prepend>
-                    <InputGroup.Text>Node ID</InputGroup.Text>
+                    <InputGroup.Text>Node position (ID)</InputGroup.Text>
                 </InputGroup.Prepend>
                 <FormControl defaultValue={obj.id} disabled/>
 
