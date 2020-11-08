@@ -118,8 +118,8 @@ export default class FileManager{
     return({cVariables, infoVariables})
   }
 
-  runOPFFunction(functionInfo, description){//,graphOrigin = null, modelFileOrigin = null){
-    console.log("runOPFFunction",functionInfo,description)
+  runCFunction(functionInfo, description){//,graphOrigin = null, modelFileOrigin = null){
+    console.log("runCFunction",functionInfo,description)
     const cwrap = this.Module.cwrap("c_"+functionInfo.opfFunction.function,null,['number', 'number']);
     
     var variables = this.getFunctionParamters(functionInfo)
@@ -143,12 +143,11 @@ export default class FileManager{
 
     var buffer = {dat: [],cla: [],dis: [],out: [], acc:[]}
     
-    if(functionInfo.opfFunction.function == "opf_merge"){
+    if(functionInfo.opfFunction.function == "opf_merge" || functionInfo.opfFunction.function == "opf_normalize"){
       var file = this.FS.readdir("files/").find(e => e.substr(-3) === "dat");
       if(file){
-        var loadedFile = this.readGraph(new DataView(this.FS.readFile("files/"+file, null).buffer),"Graph Data", "Marged datas");                    
-        this.parent.Tree.current.addNewEmptyData(loadedFile);
-        this.parent.CSigma.current.loadSugGraph(loadedFile);
+        var loadedFile = this.readGraph(new DataView(this.FS.readFile("files/"+file, null).buffer),"Graph Data",description);                    
+        this.parent.Tree.current.addNewEmptyData(loadedFile,(functionInfo.opfFunction.function == "opf_normalize"? "Normalized Data" : "Marged data"));
         this.parent.OPFFunctions.current.loadFunctions()
         this.FS.unlink("files/"+file);
       }
@@ -192,9 +191,25 @@ export default class FileManager{
     return(buffer);
   }
 
+  cloneToNewGraph(obj){ //arrumar
+      var newData = Object.assign({}, obj);
+      delete newData.graphOrigin;
+      delete newData.isSubGraph;
+      newData.getDetails = "detailsGraph"
+      newData.saveInFile = "writeGraph"
+      newData.nodes = []
+      newData.isGraph = true;
+      for(var i in obj.nodes){
+          var node = Object.assign({}, obj.nodes[i])
+          node.self = node
+          newData.nodes = newData.nodes.concat(node)
+      }
+      return(newData)
+  }
+
   readGraph(dv, title, description){
     var graph= {
-      nnodes: -1, nlabels: -1, nfeats: -1, title: title, description:description, open: false, inicial_nlabels: -1, inicial_nfeats: -1, isGraph: true,
+      nnodes: -1, nlabels: -1, nfeats: -1, title: title, description:description, open: false, inicial_nlabels: -1, inicial_nfeats: -1, isGraph: true, positionDuplicate: [],
       nodes: [],
       edges:[]
     };
@@ -221,6 +236,12 @@ export default class FileManager{
       for(var j = 0; j < graph.nfeats; j++){
         graph.nodes[i].feat[j] = dv.getFloat32(cont=cont+4,true);
       }
+
+      if(graph.nodes.slice(0,-1).find(e => e.id === graph.nodes[i].id)){
+        graph.positionDuplicate.push(i)
+        graph.nodes[i].id = Math.max.apply(Math, graph.nodes.map(function(o) { return o.id; }))+1
+      }
+
       graph.nodes[i].x = graph.nodes[i].feat[0];
       graph.nodes[i].y = graph.nodes[i].feat[1];
       graph.nodes[i].color = this.colors[graph.nodes[i].truelabel]
@@ -229,11 +250,15 @@ export default class FileManager{
       graph.nodes[i].self = graph.nodes[i];
       graph.nodes[i].getDetails = "detailsGraphNode"
     }
-
+    
+    if(graph.positionDuplicate.length){
+      this.parent.addText("Warning! Some nodes had same position (ID), so new positions were given to them","textWar")
+    }
     return(graph);
   }
 
   writeGraph(graph, file){
+    console.log("b")
     const buf = Buffer.allocUnsafe((3 + graph.nnodes*(2+graph.nfeats))*4);
     
     var cont = 0;
@@ -290,6 +315,7 @@ export default class FileManager{
   readModelFile(dv, title, description){
     var modelFile= {
       nnodes: -1, nlabels: -1, nfeats: -1, df: -1, bestk: -1, K: -1, mindens: -1, maxdens: -1, title: title, open: false, description:description, ordered_list_of_nodes: [], isModelFile: true,
+      positionDuplicate: [],
       nodes: [],
       edges:[]
     };
@@ -320,6 +346,12 @@ export default class FileManager{
       for(var j = 0; j < modelFile.nfeats; j++){
         modelFile.nodes[i].feat[j] = dv.getFloat32(cont=cont+4,true);
       }
+
+      if(modelFile.nodes.slice(0,-1).find(e => e.id === modelFile.nodes[i].id)){
+        modelFile.positionDuplicate.push(i)
+        modelFile.nodes[i].id = Math.max.apply(Math, modelFile.nodes.map(function(o) { return o.id; }))+1
+      }
+
       modelFile.nodes[i].x = modelFile.nodes[i].feat[0];
       modelFile.nodes[i].y = modelFile.nodes[i].feat[1];
       modelFile.nodes[i].color = this.colors[modelFile.nodes[i].truelabel]
@@ -334,7 +366,9 @@ export default class FileManager{
       modelFile.ordered_list_of_nodes[i] = dv.getInt32(cont=cont+4,true);
     }
 
+    console.log("a",modelFile.ordered_list_of_nodes)
     for(var ID in modelFile.ordered_list_of_nodes){
+      console.log(ID)
       if(modelFile.nodes[ID].pred !== -1){
         modelFile.edges = modelFile.edges.concat({
           id: modelFile.edges.length,
@@ -346,6 +380,10 @@ export default class FileManager{
       else{
         modelFile.nodes[ID].type = "star"
       }
+    }
+
+    if(modelFile.positionDuplicate.length){
+      this.parent.addText("Warning! Some nodes had same position (ID), so new positions were given to them","textWar")
     }
     return(modelFile);
   }

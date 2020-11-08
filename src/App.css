@@ -125,6 +125,10 @@ button.list{
   color:red;
 }
 
+.textWar{
+  color:orange;
+}
+
 .textFunction-info{
   color:blue;
 }
@@ -204,12 +208,16 @@ button.list{
   transform: rotate(-90deg);
 }
 
+.functions-menu .panel {
+  display: flex; 
+  flex-direction: column-reverse;
+}
+
 .functions-menu .log-content {
   overflow-y: scroll;
   overflow-x: hidden;
   overflow-wrap: break-word; 
   position: relative;
-  height: calc(100% - 50px);
   margin-left: 10px;
   margin-bottom: 5px;
   display: flex; 
@@ -217,10 +225,10 @@ button.list{
 }
 
 .functions-menu .functions-content {
-  overflow-y: scroll;
-  overflow-x: hidden;
   position: relative;
+  height: max-content;
   margin-left: 10px;
+  margin-bottom: 5px;
 }
 
 
@@ -288,3 +296,4 @@ button.list{
   position: relative;
   cursor: pointer;
 }
+

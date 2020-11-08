@@ -49,6 +49,7 @@ export default class CustomSigma extends React.Component {
           this.props.sigma.graph.read(Graph);
           this.props.sigma.refresh();
           this.props.graphMenu.current.updateInfo();
+          this.props.parent.Tree.current.setState({});
           this.props.parent.openMenu([0])
         })
       }

@@ -38,10 +38,28 @@ export default class FunctionManager extends React.Component {
             out: ["cla"], extraOutInfo: ["out"]},
 
             opf_distance: {function: "opf_distance", description: "Generates the precomputed distance file for the OPF classifier",
-            entraces: () => 
-            [this.entrace_Graph("S","The subGraph object, normaly is the whole data"),
-            this.entrace_Select(this.distancesDict,"Distance calculation option","Distance Calculation"),
-            this.entrace_Select(this.yesNoDict,"Distance normalization?","Is to Normalize?")],
+            entraces: () => {
+              var maxPosition = Math.max.apply(Math, this.props.parent.Tree.current.state.activeData.graph.nodes.map(function(o) { return o.id; }));
+              if(maxPosition >= this.props.parent.Tree.current.state.activeData.graph.nodes.length){
+                if (window.confirm('The active Data have a max position(ID) higher than the quantity of nodes, to proceed you need to generate a copy of the Data with new positions values, do you want to do that?')) {
+                  var newGraph = this.props.parent.FM.cloneToNewGraph(this.props.parent.Tree.current.state.activeData.graph)
+                  newGraph.title = "newGraph";
+                  for(var i in newGraph.nodes){
+                    newGraph.nodes[i].id = i;
+                  }
+                  this.props.parent.Tree.current.addNewEmptyData(newGraph,"New postitions graph");
+                }
+                else{
+                  return([]);
+                }
+              }
+              return(
+                [this.entrace_Graph("S","The Data to calculate"),
+                this.entrace_Select(this.distancesDict,"Distance calculation option","Distance Calculation"),
+                this.entrace_Select(this.yesNoDict,"Distance normalization?","Is to Normalize?")]
+              )
+            }
+            ,
             out: ["dis"], extraOutInfo: []},
 
             /*
@@ -144,7 +162,7 @@ export default class FunctionManager extends React.Component {
     entrace_Select(dict,description,objectInfo, none = false){
         var ref = React.createRef();
         return (
-            <OverlayTrigger getvalue={() => {return((ref.current.value === "" ? {title:"none", value:""} : dict[ref.current.value]))}} overlay={<Tooltip id="tooltip-disabled">{description}</Tooltip>}>
+          <OverlayTrigger getvalue={() => {return((ref.current.value === "" ? {title:"none", value:""} : dict[ref.current.value]))}} overlay={<Tooltip id="tooltip-disabled">{description}</Tooltip>}>
             <span className="d-inline-block">
                 <Form.Control
                 as="select"
@@ -158,25 +176,38 @@ export default class FunctionManager extends React.Component {
                 ))}
                 </Form.Control>
             </span>            
-            </OverlayTrigger>
+          </OverlayTrigger>
         )
     }
 
     entrace_Number(min, max, step, placeholder, objectInfo, description, percentage = false){
         var ref = React.createRef();
         return (
-            <OverlayTrigger getvalue={() => {return({description:placeholder, value:(ref.current.value / (percentage ? 100 : 1))})}} overlay={<Tooltip id="tooltip-disabled">{description}</Tooltip>}>
+          <OverlayTrigger getvalue={() => {return({description:placeholder, value:(ref.current.value / (percentage ? 100 : 1))})}} overlay={<Tooltip id="tooltip-disabled">{description}</Tooltip>}>
             <span className="d-inline-block">
                 <input ref={ref} type="number" min={min} max={max} step={step} placeholder={placeholder}/>
                 {percentage ? <span>%</span> : null}
             </span>   
-            </OverlayTrigger>
+          </OverlayTrigger>
         )
     }
 
     loadFunctions(){
       this.setState({return: []}, () => {this.setState({return: [
         <span className="d-inline-block">
+          {this.props.parent.Tree.current.state.treeData.length > 1 ? [
+            <span class="function text">Active data: </span>,
+            <span className="d-inline-block">
+                <FormControl as="select" custom title="Select a function" onChange={(e) => {
+                  this.props.parent.Tree.current.setState({activeData: this.props.parent.Tree.current.state.treeData[e.target.value]},()=>this.loadFunctions())}}>
+                  {this.props.parent.Tree.current.state.treeData.map((data,index) => {
+                      return(<option value={index} selected={Object.is(data,this.props.parent.Tree.current.state.activeData)?"selected":""}>{data.graph.title}</option>)
+                  })}
+                </FormControl>
+                </span>  ]
+          : ""}
+          <span class="function text"> Run function: </span>
+          <span className="d-inline-block">
             <Form.Control
               as="select"
               custom title="Select a function" onChange={(e) => {
@@ -205,27 +236,35 @@ export default class FunctionManager extends React.Component {
                 <option value="opfknn_classify" title={this.functionDetails["opfknn_classify"].description} disabled={this.props.parent.Tree.current.state.activeData && this.props.parent.Tree.current.state.activeData.ModelFiles.children.length? "" : "disabled"}>opfknn_classify</option>
               </optgroup>
             </Form.Control>   
+          </span>  
         </span>
       ]})});
     }
 
     loadFunctionEntrance(key){
       var entrances = this.functionDetails[key].entraces()
-      return(
-        <span>
-           ( {entrances.map((entrace, index) => (
-            [<b>{((index !== 0) ? (" , ") : (""))}</b>,entrace]
-          ))}
-          ) 
-          <Button variant="secondary" onClick={() => {
-            var functionInfo = {opfFunction: this.functionDetails[key], objs:[]};
-            entrances.map((entrace, index) => {
-              functionInfo.objs = functionInfo.objs.concat(entrace.props.getvalue())
-            })
-            this.props.parent.Tree.current.addBuffer(this.props.parent.FM.runOPFFunction(functionInfo, "Created by the function "+key));
-          }}>Run</Button>
-        </span>
-      )
+      if(entrances.length){
+        return(
+          <span>
+            <span class="function text">  ( </span>
+            <option selected disabled hidden> Paramters: </option>
+              {entrances.map((entrace, index) => (
+              [<b>{((index !== 0) ? (" , ") : (""))}</b>,entrace]
+            ))}
+            <span class="function text"> )  </span>
+            <Button variant="secondary" onClick={() => {
+              var functionInfo = {opfFunction: this.functionDetails[key], objs:[]};
+              entrances.map((entrace, index) => {
+                functionInfo.objs = functionInfo.objs.concat(entrace.props.getvalue())
+              })
+              this.props.parent.Tree.current.addBuffer(this.props.parent.FM.runCFunction(functionInfo, "Created by the function "+key));
+            }}>Run</Button>
+          </span>
+        )
+      }
+      else{
+        this.props.parent.OPFFunctions.current.loadFunctions();
+      }
     }
 
     render(){

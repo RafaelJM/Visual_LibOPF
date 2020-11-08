@@ -36,23 +36,7 @@ export default class ObjDetails extends React.Component {
     downloadOPFFFileAsCSV(obj, fileName){
         
     }
-
-    cloneToData(obj){ //arrumar
-        var newData = Object.assign({}, obj);
-        delete newData.graphOrigin;
-        delete newData.isSubGraph;
-        newData.getDetails = "detailsGraph"
-        newData.saveInFile = "writeGraph"
-        newData.nodes = []
-        newData.isGraph = true;
-        for(var i in obj.nodes){
-            var node = Object.assign({}, obj.nodes[i])
-            node.self = node
-            newData.nodes = newData.nodes.concat(node)
-        }
-        this.props.parent.Tree.current.addNewEmptyData(newData,obj.graphOrigin.title + " - " + obj.title);
-    }
-
+    
     detailsGraph(obj){ //arrumar, work with nlabels nfeats details
         return(
             <div>
@@ -82,7 +66,7 @@ export default class ObjDetails extends React.Component {
                 <FormControl defaultValue={obj.nfeats} onChange={(e) => {obj.nfeats = e.target.value;}} disabled={obj.hasOwnProperty("isSubGraph")?"disabled":""}/>
                 
                 {obj.hasOwnProperty("isSubGraph")?
-                    <Button variant="secondary" onClick={() => this.cloneToData(obj)}>
+                    <Button variant="secondary" onClick={() => this.props.parent.Tree.current.addNewEmptyData(this.props.parent.FM.cloneToNewGraph(obj),obj.graphOrigin.title + " - " + obj.title)}> 
                     clone to data
                     </Button>
                     :
@@ -166,7 +150,30 @@ export default class ObjDetails extends React.Component {
     detailsModelFile(obj){ //arrumar: ask to learn again
         return(
             <div>
-                {this.detailsGraph(obj)}
+                <InputGroup.Prepend>
+                    <InputGroup.Text>Title</InputGroup.Text>
+                </InputGroup.Prepend>
+                <FormControl defaultValue={obj.title} onChange={(e) => {obj.title = e.target.value; this.props.parent.Tree.current.setState({});this.props.parent.GraphMenu.current.updateInfo();}}/>
+
+                <InputGroup.Prepend>
+                    <InputGroup.Text>Description</InputGroup.Text>
+                </InputGroup.Prepend>
+                <FormControl defaultValue={obj.description} onChange={(e) => {obj.description = e.target.value;}}/>
+
+                <InputGroup.Prepend>
+                    <InputGroup.Text>Number of nodes</InputGroup.Text>
+                </InputGroup.Prepend>
+                <FormControl defaultValue={obj.nnodes} disabled/>
+
+                <InputGroup.Prepend>
+                    <InputGroup.Text>nlabels</InputGroup.Text>
+                </InputGroup.Prepend>
+                <FormControl defaultValue={obj.nlabels} onChange={(e) => {obj.nlabels = e.target.value;}} disabled={obj.hasOwnProperty("isSubGraph")?"disabled":""}/>
+
+                <InputGroup.Prepend>
+                    <InputGroup.Text>nfeats</InputGroup.Text>
+                </InputGroup.Prepend>
+                <FormControl defaultValue={obj.nfeats} onChange={(e) => {obj.nfeats = e.target.value;}} disabled={obj.hasOwnProperty("isSubGraph")?"disabled":""}/>
                 <InputGroup.Prepend>
                     <InputGroup.Text>df</InputGroup.Text>
                 </InputGroup.Prepend>

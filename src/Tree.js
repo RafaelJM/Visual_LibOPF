@@ -64,6 +64,7 @@ export default class TreeData extends React.Component {
             treeData: this.state.treeData.concat(auxData),
             activeData: auxData
         })
+        this.props.parent.CSigma.current.loadSugGraph(auxData.graph);
         this.props.parent.OPFFunctions.current.loadFunctions();
     }
 
@@ -113,18 +114,14 @@ export default class TreeData extends React.Component {
         return(
             <span style={this.typeStyles}>
                 <img class="tree-image" src="information.png" alt="" onClick={() => {this.props.parent.ObjDetails.current.loadDetails(c.graph);}}/>
-                <img class="tree-image" src="eye.png" onClick={() => {this.props.parent.CSigma.current.loadSugGraph(c.graph)}}/>
-                <img class="tree-image" src={Object.is(this.state.activeData,c)?"A2.png":"A1.png"} onClick={() => {
-                    this.setState({activeData: c})
-                    this.props.parent.OPFFunctions.current.loadFunctions()
-                }}/>
+                <img class="tree-image" src={Object.is(this.props.parent.CSigma.current.state.loadedGraph,c.graph)?"eye2.png":"eye1.png"} onClick={() => {this.props.parent.CSigma.current.loadSugGraph(c.graph)}}/> 
             </span>)        
     }
 
     generateSpamChildren(c){
         return(<span style={this.typeStyles}>
             <img class="tree-image" src="information.png" alt="" onClick={() => {this.props.parent.ObjDetails.current.loadDetails(c);}}/>
-            <img class="tree-image" src="eye.png" onClick={() => {this.props.parent.CSigma.current.loadSugGraph(c)}}/>
+            <img class="tree-image" src={Object.is(this.props.parent.CSigma.current.state.loadedGraph,c)?"eye2.png":"eye1.png"} onClick={() => {this.props.parent.CSigma.current.loadSugGraph(c)}}/>
         </span>)
     }
     
@@ -164,7 +161,6 @@ export default class TreeData extends React.Component {
                     console.log(scope)
 
                     scope.props.parent.Tree.current.addNewEmptyData(loadedFile);
-                    scope.props.parent.CSigma.current.loadSugGraph(loadedFile);
                     scope.props.parent.OPFFunctions.current.loadFunctions()
                 }
                 this.dataLoad.current.value = '' 

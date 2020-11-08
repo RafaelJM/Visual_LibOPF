@@ -124,11 +124,11 @@ class MyFirstGrid extends React.Component {
         <div class="functions-menu" >
           <img class="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}} />
           <div class="panel" id="panel"  ref={this.inferiorRef}>
-            <div class="log-content scroll">        
-              {this.logOut}
-            </div>
-            <div class="functions-content scroll ">
+            <div class="functions-content scroll">      
               <OPFFunctions ref={this.OPFFunctions} parent={this}/>
+            </div>
+            <div class="log-content scroll ">  
+              {this.logOut}
             </div>
           </div>
         </div>
