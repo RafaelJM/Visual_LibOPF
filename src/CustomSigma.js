@@ -41,6 +41,7 @@ export default class CustomSigma extends React.Component {
     }
 
     loadSugGraph(Graph){
+      if(!Graph) return;
       if(Graph.hasOwnProperty("nodes")){
         this.setState({loadedGraph: Graph, X:0, Y:1},()=>{
           this.props.parent.ObjDetails.current.loadNodeSelect(Graph);

@@ -52,15 +52,15 @@ export default class FunctionManager extends React.Component {
             this.entrace_Select(this.yesNoDict,"Distance normalization?","Is to Normalize?")]
             },
 
+            */
+
             // opf_info
 
             opf_merge: {function: "opf_merge", description: "Merge subGraphs", //can be changed to add more (a func that add more entraces)
             entraces: () => 
-            [this.entrace_Graph("S","A subGraph object"),
-            this.entrace_Graph("S","A subGraph object")]
-            },
-
-            */
+            [this.entrace_Datas("A Data object"),
+            this.entrace_Datas("A Data object")],
+            out: ["dat"], extraOutInfo: []},
 
             opf_learn: {function: "opf_learn", description: "Executes the learning phase of the OPF classifier",
             entraces: () => 
@@ -124,6 +124,14 @@ export default class FunctionManager extends React.Component {
         this.state = {return: []}
     }
 
+    entrace_Datas(description){
+      var aux = [];
+      for(var i in this.props.parent.Tree.current.state.treeData){
+        aux = aux.concat(this.props.parent.Tree.current.state.treeData[i].graph)
+      }
+      return(this.entrace_Select(aux,description,"Datas"))
+    }
+
     entrace_Graph(type, description,placeholder){
         if(type === "S"){
           return(this.entrace_Select([this.props.parent.Tree.current.state.activeData.graph].concat(this.props.parent.Tree.current.state.activeData.SubGraphs.children),description,"SubGraph"))//arrumar , divide grapg/subgraph?
@@ -182,6 +190,7 @@ export default class FunctionManager extends React.Component {
                 <option value="opf_split" title={this.functionDetails["opf_split"].description}>opf_split</option>
                 <option value="opf_normalize" title={this.functionDetails["opf_normalize"].description}>opf_normalize</option>
                 <option value="opf_distance" title={this.functionDetails["opf_distance"].description}>opf_distance</option>
+                <option value="opf_merge" title={this.functionDetails["opf_merge"].description}>opf_merge</option>
               </optgroup>
               <optgroup label="Training phase">
                 <option value="opf_train" title={this.functionDetails["opf_train"].description}>opf_train</option>
@@ -192,8 +201,8 @@ export default class FunctionManager extends React.Component {
                 <option value="opfknn_train" title={this.functionDetails["opfknn_train"].description}>opfknn_train</option>
               </optgroup>
               <optgroup label="Classifing phase"> 
-                <option value="opf_classify" title={this.functionDetails["opf_classify"].description} disabled={this.props.parent.Tree.current.state.activeData.ModelFiles.children.length? "" : "disabled"}>opf_classify</option>
-                <option value="opfknn_classify" title={this.functionDetails["opfknn_classify"].description} disabled={this.props.parent.Tree.current.state.activeData.ModelFiles.children.length? "" : "disabled"}>opfknn_classify</option>
+                <option value="opf_classify" title={this.functionDetails["opf_classify"].description} disabled={this.props.parent.Tree.current.state.activeData && this.props.parent.Tree.current.state.activeData.ModelFiles.children.length? "" : "disabled"}>opf_classify</option>
+                <option value="opfknn_classify" title={this.functionDetails["opfknn_classify"].description} disabled={this.props.parent.Tree.current.state.activeData && this.props.parent.Tree.current.state.activeData.ModelFiles.children.length? "" : "disabled"}>opfknn_classify</option>
               </optgroup>
             </Form.Control>   
         </span>

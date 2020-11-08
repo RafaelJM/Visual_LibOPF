@@ -47,6 +47,8 @@ class MyFirstGrid extends React.Component {
 
     this.today = new Date();   
 
+    this.inputAccept = ".opf, .dat, .cla, .dis, .out, .acc, .txt"
+
     this.state = {
       
     }

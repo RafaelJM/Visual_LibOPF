@@ -44,6 +44,7 @@ export default class ObjDetails extends React.Component {
         newData.getDetails = "detailsGraph"
         newData.saveInFile = "writeGraph"
         newData.nodes = []
+        newData.isGraph = true;
         for(var i in obj.nodes){
             var node = Object.assign({}, obj.nodes[i])
             node.self = node
@@ -85,11 +86,26 @@ export default class ObjDetails extends React.Component {
                     clone to data
                     </Button>
                     :
-                    <Button variant="secondary" onClick={() => {
-                        
-                    }}>
-                    merge with another data
-                    </Button>
+                    <spam>
+                        <Button variant="secondary" onClick={() => {}}>
+                        Add SubGraph
+                        </Button>
+                        <Button variant="secondary" onClick={() => {
+                            
+                        }}>
+                        Add ModelFile
+                        </Button>
+                        <Button variant="secondary" onClick={() => {
+                            
+                        }}>
+                        Add Distances
+                        </Button>
+                        <Button variant="secondary" onClick={() => {
+                            
+                        }}>
+                        Add Classification
+                        </Button>
+                    </spam>
                 }
                 <Button variant="secondary" onClick={() => this.downloadOPFFFile(obj,obj.title+".dat")}>
                 download as OPF file

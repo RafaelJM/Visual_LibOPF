@@ -140,8 +140,21 @@ export default class FileManager{
 
     this.parent.addText("Runing: "+functionInfo.opfFunction.function + "(" + variables.infoVariables.toString() + ")","textFunction-info")
     cwrap(ptrNum,ptrArr); //testar, will wait?
-    
+
     var buffer = {dat: [],cla: [],dis: [],out: [], acc:[]}
+    
+    if(functionInfo.opfFunction.function == "opf_merge"){
+      var file = this.FS.readdir("files/").find(e => e.substr(-3) === "dat");
+      if(file){
+        var loadedFile = this.readGraph(new DataView(this.FS.readFile("files/"+file, null).buffer),"Graph Data", "Marged datas");                    
+        this.parent.Tree.current.addNewEmptyData(loadedFile);
+        this.parent.CSigma.current.loadSugGraph(loadedFile);
+        this.parent.OPFFunctions.current.loadFunctions()
+        this.FS.unlink("files/"+file);
+      }
+      return(buffer);
+    }
+
 
     if(this.FS.readdir("files/").find(e => e.length > 6)){
       this.parent.addText("Successfully finished the opf function","textFunction-info")
@@ -192,6 +205,12 @@ export default class FileManager{
     graph.nnodes = dv.getInt32(cont,true);
     graph.nlabels = dv.getInt32(cont=cont+4,true);
     graph.nfeats = dv.getInt32(cont=cont+4,true);
+
+    if(graph.nnodes < 0 || graph.nlabels < 0 || graph.nfeats < 0 || (3 + graph.nnodes*(2+graph.nfeats))*4 !== dv.byteLength){
+      this.parent.addText("Error in the graph/data reading","textErr")
+      return;
+    }
+
     for(var i = 0; i < graph.nnodes; i++){
       graph.nodes[i] = {
       graph: graph,
@@ -243,7 +262,7 @@ export default class FileManager{
     var id;
     for(var i = 0; i < subGraph.nnodes; i++){
       id = dv.getInt32(cont=cont+4,true);
-      subGraph.nodes = subGraph.nodes.concat(this.parent.Tree.current.state.activeData.graph.nodes[id])
+      subGraph.nodes = subGraph.nodes.concat(this.parent.Tree.current.state.activeData.graph.nodes.find(element => element.id === id))
       cont += 4 + subGraph.nfeats * 4
     }
 

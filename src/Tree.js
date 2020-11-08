@@ -7,7 +7,7 @@ export default class TreeData extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            activeData: {},
+            activeData: null,
             treeData: []
         };
         this.dataLoad = React.createRef();
@@ -22,6 +22,7 @@ export default class TreeData extends React.Component {
     }
 
     addNewEmptyData(data, title = ""){
+        if(!data) return;
         data.title = (title ? title :"Data " + (this.state.treeData.length + 1));
 
         var auxData = {
@@ -63,6 +64,7 @@ export default class TreeData extends React.Component {
             treeData: this.state.treeData.concat(auxData),
             activeData: auxData
         })
+        this.props.parent.OPFFunctions.current.loadFunctions();
     }
 
     addBuffer(buffer){
@@ -119,14 +121,6 @@ export default class TreeData extends React.Component {
             </span>)        
     }
 
-    generateSpamObjects(c){
-        return(<span style={this.typeStyles}>
-            <img class="tree-image" src="add.png" alt="" onClick={() => {
-                this.props.parent.ObjDetails.current.state.details = this[c.AddFunction]()
-            }}/>
-        </span>)
-    }
-
     generateSpamChildren(c){
         return(<span style={this.typeStyles}>
             <img class="tree-image" src="information.png" alt="" onClick={() => {this.props.parent.ObjDetails.current.loadDetails(c);}}/>
@@ -138,11 +132,13 @@ export default class TreeData extends React.Component {
         return(
             <Tree content={data.graph.title} style={(Object.is(data,this.state.activeData)? Object.assign({}, {fontWeight: "700"}, this.treeStyles): this.treeStyles)} type={this.generateSpamData(data)} open style={this.treeStyles}>
                 {data.children.map((c) => 
-                    <Tree content={c.title} style={this.typeStyles} type={this.generateSpamObjects(c)} open>
+                    (c.children.length ?
+                    <Tree content={c.title} style={this.typeStyles} open>
                         {c.children.map((c2) => 
                             <Tree content={c2.title} style={this.typeStyles} type={this.generateSpamChildren(c2)} style={this.treeStyles}/>
                         )}
                     </Tree> 
+                    : "")
                 )}
             </Tree>
         )
@@ -155,7 +151,7 @@ export default class TreeData extends React.Component {
         })
         return (
             <div>
-                <input type="file" id="inputFile" ref={this.dataLoad} onChange={(evt) => {              
+                <input type="file" id="inputFile" accept={this.props.parent.inputAccept} ref={this.dataLoad} onChange={(evt) => {              
                 if(this.dataLoad.current.files.length === 0) return;
                 
                 var reader = new FileReader();
@@ -173,7 +169,7 @@ export default class TreeData extends React.Component {
                 }
                 this.dataLoad.current.value = '' 
                 }} style={{display: "none"}} multiple></input>
-                <input type="file" id="inputFile" ref={this.dataLoadFlated} onChange={(evt) => {              
+                <input type="file" id="inputFile" accept={this.props.parent.inputAccept} ref={this.dataLoadFlated} onChange={(evt) => {              
                 if(this.dataLoadFlated.current.files.length === 0) return;
                 
                 var reader = new FileReader();
@@ -187,7 +183,6 @@ export default class TreeData extends React.Component {
                     console.log(data)
                     scope.props.parent.Tree.current.addCompletData(data);
                     scope.props.parent.CSigma.current.loadSugGraph(data.graph);
-                    scope.props.parent.OPFFunctions.current.loadFunctions();
                 }
                 this.dataLoadFlated.current.value = '' 
                 
