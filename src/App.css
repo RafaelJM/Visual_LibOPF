@@ -26,6 +26,7 @@
 }
 
 body{
+  overflow: hidden;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   -khtml-user-select: none;
@@ -45,21 +46,17 @@ button.list{
   font-Weight: 100;
 }
 
-.tab-content .content {
-    display: none;
-}
-
-.tab-content .content.show {
-    display: block;
-}
-
 .holder-tabs {
   width: 100%;
   display: flex;
   justify-content: space-around;
+  position: absolute;
+  overflow: hidden;
+  
 }
 
 .holder-tabs .tab__link {
+  outline:0;
   color: #222;
   font-size: 24px;
   text-decoration: none;
@@ -71,20 +68,20 @@ button.list{
 }
 
 .holder-tabs .tab__link.is-active {
-  border-bottom: 2px solid blue;
+  border-bottom: 2px solid black;
 }
 
 .panel {
+  overflow: hidden;
   width: 100%;
   height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
   display: block;
   background: #fff;
   border-color: rgba(0,0,0,.2);
+  border-radius:20px;
   border: 1px solid #ccc;
   color: #000;
-  box-shadow: 0 2px 10px rgba(0,0,0,.2);
+  box-shadow: 0 2px 20px rgba(0,0,0,.2);
   opacity: 1;
   transition: opacity 2s;
 }
@@ -98,6 +95,7 @@ button.list{
 .clicked .panel {
   opacity: 0;
   transition: opacity 2s;
+  pointer-events: none;
 }
 
 .scroll::-webkit-scrollbar {
@@ -107,7 +105,7 @@ button.list{
 .scroll::-webkit-scrollbar-thumb {
     background: #dadce0;
     background-clip: padding-box;
-    border: 4px solid transparent;
+    border: 6px solid transparent;
     -webkit-border-radius: 8px;
     border-radius: 8px;
     -webkit-box-shadow: none;
@@ -117,86 +115,84 @@ button.list{
 .scroll {
   -webkit-border-radius: 8px;
   border-radius: 8px;
-  margin-left: 12px;
 }
 
-.graphInfo{
-  left: 15px;
-  top: 80px;
-  z-index: 900;
-  position: absolute;
-  font-size: 24px;
+.textOut{
+  
 }
 
-.menu {
-  width: calc(100vw - 60px - 120px);
-  height: 50px;
-  min-width: 400px;
-  left: 60px;
-  top: 10px;
-  z-index: 991;
-  position: absolute;
-  transition: height 2s;
+.textErr{
+  color:red;
 }
 
-.menu.clicked {
-  height: 0;
+.textFunction-info{
+  color:blue;
 }
 
-.menu .button {
-  width: 20px;
-  height: 70px;
-  bottom: -50px;
-  left: calc(50% - 35px);;
-  transform: rotate(-90deg);
-}
-
-.menu.clicked .button {
-  transform: rotate(90deg);
+.bold{
+  font-weight: bold;
 }
 
 
-.lateral {
-  width: 300px;
-  height: calc(100vh - 150px - 30px);
-  right: 15px;
-  top: 80px;
+.objects-menu {
+  width: 220px;
+  height: calc(100vh - 30px);
+  min-height: 100px;
+  right: 5px;
+  top: 5px;
   z-index: 991;
   position: absolute;
   transition: width 2s;
 }
 
-.lateral.clicked {
+.objects-menu.clicked {
   width: 0;
 }
 
-.lateral .button {
+.objects-menu .button {
   width: 20px;
   height: 70px;
-  left: -15px;
+  left: -28px;
   top: calc(50% - 35px);
 }
 
-.lateral.clicked .button {
+.objects-menu.clicked .button {
   transform: rotate(180deg);
 }
 
-.inferior {
-  width: calc(100vw - 30px - 350px);
-  height: 150px;
-  min-width: 400px;
+.objects-menu .tree-content {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  position: relative;
+  height: 50%;
+  margin-left: 10px;
+  margin-top: 10px;
+  margin-bottom: -25px;
+}
+
+.objects-menu .datails-content {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  position: relative;
+  height: calc(50% - 30px);
+  margin-left: 10px;
+  margin-top: -15px;
+}
+
+
+
+.functions-menu {
+  width: calc(100vw - 30px - 235px);
+  height: 230px;
+  min-width: 360px;
   bottom: 10px;
-  left: 30px;
+  left: 10px;
   z-index: 991;
   position: absolute;
   transition: height 2s;
 }
 
-.inferior.clicked {
-  height: 0;
-}
-
-.inferior .button {
+.functions-menu .button {
   width: 20px;
   height: 70px;
   top: -50px;
@@ -204,6 +200,91 @@ button.list{
   transform: rotate(90deg);
 }
 
-.inferior.clicked .button {
+.functions-menu.clicked .button {
   transform: rotate(-90deg);
+}
+
+.functions-menu .log-content {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  overflow-wrap: break-word; 
+  position: relative;
+  height: calc(100% - 50px);
+  margin-left: 10px;
+  margin-bottom: 5px;
+  display: flex; 
+  flex-direction: column-reverse;
+}
+
+.functions-menu .functions-content {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  position: relative;
+  margin-left: 10px;
+}
+
+
+
+.graph-text{
+  font-size: 24px;
+  text-align: center;
+}
+
+.graph-menu {
+  width: 200px;
+  height: calc(100vh - 245px - 30px);
+  min-height: 100px;
+  left: 5px;
+  top: 5px;
+  z-index: 991;
+  position: absolute;
+  transition: width 2s;
+}
+
+.graph-menu.clicked {
+  width: 0;
+}
+
+.graph-menu .button {
+  width: 20px;
+  height: 70px;
+  right: -28px;
+  top: calc(50% - 35px);
+}
+
+.graph-menu.clicked .button {
+  transform: rotate(180deg);
+}
+
+.graph-menu .tab-content .content {
+  visibility: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  width: calc(100% - 12px);
+  height: calc(100% - 65px);
+  position: relative;
+  top: 60px;
+  margin-left: 5px;
+}
+
+.graph-menu .tab-content .content.show {
+    visibility: visible;
+    position: absolute;
+}
+
+.graph-menu .tab-content {
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+
+
+
+
+.tree-image{
+  outline:0;
+  width: 25px;
+  height: 25px;
+  position: relative;
+  cursor: pointer;
 }

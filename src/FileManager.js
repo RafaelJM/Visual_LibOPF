@@ -4,6 +4,8 @@ export default class FileManager{
     this.stateUpdate = stateUpdate;
     
     this.Module = require('./libopf.js')(); // Your Emscripten JS output file
+    this.Module['FM'] = this;
+    
     this.FS = this.Module.FS;
     this.isDv={dat:"",cla:"",dis:""}
     this.outInfo = {
@@ -29,7 +31,7 @@ export default class FileManager{
       tim: () => {}
     }
     this.colors = [
-      "#63b598", "#ce7d78", "#ea9e70", "#a48a9e", "#c6e1e8", "#648177" ,"#0d5ac1" ,
+      "#63b598", "#0d5ac1", "#ea9e70", "#ce7d78", "#c6e1e8", "#648177" ,"#a48a9e" ,
       "#f205e6" ,"#1c0365" ,"#14a9ad" ,"#4ca2f9" ,"#a4e43f" ,"#d298e2" ,"#6119d0",
       "#d2737d" ,"#c0a43c" ,"#f2510e" ,"#651be6" ,"#79806e" ,"#61da5e" ,"#cd2f00" ,
       "#9348af" ,"#01ac53" ,"#c5a4fb" ,"#996635","#b11573" ,"#4bb473" ,"#75d89e" ,
@@ -98,73 +100,88 @@ export default class FileManager{
   }
 */
   getFunctionParamters(functionInfo){
-    var variables = [""]
+    var cVariables = [""]
+    var infoVariables = [];
     var fileUsed = -1;
     for (var i = 0; i < functionInfo.objs.length; i++) {
       if(functionInfo.objs[i].hasOwnProperty("saveInFile")){
         this[functionInfo.objs[i].saveInFile](functionInfo.objs[i],"files/"+(fileUsed=fileUsed+1)+".temp")
-        variables = variables.concat("files/"+fileUsed+".temp");
+        cVariables = cVariables.concat("files/"+fileUsed+".temp");
+        infoVariables = infoVariables.concat(functionInfo.objs[i].title)
       }
       else
-        if(functionInfo.objs[i].value.toString() !== "")
-          variables = variables.concat(functionInfo.objs[i].value.toString());
+        if(functionInfo.objs[i].value.toString() !== ""){
+          cVariables = cVariables.concat(functionInfo.objs[i].value.toString());
+          infoVariables = infoVariables.concat(functionInfo.objs[i].hasOwnProperty("title") ? functionInfo.objs[i].title : functionInfo.objs[i].value.toString())
+        }
     }
-    return(variables)
+    return({cVariables, infoVariables})
   }
 
   runOPFFunction(functionInfo, description){//,graphOrigin = null, modelFileOrigin = null){
+    console.log("runOPFFunction",functionInfo,description)
     const cwrap = this.Module.cwrap("c_"+functionInfo.opfFunction.function,null,['number', 'number']);
     
     var variables = this.getFunctionParamters(functionInfo)
 
     var ptrArr = this.Module._malloc(variables.length * 4);
     var ptrAux = []
-    for (var i = 0; i < variables.length; i++) {
-      var len = variables[i].length + 1;
+    for (var i = 0; i < variables.cVariables.length; i++) {
+      var len = variables.cVariables[i].length + 1;
       var ptr = this.Module._malloc(len);
       ptrAux = ptrAux.concat(ptr);
-      this.Module.stringToUTF8(variables[i].toString(), ptr, len);
+      this.Module.stringToUTF8(variables.cVariables[i].toString(), ptr, len);
 
       this.Module.setValue(ptrArr + i * 4, ptr, "i32");      
     }
     var ptrNum = this.Module._malloc(4);
-    this.Module.setValue(ptrNum, variables.length, 'i32');
+    this.Module.setValue(ptrNum, variables.cVariables.length, 'i32');
 
+
+    this.parent.addText("Runing: "+functionInfo.opfFunction.function + "(" + variables.infoVariables.toString() + ")","textFunction-info")
     cwrap(ptrNum,ptrArr); //testar, will wait?
-
-    var graphOrigin = functionInfo.objs.find(e => e.isGraph || e.isSubGraph)
-    var modelFileOrigin = functionInfo.objs.find(e => e.isModelFile)
-    console.log(graphOrigin,modelFileOrigin)
     
     var buffer = {dat: [],cla: [],dis: [],out: [], acc:[]}
 
-    var extraInfo = {}
-    functionInfo.opfFunction.extraOutInfo.map((out, index) => {
-      var dir = this.FS.readdir("files/");
-      var file = dir.find(e => e.substr(-3) === out)
-      if(file){
-        extraInfo = Object.assign({}, extraInfo, this.outInfo[out]((this.isDv.hasOwnProperty(out)?new DataView(this.FS.readFile("files/"+file, null).buffer):"files/"+file),this.getName[out](file),description,graphOrigin,modelFileOrigin))
-        this.FS.unlink("files/"+file);
-      }
-    })
+    if(this.FS.readdir("files/").find(e => e.length > 6)){
+      this.parent.addText("Successfully finished the opf function","textFunction-info")
 
-    functionInfo.opfFunction.out.map((out, index) => {
-      var dir = this.FS.readdir("files/");
-      var file = dir.find(e => e.substr(-3) === out)
-      if(file){
-        buffer[out][buffer[out].length] =  Object.assign({}, extraInfo, this.outInfo[out]((this.isDv.hasOwnProperty(out)?new DataView(this.FS.readFile("files/"+file, null).buffer):"files/"+file),this.getName[out](file),description,graphOrigin,modelFileOrigin,extraInfo))
-        this.FS.unlink("files/"+file);
-      }
-    })
+      var graphOrigin = functionInfo.objs.find(e => e.isGraph || e.isSubGraph)
+      var modelFileOrigin = functionInfo.objs.find(e => e.isModelFile)
+      console.log(graphOrigin,modelFileOrigin)
+      
+      var extraInfo = {}
+      functionInfo.opfFunction.extraOutInfo.map((out, index) => {
+        var dir = this.FS.readdir("files/");
+        var file = dir.find(e => e.substr(-3) === out)
+        if(file){
+          extraInfo = Object.assign({}, extraInfo, this.outInfo[out]((this.isDv.hasOwnProperty(out)?new DataView(this.FS.readFile("files/"+file, null).buffer):"files/"+file),this.getName[out](file),description,graphOrigin,modelFileOrigin))
+          this.FS.unlink("files/"+file);
+        }
+      })
 
-    if(this.FS.readdir("files/").find(e => e.length > 6)) console.log("error! files > 6", this.FS.readdir("files/").find(e => e.length > 6))
+      functionInfo.opfFunction.out.map((out, index) => {
+        var dir = this.FS.readdir("files/");
+        var file = dir.find(e => e.substr(-3) === out)
+        if(file){
+          buffer[out][buffer[out].length] =  Object.assign({}, extraInfo, this.outInfo[out]((this.isDv.hasOwnProperty(out)?new DataView(this.FS.readFile("files/"+file, null).buffer):"files/"+file),this.getName[out](file),description,graphOrigin,modelFileOrigin,extraInfo))
+          this.FS.unlink("files/"+file);
+        }
+      })
 
+      if(this.FS.readdir("files/").find(e => e.length > 6)) console.log("error! files > 6", this.FS.readdir("files/").find(e => e.length > 6))
+
+      this.parent.OPFFunctions.current.loadFunctions();
+    }
+    else{
+      this.parent.addText("Error! LibOPF didn't return files","textErr")
+    }
     return(buffer);
   }
 
   readGraph(dv, title, description){
     var graph= {
-      nnodes: -1, nlabels: -1, nfeats: -1, title: title, description:description, open: false, inicial_nlabels: -1, inicial_nfeats: -1, isGraph: true, featTitle: [],
+      nnodes: -1, nlabels: -1, nfeats: -1, title: title, description:description, open: false, inicial_nlabels: -1, inicial_nfeats: -1, isGraph: true,
       nodes: [],
       edges:[]
     };
@@ -175,8 +192,6 @@ export default class FileManager{
     graph.nnodes = dv.getInt32(cont,true);
     graph.nlabels = dv.getInt32(cont=cont+4,true);
     graph.nfeats = dv.getInt32(cont=cont+4,true);
-    for(var i = 0; i < graph.nfeats; i++)
-      graph.featTitle[i] = "Feat "+(i+1)
     for(var i = 0; i < graph.nnodes; i++){
       graph.nodes[i] = {
       graph: graph,

@@ -1,44 +1,64 @@
 import React from 'react';
-import {InputGroup, FormControl} from 'react-bootstrap';
+import {InputGroup, FormControl, Button} from 'react-bootstrap';
+import { CSVLink, CSVDownload } from "react-csv";
 
 export default class ObjDetails extends React.Component {  
     constructor(props){
         super(props)
-        this.state = {details: [], nodeSelect:[]}
+        this.state = {details: []}
       }
 
-    loadNodeSelect(data){ //put input more easy
-        this.setState({ details:[], nodeSelect:[]}, () => {
-        this.setState({ nodeSelect:[
-        <select onChange={(e) => {
-            this.loadDetails(data.nodes[e.target.value])
-            this.props.parent.CSigma.current.focousInXY(data.nodes[e.target.value])
-        }}>
-            <option selected disabled hidden>Select node</option>
-            {data.nodes.map((node,index) => {
-                return(<option value={index}>Node {node.id}</option>)
-            })}
-        </select>     
-        ]})
-        })
+    loadNodeSelect(){ //put input more easy
+        this.setState({ details:[]})
     }
 
     loadDetails(obj){
-        this.props.parent.lateralClick(0)
-        this.props.parent.openMenu([1])
         console.log(obj)
+        this.props.parent.openMenu([1])
         this.setState({ details:[]}, () => {
             this.setState({ details: this[obj.getDetails](obj)})
         });
     }
+    
+    downloadOPFFFile(obj, fileName){
+        this.props.parent.FM[obj.saveInFile](obj,"files/0.temp")
 
-    detailsGraph(obj, isSubGraph = false){ //arrumar, work with nlabels nfeats details
+        var element = document.createElement('a');
+        element.setAttribute('href', URL.createObjectURL(new Blob([this.props.parent.FM.FS.readFile("files/0.temp", null).buffer])))
+        element.setAttribute('download', fileName);
+        element.setAttribute('target', "blank");
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+    }
+
+    downloadOPFFFileAsCSV(obj, fileName){
+        
+    }
+
+    cloneToData(obj){ //arrumar
+        var newData = Object.assign({}, obj);
+        delete newData.graphOrigin;
+        delete newData.isSubGraph;
+        newData.getDetails = "detailsGraph"
+        newData.saveInFile = "writeGraph"
+        newData.nodes = []
+        for(var i in obj.nodes){
+            var node = Object.assign({}, obj.nodes[i])
+            node.self = node
+            newData.nodes = newData.nodes.concat(node)
+        }
+        this.props.parent.Tree.current.addNewEmptyData(newData,obj.graphOrigin.title + " - " + obj.title);
+    }
+
+    detailsGraph(obj){ //arrumar, work with nlabels nfeats details
         return(
             <div>
                 <InputGroup.Prepend>
                     <InputGroup.Text>Title</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl defaultValue={obj.title} onChange={(e) => {obj.title = e.target.value; this.props.parent.Tree.current.setState({});this.props.parent.CSigma.current.setState({});}}/>
+                <FormControl defaultValue={obj.title} onChange={(e) => {obj.title = e.target.value; this.props.parent.Tree.current.setState({});this.props.parent.GraphMenu.current.updateInfo();}}/>
 
                 <InputGroup.Prepend>
                     <InputGroup.Text>Description</InputGroup.Text>
@@ -53,12 +73,30 @@ export default class ObjDetails extends React.Component {
                 <InputGroup.Prepend>
                     <InputGroup.Text>nlabels</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl defaultValue={obj.nlabels} onChange={(e) => {obj.nlabels = e.target.value;}} disabled={isSubGraph?"disabled":""}/>
+                <FormControl defaultValue={obj.nlabels} onChange={(e) => {obj.nlabels = e.target.value;}} disabled={obj.hasOwnProperty("isSubGraph")?"disabled":""}/>
 
                 <InputGroup.Prepend>
                     <InputGroup.Text>nfeats</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl defaultValue={obj.nfeats} onChange={(e) => {obj.nfeats = e.target.value;}} disabled={isSubGraph?"disabled":""}/>
+                <FormControl defaultValue={obj.nfeats} onChange={(e) => {obj.nfeats = e.target.value;}} disabled={obj.hasOwnProperty("isSubGraph")?"disabled":""}/>
+                
+                {obj.hasOwnProperty("isSubGraph")?
+                    <Button variant="secondary" onClick={() => this.cloneToData(obj)}>
+                    clone to data
+                    </Button>
+                    :
+                    <Button variant="secondary" onClick={() => {
+                        
+                    }}>
+                    merge with another data
+                    </Button>
+                }
+                <Button variant="secondary" onClick={() => this.downloadOPFFFile(obj,obj.title+".dat")}>
+                download as OPF file
+                </Button>
+                <Button variant="secondary" onClick={() => {}}>
+                delete
+                </Button>
             </div>
         )
     }
@@ -69,7 +107,7 @@ export default class ObjDetails extends React.Component {
                 <InputGroup.Prepend>
                     <InputGroup.Text>Title</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl defaultValue={obj.title} onChange={(e) => {obj.title = e.target.value; this.props.parent.Tree.current.setState({});this.props.parent.CSigma.current.setState({});}}/>
+                <FormControl defaultValue={obj.title} onChange={(e) => {obj.title = e.target.value; this.props.parent.Tree.current.setState({});this.props.parent.GraphMenu.current.updateInfo();}}/>
 
                 <InputGroup.Prepend>
                     <InputGroup.Text>Node position (ID)</InputGroup.Text>
@@ -98,11 +136,13 @@ export default class ObjDetails extends React.Component {
                         </InputGroup.Prepend>
                         <FormControl defaultValue={feat} onChange={(e) => {
                             obj.feat[indexFeat] = e.target.value; 
-                            obj.x = obj.feat[0];
-                            obj.y = obj.feat[1];
                             this.props.parent.CSigma.current.updateNode(obj);}}/>
                     </div>
                 ))}
+
+                <Button variant="secondary" onClick={() => {}}>
+                delete
+                </Button>
             </div>
         )
     }
@@ -135,6 +175,15 @@ export default class ObjDetails extends React.Component {
                     <InputGroup.Text>ordered_list_of_nodes</InputGroup.Text>
                 </InputGroup.Prepend>
                 <FormControl defaultValue={obj.ordered_list_of_nodes} disabled/>
+                <Button variant="secondary" onClick={() => {}}>
+                clone to data
+                </Button>
+                <Button variant="secondary" onClick={() => this.downloadOPFFFile(obj,obj.title+".opf")}>
+                download as OPF file
+                </Button>
+                <Button variant="secondary" onClick={() => {}}>
+                delete
+                </Button>
             </div>
         )
     }
@@ -145,7 +194,7 @@ export default class ObjDetails extends React.Component {
                 <InputGroup.Prepend>
                     <InputGroup.Text>Title</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl defaultValue={obj.title} onChange={(e) => {obj.title = e.target.value; this.props.parent.Tree.current.setState({});this.props.parent.CSigma.current.setState({});}}/>
+                <FormControl defaultValue={obj.title} onChange={(e) => {obj.title = e.target.value; this.props.parent.Tree.current.setState({});this.props.parent.GraphMenu.current.updateInfo();}}/>
 
                 <InputGroup.Prepend>
                     <InputGroup.Text>Node position (ID)</InputGroup.Text>
@@ -197,6 +246,9 @@ export default class ObjDetails extends React.Component {
     detailsDistances(obj){
         return(
             <div>
+            <Button variant="secondary" onClick={() => this.downloadOPFFFile(obj,obj.title+".dis")}>
+            download as OPF file
+            </Button>
             </div>
         )
     }
@@ -204,6 +256,9 @@ export default class ObjDetails extends React.Component {
     detailsClassification(obj){
         return(
             <div>
+            <Button variant="secondary" onClick={() => this.downloadOPFFFile(obj,obj.title+".txt")}>
+            download as OPF file
+            </Button>
             </div>
         )
     }
@@ -211,7 +266,6 @@ export default class ObjDetails extends React.Component {
     render(){
         return(
         <div>
-            {this.state.nodeSelect}
             {this.state.details}
         </div>
         )

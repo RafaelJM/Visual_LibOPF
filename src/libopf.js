@@ -336,6 +336,9 @@ if (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) {
 
 // Set up the out() and err() hooks, which are how we can print to stdout or
 // stderr, respectively.
+
+Module['print'] = function(text) { Module['FM'].parent.addText(text,"textOut") };
+Module['printErr'] = function(text) { Module['FM'].parent.addText(text,"textErr") };
 var out = Module['print'] || console.log.bind(console);
 var err = Module['printErr'] || console.warn.bind(console);
 

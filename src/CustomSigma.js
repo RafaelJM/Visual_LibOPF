@@ -1,5 +1,4 @@
 import React from 'react';
-import {InputGroup, FormControl} from 'react-bootstrap';
 
 export default class CustomSigma extends React.Component {  
     constructor(props){
@@ -23,37 +22,63 @@ export default class CustomSigma extends React.Component {
       this.props.sigma.refresh();
     }
 
+    loadX(X = 0){
+      this.setState({X})
+      var nodes = this.props.sigma.graph.nodes();
+      for(var i in nodes){
+        nodes[i].x = nodes[i].feat[X];
+      }
+      this.props.sigma.refresh();
+    }
+
+    loadY(Y = 1){
+      this.setState({Y})
+      var nodes = this.props.sigma.graph.nodes();
+      for(var i in nodes){
+        nodes[i].y = nodes[i].feat[Y];
+      }
+      this.props.sigma.refresh();
+    }
+
     loadSugGraph(Graph){
       if(Graph.hasOwnProperty("nodes")){
-        this.props.parent.ObjDetails.current.loadNodeSelect(Graph);
-        this.props.sigma.graph.clear();
-        this.props.sigma.graph.read(Graph);
-        this.setState({loadedGraph: Graph})
-        this.props.sigma.refresh();
+        this.setState({loadedGraph: Graph, X:0, Y:1},()=>{
+          this.props.parent.ObjDetails.current.loadNodeSelect(Graph);
+          this.props.sigma.graph.clear();
+          this.props.sigma.graph.read(Graph);
+          this.props.sigma.refresh();
+          this.props.graphMenu.current.updateInfo();
+          this.props.parent.openMenu([0])
+        })
       }
       else{
-        console.log("erro")
+        this.props.parent.addText("Error! Graph don't have nodes to show","textErr")
       }
     }
 
     updateNode(node){
       this.props.sigma.graph.dropNode(node.id);
+      node.self.x = node.feat[this.state.X];
+      node.self.y = node.feat[this.state.Y];
       this.props.sigma.graph.addNode(node.self);
       this.props.sigma.refresh();
     }
   
     focousInXY(node){
       node = this.props.sigma.graph.nodes().find(element => element.id === node.id)
-      /*
       var c = this.props.sigma.camera;
       c.goTo({
         x:node['read_cam0:x'],
         y:node['read_cam0:y']
-      });*/
+      });
       var aux = node.color;
       node.color = "#000000";
       this.props.sigma.refresh();
-      setTimeout(() => {node.color = aux; this.props.sigma.refresh();}, 1000);
+      setTimeout(() => {node.color = aux; this.props.sigma.refresh();}, 500);
+      setTimeout(() => {node.color =  "#000000"; this.props.sigma.refresh();}, 1000);
+      setTimeout(() => {node.color = aux; this.props.sigma.refresh();}, 1500);
+      setTimeout(() => {node.color =  "#000000"; this.props.sigma.refresh();}, 2000);
+      setTimeout(() => {node.color = aux; this.props.sigma.refresh();}, 2500);
     }
 
     loadGraphDistance(node,distancesObj){
@@ -75,11 +100,7 @@ export default class CustomSigma extends React.Component {
     render(){
       console.log(this.state.loadedGraph)
       return([
-      <div class="graphInfo">
-        <p class="text">{this.props.parent.Tree.current.state.activeData.graph ? "Active data:  "+this.props.parent.Tree.current.state.activeData.graph.title : ""}</p>
-        <p class="text">{this.state.loadedGraph.title ? "Showing graph "+this.state.loadedGraph.title : ""}</p>
-        
-      </div>
+      
       ])
     }
   }

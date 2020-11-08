@@ -1,5 +1,5 @@
 import React from 'react';
-import {InputGroup, Form, OverlayTrigger, Tooltip} from 'react-bootstrap';
+import {FormControl, Form, OverlayTrigger, Tooltip, Button} from 'react-bootstrap';
 
 export default class FunctionManager extends React.Component {
     constructor(props){
@@ -121,9 +121,7 @@ export default class FunctionManager extends React.Component {
             out: ["cla"], extraOutInfo: ["out","tim"]}
         }
 
-        this.state = {
-          return: this.loadFunctions()
-        }
+        this.state = {return: []}
     }
 
     entrace_Graph(type, description,placeholder){
@@ -159,7 +157,7 @@ export default class FunctionManager extends React.Component {
     entrace_Number(min, max, step, placeholder, objectInfo, description, percentage = false){
         var ref = React.createRef();
         return (
-            <OverlayTrigger getvalue={() => {return({title:placeholder, value:(ref.current.value / (percentage ? 100 : 1))})}} overlay={<Tooltip id="tooltip-disabled">{description}</Tooltip>}>
+            <OverlayTrigger getvalue={() => {return({description:placeholder, value:(ref.current.value / (percentage ? 100 : 1))})}} overlay={<Tooltip id="tooltip-disabled">{description}</Tooltip>}>
             <span className="d-inline-block">
                 <input ref={ref} type="number" min={min} max={max} step={step} placeholder={placeholder}/>
                 {percentage ? <span>%</span> : null}
@@ -167,54 +165,57 @@ export default class FunctionManager extends React.Component {
             </OverlayTrigger>
         )
     }
-    
+
     loadFunctions(){
-        return (
-          <div>
-            {Object.keys(this.functionDetails).map((key, index) => (
-            <OverlayTrigger key={index} overlay={<Tooltip id="tooltip-disabled">{this.functionDetails[key].description}</Tooltip>}>
-              <span className="d-inline-block">
-                <button onClick={() => {
-                    if(this.props.parent.Tree.current.state.treeData.length){
-                      this.setState({return: this.loadFunctionEntrance(key)});
-                    }
-                    else{
-                      console.log("erro")
-                    }
-                  }}>
-                  {key}
-                </button>
-              </span>            
-            </OverlayTrigger>
-            ))}
-          </div>
-        )
+      this.setState({return: []}, () => {this.setState({return: [
+        <span className="d-inline-block">
+            <Form.Control
+              as="select"
+              custom title="Select a function" onChange={(e) => {
+              if(this.props.parent.Tree.current.state.treeData.length){
+                this.state.return[1] = this.loadFunctionEntrance(e.target.value);
+                this.setState({});
+              }
+            }}>
+              <option selected disabled hidden>Select a function</option>
+              <optgroup label="Data manipulation">
+                <option value="opf_split" title={this.functionDetails["opf_split"].description}>opf_split</option>
+                <option value="opf_normalize" title={this.functionDetails["opf_normalize"].description}>opf_normalize</option>
+                <option value="opf_distance" title={this.functionDetails["opf_distance"].description}>opf_distance</option>
+              </optgroup>
+              <optgroup label="Training phase">
+                <option value="opf_train" title={this.functionDetails["opf_train"].description}>opf_train</option>
+                <option value="opf_semi" title={this.functionDetails["opf_semi"].description}>opf_semi</option>
+                <option value="opf_learn" title={this.functionDetails["opf_learn"].description}>opf_learn</option>
+                <option value="opf_cluster" title={this.functionDetails["opf_cluster"].description}>opf_cluster</option>
+                <option value="opf_pruning" title={this.functionDetails["opf_pruning"].description}>opf_pruning</option>
+                <option value="opfknn_train" title={this.functionDetails["opfknn_train"].description}>opfknn_train</option>
+              </optgroup>
+              <optgroup label="Classifing phase"> 
+                <option value="opf_classify" title={this.functionDetails["opf_classify"].description} disabled={this.props.parent.Tree.current.state.activeData.ModelFiles.children.length? "" : "disabled"}>opf_classify</option>
+                <option value="opfknn_classify" title={this.functionDetails["opfknn_classify"].description} disabled={this.props.parent.Tree.current.state.activeData.ModelFiles.children.length? "" : "disabled"}>opfknn_classify</option>
+              </optgroup>
+            </Form.Control>   
+        </span>
+      ]})});
     }
 
     loadFunctionEntrance(key){
       var entrances = this.functionDetails[key].entraces()
       return(
-        <div>
-          <InputGroup className="functions">
-            <OverlayTrigger overlay={<Tooltip id="tooltip-disabled">{this.functionDetails[key].description}</Tooltip>}>
-              <span className="d-inline-block"><p>{this.functionDetails[key].function}</p></span>            
-            </OverlayTrigger>
-            ({entrances.map((entrace, index) => (
-              [<b>{((index !== 0) ? (" , ") : (""))}</b>,entrace]
-            ))}
-            )
-          </InputGroup>
-          <InputGroup>
-            <button onClick={() => {
-              var functionInfo = {opfFunction: this.functionDetails[key], objs:[]};
-              entrances.map((entrace, index) => {
-                functionInfo.objs = functionInfo.objs.concat(entrace.props.getvalue())
-              })
-              this.props.parent.Tree.current.addBuffer(this.props.parent.FM.runOPFFunction(functionInfo, "Created by the function "+key));
-            }}>Run</button>
-            <button onClick={() => {this.activeFunction = null; this.setState({return: this.loadFunctions()})}}>Back</button>
-          </InputGroup>
-        </div>
+        <span>
+           ( {entrances.map((entrace, index) => (
+            [<b>{((index !== 0) ? (" , ") : (""))}</b>,entrace]
+          ))}
+          ) 
+          <Button variant="secondary" onClick={() => {
+            var functionInfo = {opfFunction: this.functionDetails[key], objs:[]};
+            entrances.map((entrace, index) => {
+              functionInfo.objs = functionInfo.objs.concat(entrace.props.getvalue())
+            })
+            this.props.parent.Tree.current.addBuffer(this.props.parent.FM.runOPFFunction(functionInfo, "Created by the function "+key));
+          }}>Run</Button>
+        </span>
       )
     }
 
