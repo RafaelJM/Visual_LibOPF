@@ -32,10 +32,6 @@ export default class ObjDetails extends React.Component {
         element.click();
         document.body.removeChild(element);
     }
-
-    downloadOPFFFileAsCSV(obj, fileName){
-        
-    }
     
     detailsGraph(obj){ //arrumar, work with nlabels nfeats details
         return(
@@ -71,22 +67,16 @@ export default class ObjDetails extends React.Component {
                     </Button>
                     :
                     <spam>
-                        <Button variant="secondary" onClick={() => {}}>
+                        <Button variant="secondary" onClick={() => {this.addSubGraph(obj)}}>
                         Add SubGraph
                         </Button>
-                        <Button variant="secondary" onClick={() => {
-                            
-                        }}>
+                        <Button variant="secondary" onClick={() => {this.addModelFiles(obj)}}>
                         Add ModelFile
                         </Button>
-                        <Button variant="secondary" onClick={() => {
-                            
-                        }}>
+                        <Button variant="secondary" onClick={() => {this.addDistance(obj)}}>
                         Add Distances
                         </Button>
-                        <Button variant="secondary" onClick={() => {
-                            
-                        }}>
+                        <Button variant="secondary" onClick={() => {this.addClassification(obj)}}>
                         Add Classification
                         </Button>
                     </spam>
@@ -94,10 +84,19 @@ export default class ObjDetails extends React.Component {
                 <Button variant="secondary" onClick={() => this.downloadOPFFFile(obj,obj.title+".dat")}>
                 download as OPF file
                 </Button>
-                <Button variant="secondary" onClick={() => {}}>
+                <Button variant="secondary" onClick={() => {
+                    console.log("fsad")
+                    if (window.confirm('Do you want to delete '+obj.title+" ?" )) {
+                        for(var i in this.props.parent.Tree.current.state.treeData){
+                            this.props.parent.Tree.current.deleteData(i);
+                            return;
+                        }
+                    }
+                }}>
                 delete
                 </Button>
             </div>
+
         )
     }
 
@@ -284,6 +283,27 @@ export default class ObjDetails extends React.Component {
             </Button>
             </div>
         )
+    }
+  
+    addSubGraph(obj) {
+        this.setState({
+            details: [
+                <p>SubGraph is a subset of the Data. Choose some nodes to create a new SubGraph or upload a Data file, the nodes that have same position will be added to the new SubGraph:</p>,
+                
+            ]
+        })
+    }
+
+    addModelFiles(c) {
+        
+    }
+
+    addDistance(c) {
+        
+    }
+
+    addClassification(c) {
+        
     }
 
     render(){

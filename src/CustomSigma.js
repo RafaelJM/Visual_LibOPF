@@ -40,6 +40,13 @@ export default class CustomSigma extends React.Component {
       this.props.sigma.refresh();
     }
 
+    clearObject(){
+      this.setState({loadedGraph: {}, X:0, Y:1},()=>{
+        this.props.sigma.graph.clear();
+        this.props.sigma.refresh();
+      })
+    }
+
     loadSugGraph(Graph){
       if(!Graph) return;
       if(Graph.hasOwnProperty("nodes")){

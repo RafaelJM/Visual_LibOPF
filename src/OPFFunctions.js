@@ -210,6 +210,7 @@ export default class FunctionManager extends React.Component {
           <span className="d-inline-block">
             <Form.Control
               as="select"
+              disabled={this.props.parent.Tree.current.state.treeData.length ? "" : "disabled"}
               custom title="Select a function" onChange={(e) => {
               if(this.props.parent.Tree.current.state.treeData.length){
                 this.state.return[1] = this.loadFunctionEntrance(e.target.value);

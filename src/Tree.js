@@ -14,11 +14,23 @@ export default class TreeData extends React.Component {
         this.dataLoadFlated = React.createRef();
     }
 
-    addCompletData(fullData){
+    resetAllLoadedInfo(){
+        this.props.parent.OPFFunctions.current.setState({return:[]})
+        this.props.parent.ObjDetails.current.setState({details:[]})
+        this.props.parent.CSigma.current.clearObject()
+    }
+
+    addCompleteState(state){
+        this.setState(state,() => this.resetAllLoadedInfo())
+        this.props.parent.OPFFunctions.current.loadFunctions();
+        this.props.parent.CSigma.current.loadSugGraph(this.state.activeData.graph);
+    }
+
+    deleteData(num){
         this.setState({
-            treeData: this.state.treeData.concat(fullData),
-            activeData: fullData
-        })
+            activeData: (Object.is(this.state.activeData,this.state.treeData[num])? null : this.activeData),
+            treeData: (this.state.treeData.length == 1 ? [] : this.state.treeData.splice(num,1))
+        },() => this.resetAllLoadedInfo())
     }
 
     addNewEmptyData(data, title = ""){
@@ -82,22 +94,6 @@ export default class TreeData extends React.Component {
         })
         
     }
-  
-    addSubGraph(c) {
-        
-    }
-
-    addModelFiles(c) {
-        
-    }
-
-    addDistance(c) {
-        
-    }
-
-    addClassification(c) {
-        
-    }
 
     updateTreeData(treeData) {
         this.setState({ treeData });
@@ -141,6 +137,60 @@ export default class TreeData extends React.Component {
         )
     }
 
+    readData(title, description) {   
+        var element = document.createElement('input');
+                    
+        element.setAttribute('type', 'file')
+        element.setAttribute('accept' , this.props.parent.inputAccept);
+        element.setAttribute('value' , '0');
+        const scope = this;
+        element.addEventListener('change', function() {    
+            console.log(element)
+            if(element.files.length === 0) return;
+            
+            var reader = new FileReader();
+            
+            reader.readAsArrayBuffer(element.files[0]);
+            reader.onload = function() {     
+                var loadedFile = scope.props.parent.FM.readGraph(new DataView(reader.result),title,description);
+                scope.props.parent.Tree.current.addNewEmptyData(loadedFile);
+                scope.props.parent.OPFFunctions.current.loadFunctions()
+            }
+
+            document.body.removeChild(element);
+        })
+
+        element.style.display = 'none';
+        document.body.appendChild(element);
+
+        element.click();
+    }
+
+    readJSON() {   
+        if (!this.state.treeData.length || window.confirm('This will delete your current objects, do you accept?')){
+            var element = document.createElement('input');
+                    
+            element.setAttribute('type', 'file')
+            element.setAttribute('accept' , this.props.parent.inputAccept);
+            element.setAttribute('value' , '0');
+            const scope = this;
+            element.addEventListener('change', function() {              
+                if(element.files.length === 0) return;
+                var reader = new FileReader();
+                reader.readAsText(element.files[0]);
+                reader.onload = function() {    
+                    var state = parse(reader.result);
+                    scope.addCompleteState(state);
+                }
+
+                document.body.removeChild(element);
+            })
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+        }
+    }
+
     render() {         
         var html = []
         this.state.treeData.map((data) => {
@@ -148,52 +198,15 @@ export default class TreeData extends React.Component {
         })
         return (
             <div>
-                <input type="file" id="inputFile" accept={this.props.parent.inputAccept} ref={this.dataLoad} onChange={(evt) => {              
-                if(this.dataLoad.current.files.length === 0) return;
-                
-                var reader = new FileReader();
-                const scope = this;
-                
-                reader.readAsArrayBuffer(this.dataLoad.current.files[0]);
-                reader.onload = function() {     
-                    var loadedFile = scope.props.parent.FM.readGraph(new DataView(reader.result),"Graph Data", "Loaded by the user");
-                    
-                    console.log(scope)
-
-                    scope.props.parent.Tree.current.addNewEmptyData(loadedFile);
-                    scope.props.parent.OPFFunctions.current.loadFunctions()
-                }
-                this.dataLoad.current.value = '' 
-                }} style={{display: "none"}} multiple></input>
-                <input type="file" id="inputFile" accept={this.props.parent.inputAccept} ref={this.dataLoadFlated} onChange={(evt) => {              
-                if(this.dataLoadFlated.current.files.length === 0) return;
-                
-                var reader = new FileReader();
-                const scope = this;
-                
-                console.log(this.dataLoadFlated.current.files)
-                reader.readAsText(this.dataLoadFlated.current.files[0]);
-                reader.onload = function() {    
-                    console.log(reader.result) 
-                    var data = parse(reader.result)
-                    console.log(data)
-                    scope.props.parent.Tree.current.addCompletData(data);
-                    scope.props.parent.CSigma.current.loadSugGraph(data.graph);
-                }
-                this.dataLoadFlated.current.value = '' 
-                
-                }} style={{display: "none"}} multiple></input>
-                <Button variant="secondary"
-                onClick={() => this.dataLoad.current.click(-1)}
-                >
+                <Button variant="secondary" onClick={() => this.readData("Graph Data", "Loaded by the user")}>
                 +
                 </Button>
                 <Button variant="secondary"
                 onClick={() => {
                     var element = document.createElement('a');
                     
-                    element.setAttribute('href', URL.createObjectURL(new Blob([stringify(this.props.parent.Tree.current.state.activeData)])))
-                    element.setAttribute('download', this.props.parent.Tree.current.state.activeData.graph.title+".txt");
+                    element.setAttribute('href', URL.createObjectURL(new Blob([stringify(this.props.parent.Tree.current.state)])))
+                    element.setAttribute('download', "state at " + this.props.parent.today.getHours() + ":" + this.props.parent.today.getMinutes() + ".txt");
                     element.setAttribute('target', "blank");
 
                     element.style.display = 'none';
@@ -206,11 +219,7 @@ export default class TreeData extends React.Component {
                 >
                 download
                 </Button>
-                <Button variant="secondary"
-                onClick={() => {
-                    this.dataLoadFlated.current.click(-1)
-                }}
-                >
+                <Button variant="secondary" onClick={() => this.readJSON()}>
                 load
                 </Button>
                 {html}

@@ -282,8 +282,8 @@ export default class FileManager{
     subGraph.saveInFile = "writeSubGraph"
 
     subGraph.nnodes = dv.getInt32(cont,true);
-    subGraph.nlabels = dv.getInt32(cont=cont+4,true);
-    subGraph.nfeats = dv.getInt32(cont=cont+4,true);
+    subGraph.nlabels = graphOrigin.nlabels;
+    subGraph.nfeats = graphOrigin.nfeats;
     var id;
     for(var i = 0; i < subGraph.nnodes; i++){
       id = dv.getInt32(cont=cont+4,true);

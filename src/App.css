@@ -196,6 +196,10 @@ button.list{
   transition: height 2s;
 }
 
+.functions-menu.clicked {
+  height: 0;
+}
+
 .functions-menu .button {
   width: 20px;
   height: 70px;
