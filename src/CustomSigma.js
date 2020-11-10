@@ -51,13 +51,18 @@ export default class CustomSigma extends React.Component {
       if(!Graph) return;
       if(Graph.hasOwnProperty("nodes")){
         this.setState({loadedGraph: Graph, X:0, Y:1},()=>{
-          this.props.parent.ObjDetails.current.loadNodeSelect(Graph);
-          this.props.sigma.graph.clear();
-          this.props.sigma.graph.read(Graph);
-          this.props.sigma.refresh();
-          this.props.graphMenu.current.updateInfo();
-          this.props.parent.Tree.current.setState({});
-          this.props.parent.openMenu([0])
+          try{
+            this.props.parent.ObjDetails.current.loadNodeSelect(Graph);
+            this.props.sigma.graph.clear();
+            this.props.sigma.graph.read(Graph);
+            this.props.sigma.refresh();
+            this.props.graphMenu.current.updateInfo();
+            this.props.parent.Tree.current.setState({});
+            this.props.parent.openMenu([0])
+          }
+          catch(e){
+            this.props.parent.addText("Error! "+e,"textErr")
+          }
         })
       }
       else{

@@ -9,6 +9,7 @@ export default class FunctionManager extends React.Component {
         this.distancesDict = [{title:"Euclidean", value:1},{title:"Chi-Squar", value:2},{title:"Manhattan", value:3},{title:"Canberra", value:4},{title:"Squared Chord", value:5},{title:"Squared Chi-Squared", value:6},{title:"BrayCurtis", value:7}];
         this.activeFunction = null;
         this.functionDetails = {
+          
             opf_accuracy: {function: "opf_accuracy", description: "Computes the OPF accuracy",
             entraces: () => 
             [this.entrace_Graph("S","Data object used in the opf_classify function, or similar, normaly is the testing object"),
@@ -20,7 +21,7 @@ export default class FunctionManager extends React.Component {
             [this.entrace_Graph("S","Data object used in the opf_classify function, or similar, normaly is the testing object"),
             this.entrace_Select(this.props.parent.Tree.current.state.activeData.Classifications.children,"The output list, classified, produced by opf_classify function")],
             out: ["acc"], extraOutInfo: []},
-
+            
             opf_classify: {function: "opf_classify", description: "Executes the test phase of the OPF classifier",
             entraces: () => 
             [this.entrace_Graph("S","The testing data object produced by the opf_split function (subGraph object)"),
@@ -231,6 +232,7 @@ export default class FunctionManager extends React.Component {
                 <option value="opf_cluster" title={this.functionDetails["opf_cluster"].description}>opf_cluster</option>
                 <option value="opf_pruning" title={this.functionDetails["opf_pruning"].description}>opf_pruning</option>
                 <option value="opfknn_train" title={this.functionDetails["opfknn_train"].description}>opfknn_train</option>
+                <option value="opf_accuracy" title={this.functionDetails["opf_accuracy"].description}>opf_accuracy</option>
               </optgroup>
               <optgroup label="Classifing phase"> 
                 <option value="opf_classify" title={this.functionDetails["opf_classify"].description} disabled={this.props.parent.Tree.current.state.activeData && this.props.parent.Tree.current.state.activeData.ModelFiles.children.length? "" : "disabled"}>opf_classify</option>
@@ -258,7 +260,8 @@ export default class FunctionManager extends React.Component {
               entrances.map((entrace, index) => {
                 functionInfo.objs = functionInfo.objs.concat(entrace.props.getvalue())
               })
-              this.props.parent.Tree.current.addBuffer(this.props.parent.FM.runCFunction(functionInfo, "Created by the function "+key));
+              this.props.parent.FM.runCFunction(functionInfo)
+              this.props.parent.Tree.current.addBuffer(this.props.parent.FM.readCOutFiles(functionInfo, "Created by the function "+key));
             }}>Run</Button>
           </span>
         )

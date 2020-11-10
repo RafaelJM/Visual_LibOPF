@@ -14,7 +14,7 @@ export default class FileManager{
       dis: (dv, title, description, graph) => {return(this.readDistances(dv, title, description, graph))},
       //-----
       out: (file, title, description, subGraph, modelFileClassificator,extraInfo) => {return(this.readClassification(file, title, description, subGraph, modelFileClassificator,extraInfo))},
-      acc: (file) => {return({accuracy: this.FS.readFile(file,{encoding: 'utf8'}).split("\n")})},//this.readAccuracy(file))},
+      acc: (file) => {return(this.FS.readFile(file,{encoding: 'utf8'}).split("\n"))},//this.readAccuracy(file))},
       pra: (file) => {return({pruningRate: this.FS.readFile(file,{encoding: 'utf8'}).split("\n")[0]})},
       pre: (file) => {return({predList: this.FS.readFile(file,{encoding: 'utf8'}).split("\n")})},
       tim: (file) => {return({time:this.FS.readFile(file,{encoding: 'utf8'}).split("\n")[0]})},
@@ -118,8 +118,7 @@ export default class FileManager{
     return({cVariables, infoVariables})
   }
 
-  runCFunction(functionInfo, description){//,graphOrigin = null, modelFileOrigin = null){
-    console.log("runCFunction",functionInfo,description)
+  runCFunction(functionInfo){//,graphOrigin = null, modelFileOrigin = null){
     const cwrap = this.Module.cwrap("c_"+functionInfo.opfFunction.function,null,['number', 'number']);
     
     var variables = this.getFunctionParamters(functionInfo)
@@ -140,9 +139,16 @@ export default class FileManager{
 
     this.parent.addText("Runing: "+functionInfo.opfFunction.function + "(" + variables.infoVariables.toString() + ")","textFunction-info")
     cwrap(ptrNum,ptrArr); //testar, will wait?
+  }
 
+  readCOutFiles(functionInfo, description){
     var buffer = {dat: [],cla: [],dis: [],out: [], acc:[]}
-    
+
+    if(!this.FS.readdir("files/").find(e => e.length > 6)){
+      this.parent.addText("Error! Dont have files to read","textErr")
+      return(buffer);
+    }
+
     if(functionInfo.opfFunction.function == "opf_merge" || functionInfo.opfFunction.function == "opf_normalize"){
       var file = this.FS.readdir("files/").find(e => e.substr(-3) === "dat");
       if(file){
@@ -154,40 +160,35 @@ export default class FileManager{
       return(buffer);
     }
 
+    this.parent.addText("Successfully finished the opf function","textFunction-info")
 
-    if(this.FS.readdir("files/").find(e => e.length > 6)){
-      this.parent.addText("Successfully finished the opf function","textFunction-info")
+    var graphOrigin = functionInfo.objs.find(e => e.isGraph || e.isSubGraph)
+    var modelFileOrigin = functionInfo.objs.find(e => e.isModelFile)
+    console.log(graphOrigin,modelFileOrigin)
+    
+    var extraInfo = {}
+    functionInfo.opfFunction.extraOutInfo.map((out, index) => {
+      var dir = this.FS.readdir("files/");
+      var file = dir.find(e => e.substr(-3) === out)
+      if(file){
+        extraInfo = Object.assign({}, extraInfo, this.outInfo[out]((this.isDv.hasOwnProperty(out)?new DataView(this.FS.readFile("files/"+file, null).buffer):"files/"+file),this.getName[out](file),description,graphOrigin,modelFileOrigin))
+        this.FS.unlink("files/"+file);
+      }
+    })
 
-      var graphOrigin = functionInfo.objs.find(e => e.isGraph || e.isSubGraph)
-      var modelFileOrigin = functionInfo.objs.find(e => e.isModelFile)
-      console.log(graphOrigin,modelFileOrigin)
-      
-      var extraInfo = {}
-      functionInfo.opfFunction.extraOutInfo.map((out, index) => {
-        var dir = this.FS.readdir("files/");
-        var file = dir.find(e => e.substr(-3) === out)
-        if(file){
-          extraInfo = Object.assign({}, extraInfo, this.outInfo[out]((this.isDv.hasOwnProperty(out)?new DataView(this.FS.readFile("files/"+file, null).buffer):"files/"+file),this.getName[out](file),description,graphOrigin,modelFileOrigin))
-          this.FS.unlink("files/"+file);
-        }
-      })
+    functionInfo.opfFunction.out.map((out, index) => {
+      var dir = this.FS.readdir("files/");
+      var file = dir.find(e => e.substr(-3) === out)
+      if(file){
+        buffer[out][buffer[out].length] =  Object.assign({}, extraInfo, this.outInfo[out]((this.isDv.hasOwnProperty(out)?new DataView(this.FS.readFile("files/"+file, null).buffer):"files/"+file),this.getName[out](file),description,graphOrigin,modelFileOrigin,extraInfo))
+        this.FS.unlink("files/"+file);
+      }
+    })
 
-      functionInfo.opfFunction.out.map((out, index) => {
-        var dir = this.FS.readdir("files/");
-        var file = dir.find(e => e.substr(-3) === out)
-        if(file){
-          buffer[out][buffer[out].length] =  Object.assign({}, extraInfo, this.outInfo[out]((this.isDv.hasOwnProperty(out)?new DataView(this.FS.readFile("files/"+file, null).buffer):"files/"+file),this.getName[out](file),description,graphOrigin,modelFileOrigin,extraInfo))
-          this.FS.unlink("files/"+file);
-        }
-      })
+    if(this.FS.readdir("files/").find(e => e.length > 6)) 
+      this.parent.addText("Warning! Still have some files","textWar")
 
-      if(this.FS.readdir("files/").find(e => e.length > 6)) console.log("error! files > 6", this.FS.readdir("files/").find(e => e.length > 6))
-
-      this.parent.OPFFunctions.current.loadFunctions();
-    }
-    else{
-      this.parent.addText("Error! LibOPF didn't return files","textErr")
-    }
+    this.parent.OPFFunctions.current.loadFunctions();
     return(buffer);
   }
 
@@ -284,6 +285,7 @@ export default class FileManager{
     subGraph.nnodes = dv.getInt32(cont,true);
     subGraph.nlabels = graphOrigin.nlabels;
     subGraph.nfeats = graphOrigin.nfeats;
+    cont += 8;
     var id;
     for(var i = 0; i < subGraph.nnodes; i++){
       id = dv.getInt32(cont=cont+4,true);

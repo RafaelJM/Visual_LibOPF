@@ -85,12 +85,11 @@ export default class ObjDetails extends React.Component {
                 download as OPF file
                 </Button>
                 <Button variant="secondary" onClick={() => {
-                    console.log("fsad")
                     if (window.confirm('Do you want to delete '+obj.title+" ?" )) {
-                        for(var i in this.props.parent.Tree.current.state.treeData){
-                            this.props.parent.Tree.current.deleteData(i);
-                            return;
-                        }
+                        var i = -1;
+                        this.props.parent.Tree.current.state.treeData.find(e => {i++; return(Object.is(e.graph,obj))})
+                        this.props.parent.Tree.current.deleteData(i);
+                        return;
                     }
                 }}>
                 delete
@@ -278,8 +277,50 @@ export default class ObjDetails extends React.Component {
     detailsClassification(obj){
         return(
             <div>
+            {
+                obj.hasOwnProperty("accuracy") ?
+                <span>
+                    <InputGroup.Prepend>
+                        <InputGroup.Text>Accuracy</InputGroup.Text>
+                    </InputGroup.Prepend>
+                    <FormControl Value={obj.accuracy} disabled/>
+                </span>
+                :
+                ""
+            }
+            {
+                obj.hasOwnProperty("accuracy4Label") ?
+                <span>
+                    <InputGroup.Prepend>
+                        <InputGroup.Text>Accuracy for each label</InputGroup.Text>
+                    </InputGroup.Prepend>
+                    {Object.entries(obj.accuracy4Label).map((label, value) => (
+                        <span>
+                            {obj.accuracy4Label[value] != "" ? <FormControl Value={"Label "+(value+1)+": "+obj.accuracy4Label[value]} disabled/> : ""}
+                        </span>
+                    ))}
+                </span>
+                :
+                ""
+            }
             <Button variant="secondary" onClick={() => this.downloadOPFFFile(obj,obj.title+".txt")}>
             download as OPF file
+            </Button>
+            <Button variant="secondary" onClick={() => {
+              var functionInfo = {opfFunction: this.props.parent.OPFFunctions.current.functionDetails["opf_accuracy"], objs: [obj.subGraph,obj]}
+              this.props.parent.FM.runCFunction(functionInfo)
+              obj.accuracy = this.props.parent.FM.readCOutFiles(functionInfo, "Created by the function opf_accuracylabel").acc[0]["0"];
+              this.setState({details:this.detailsClassification(obj)})
+            }}>
+            Calculate accuracy
+            </Button>
+            <Button variant="secondary" onClick={() => {
+              var functionInfo = {opfFunction: this.props.parent.OPFFunctions.current.functionDetails["opf_accuracy4label"], objs: [obj.subGraph,obj]}
+              this.props.parent.FM.runCFunction(functionInfo)
+              obj.accuracy4Label = this.props.parent.FM.readCOutFiles(functionInfo, "Created by the function opf_accuracy4label").acc[0];
+              this.setState({details:this.detailsClassification(obj)})
+            }}>
+            Calculate accuracy for each label (class)
             </Button>
             </div>
         )

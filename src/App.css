@@ -262,10 +262,11 @@ button.list{
   height: 70px;
   right: -28px;
   top: calc(50% - 35px);
+  transform: rotate(180deg);
 }
 
 .graph-menu.clicked .button {
-  transform: rotate(180deg);
+  transform: rotate(0deg);
 }
 
 .graph-menu .tab-content .content {

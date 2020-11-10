@@ -29,7 +29,7 @@ export default class TreeData extends React.Component {
     deleteData(num){
         this.setState({
             activeData: (Object.is(this.state.activeData,this.state.treeData[num])? null : this.activeData),
-            treeData: (this.state.treeData.length == 1 ? [] : this.state.treeData.splice(num,1))
+            treeData: (this.state.treeData.length == 1 ? [] : this.state.treeData.slice(0,num).concat(this.state.treeData.slice(num+1,this.state.treeData.length)))
         },() => this.resetAllLoadedInfo())
     }
 
