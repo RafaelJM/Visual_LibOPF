@@ -200,7 +200,7 @@ export default class ObjDetails extends React.Component {
                     <InputGroup.Text>ordered_list_of_nodes</InputGroup.Text>
                 </InputGroup.Prepend>
                 <FormControl defaultValue={obj.ordered_list_of_nodes} disabled/>
-                <Button variant="secondary" onClick={() => {}}>
+                <Button variant="secondary" onClick={() => this.props.parent.Tree.current.addNewEmptyData(this.props.parent.FM.cloneToNewGraph(obj,true),"Clone of " + obj.title)}> 
                 clone to data
                 </Button>
                 <Button variant="secondary" onClick={() => this.downloadOPFFFile(obj,obj.title+".opf")}>

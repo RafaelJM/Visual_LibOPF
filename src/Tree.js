@@ -15,7 +15,7 @@ export default class TreeData extends React.Component {
     }
 
     resetAllLoadedInfo(){
-        this.props.parent.OPFFunctions.current.setState({return:[]})
+        this.props.parent.OPFFunctions.current.loadFunctions();
         this.props.parent.ObjDetails.current.setState({details:[]})
         this.props.parent.CSigma.current.clearObject()
     }

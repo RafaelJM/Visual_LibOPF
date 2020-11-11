@@ -192,20 +192,47 @@ export default class FileManager{
     return(buffer);
   }
 
-  cloneToNewGraph(obj){ //arrumar
-      var newData = Object.assign({}, obj);
-      delete newData.graphOrigin;
-      delete newData.isSubGraph;
-      newData.getDetails = "detailsGraph"
-      newData.saveInFile = "writeGraph"
-      newData.nodes = []
-      newData.isGraph = true;
-      for(var i in obj.nodes){
-          var node = Object.assign({}, obj.nodes[i])
-          node.self = node
-          newData.nodes = newData.nodes.concat(node)
+  cloneToNewGraph(obj, convertToSubGraphNode = false){ //arrumar
+    var newData= {
+      nnodes: obj.nnodes, nlabels: obj.nlabels, nfeats: obj.nfeats, title: "Clone of "+obj.title, description:obj.description, 
+      open: false, inicial_nlabels: obj.inicial_nlabels, inicial_nfeats: obj.inicial_nfeats, isGraph: true, positionDuplicate: [],
+      nodes: [],
+      edges:[]
+    };
+    newData.getDetails = "detailsGraph"
+    newData.saveInFile = "writeGraph"
+
+    newData.nodes = this.cloneNodes(obj,convertToSubGraphNode)
+
+    return(newData);
+  }
+
+  cloneNodes(obj, convertToSubGraphNode = false){ //arrumar
+    var nodes = []
+    if(convertToSubGraphNode){
+      for(var i = 0; i < obj.nnodes; i++){
+        nodes[i] = {
+        graph: obj,
+        feat: [  ],
+        id: obj.nodes[i].id,//position
+        truelabel: obj.nodes[i].truelabel,
+        x:obj.nodes[i].x, y:obj.nodes[i].y, size:obj.nodes[i].size, color:obj.nodes[i].color, title:obj.nodes[i].title, label:obj.nodes[i].label, self:null};
+        for(var j = 0; j < obj.nfeats; j++){
+          obj.nodes[i].feat[j] = obj.nodes[i].feat[j];
+        }
+
+        nodes[i].self = obj.nodes[i];
+        nodes[i].getDetails = "detailsGraphNode"
       }
-      return(newData)
+    } else {
+      for(var i in obj.nodes){
+        var node = Object.assign({}, obj.nodes[i])
+        node.graph = obj
+        node.self = node
+        nodes = nodes.concat(node)
+      }
+    }
+    return(nodes)
   }
 
   readGraph(dv, title, description){
@@ -425,7 +452,7 @@ export default class FileManager{
       var classification = {isClassification: true, classification: this.FS.readFile(file,{encoding: 'utf8'}).split("\n"), title: title, description:description, subGraph: subGraph, modelFileClassificator: modelFileClassificator}
       classification.getDetails = "detailsClassification"
       classification.saveInFile = "writeClassification"
-      classification.nodes = classification.modelFileClassificator.nodes
+      classification.nodes = this.cloneNodes(classification.modelFileClassificator)
       classification.edges = classification.modelFileClassificator.edges
 
       for(var i = 0; i < extraInfo.predList.length-1; i++){
@@ -438,7 +465,7 @@ export default class FileManager{
           })
         }
       }
-      classification.nodes = classification.nodes.concat(classification.subGraph.nodes)
+      classification.nodes = classification.nodes.concat(this.cloneNodes(classification.subGraph))
       return(classification)
     }
     else
