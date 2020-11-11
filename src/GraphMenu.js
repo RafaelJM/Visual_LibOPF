@@ -15,7 +15,6 @@ export default class GraphMenu extends React.Component {
                         <p class="graph-text">{this.props.customSigma.current.state.loadedGraph.title ? "Showing graph "+this.props.customSigma.current.state.loadedGraph.title : ""}</p>
                         <FormControl as="select" onChange={(e) => {
                             this.props.parent.ObjDetails.current.loadDetails(this.props.customSigma.current.state.loadedGraph.nodes[e.target.value])
-                            this.props.parent.openMenu([1])
                             this.props.parent.CSigma.current.focousInXY(this.props.customSigma.current.state.loadedGraph.nodes[e.target.value])
                         }}>
                             <option selected disabled hidden>Select node</option>

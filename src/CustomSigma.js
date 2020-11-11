@@ -5,12 +5,17 @@ export default class CustomSigma extends React.Component {
       super(props)
       props.sigma.bind('clickNode',(e) => {
         if(this.state.loadedGraph.hasOwnProperty("distances")){
-          //props.parent.ObjDetails.current.loadDetails(e.data.node)
-          this.loadGraphDistance(e.data.node,this.state.loadedGraph)
+          if(this.selectedNode == null){
+            this.selectedNode = e.data.node;
+          } else {
+            this.loadDistance(e.data.node,this.state.loadedGraph)
+            this.selectedNode = null
+          }
         }else{
           props.parent.ObjDetails.current.loadDetails(e.data.node)
         }
       })
+      this.selectedNode = null
       this.state = {loadedGraph: {}, X: 0, Y: 1}
     }
 
@@ -52,13 +57,15 @@ export default class CustomSigma extends React.Component {
       if(Graph.hasOwnProperty("nodes")){
         this.setState({loadedGraph: Graph, X:0, Y:1},()=>{
           try{
+            if(Graph.hasOwnProperty("distances"))
+              this.props.parent.addText("This is a distance viewer graph, click on two nodes to get the distance","textOut")
+            this.selectedNode = null
             this.props.parent.ObjDetails.current.loadNodeSelect(Graph);
             this.props.sigma.graph.clear();
             this.props.sigma.graph.read(Graph);
             this.props.sigma.refresh();
             this.props.graphMenu.current.updateInfo();
             this.props.parent.Tree.current.setState({});
-            this.props.parent.openMenu([0])
           }
           catch(e){
             this.props.parent.addText("Error! "+e,"textErr")
@@ -95,20 +102,21 @@ export default class CustomSigma extends React.Component {
       setTimeout(() => {node.color = aux; this.props.sigma.refresh();}, 2500);
     }
 
-    loadGraphDistance(node,distancesObj){
-      distancesObj.edges = []
-      for(var i = 0; i < distancesObj.nodes.length; i++){
-        if(distancesObj.nodes[i].id !== node.id){
-          distancesObj.edges = distancesObj.edges.concat({
-            id: distancesObj.edges.length,
-            source: node.id,
-            target: distancesObj.nodes[i].id,
-            type: "line", //arrow
-          })
-        }
+    loadDistance(node,distancesObj){
+      if(this.selectedNode.id !== node.id){
+        if(this.props.sigma.graph.edges().length)
+          this.props.sigma.graph.dropEdge(1);
+        this.props.sigma.graph.addEdge({
+          id: 1,
+          label: distancesObj.distances[this.selectedNode.id][node.id],
+          source: node.id,
+          target: this.selectedNode.id,
+          type: "line", //arrow
+        })
+        console.log(node,this.selectedNode,distancesObj)
+        this.props.sigma.refresh();
+        this.props.parent.addText("Distance between "+this.selectedNode.title+" and "+node.title+" is "+distancesObj.distances[this.selectedNode.id][node.id],"textOut")
       }
-      console.log("d",distancesObj)
-      this.loadSugGraph(distancesObj)
     }
     
     render(){

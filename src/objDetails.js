@@ -14,7 +14,6 @@ export default class ObjDetails extends React.Component {
 
     loadDetails(obj){
         console.log(obj)
-        this.props.parent.openMenu([1])
         this.setState({ details:[]}, () => {
             this.setState({ details: this[obj.getDetails](obj)})
         });
@@ -39,7 +38,12 @@ export default class ObjDetails extends React.Component {
                 <InputGroup.Prepend>
                     <InputGroup.Text>Title</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl defaultValue={obj.title} onChange={(e) => {obj.title = e.target.value; this.props.parent.Tree.current.setState({});this.props.parent.GraphMenu.current.updateInfo();}}/>
+                <FormControl defaultValue={obj.title} onChange={(e) => {
+                    obj.title = e.target.value; 
+                    this.props.parent.Tree.current.setState({});
+                    this.props.parent.GraphMenu.current.updateInfo();
+                    this.props.parent.OPFFunctions.current.loadFunctions();
+                }}/>
 
                 <InputGroup.Prepend>
                     <InputGroup.Text>Description</InputGroup.Text>

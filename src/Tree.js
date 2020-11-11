@@ -23,7 +23,8 @@ export default class TreeData extends React.Component {
     addCompleteState(state){
         this.setState(state,() => this.resetAllLoadedInfo())
         this.props.parent.OPFFunctions.current.loadFunctions();
-        this.props.parent.CSigma.current.loadSugGraph(this.state.activeData.graph);
+        if(this.state.activeData)
+            this.props.parent.CSigma.current.loadSugGraph(this.state.activeData.graph);
     }
 
     deleteData(num){
