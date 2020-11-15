@@ -31,6 +31,42 @@ export default class ObjDetails extends React.Component {
         element.click();
         document.body.removeChild(element);
     }
+
+    changeNTrueLabel(e,obj){
+        var num = parseInt(e.target.parentNode.childNodes[0].value)
+        if(num && num > 0){
+            var node = obj.nodes.find(n => n.truelabel > num)
+            if(node)
+                this.props.parent.addText("The node "+ node.title +" have a truelabel ("+node.truelabel+") higher than the new one that you are trying to define ("+num+"), please change the truelabel of the nodes before change the classes amount","textErr")
+            else{
+                obj.nlabels = num
+                return;
+            }
+        }
+        e.target.parentNode.childNodes[0].value = ""
+    }
+
+    changeNFeat(e,obj){
+        var num = parseInt(e.target.parentNode.childNodes[0].value)
+        if(num && num > 1){
+            if(!obj.nodes[0].feat.length === num) return;
+            if(obj.nodes[0].feat.length > num){
+                if (!window.confirm("You are trying to reduce the amount of features of the base, some features will be lost forever, ok?"))
+                    return;
+                obj.nodes.filter(n => {
+                    n.feat = n.feat.slice(0, num);
+                })
+            }
+            else{
+                obj.nodes.filter(n => {
+                    n.feat = n.feat.concat(Array(num - n.feat.length).fill(0));
+                })
+            }
+            obj.nfeats = num
+            return;
+        }
+        e.target.parentNode.childNodes[0].value = ""
+    }
     
     detailsGraph(obj){ //arrumar, work with nlabels nfeats details
         return(
@@ -51,19 +87,33 @@ export default class ObjDetails extends React.Component {
                 <FormControl defaultValue={obj.description} onChange={(e) => {obj.description = e.target.value;}}/>
 
                 <InputGroup.Prepend>
-                    <InputGroup.Text>Number of nodes (nnodes)</InputGroup.Text>
+                    <InputGroup.Text>Number of nodes</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl defaultValue={obj.nnodes} disabled/>
+                <FormControl defaultValue={obj.nodes.length} disabled/>
 
                 <InputGroup.Prepend>
-                    <InputGroup.Text>Number of labels (nlabels)</InputGroup.Text>
+                    <InputGroup.Text>Number of labels (classes)</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl defaultValue={obj.nlabels} onChange={(e) => {obj.nlabels = e.target.value;}} disabled={obj.hasOwnProperty("isSubGraph")?"disabled":""}/>
+                <InputGroup.Prepend>
+                    <FormControl defaultValue={obj.hasOwnProperty("isSubGraph")?obj.graphOrigin.nlabels:obj.nlabels} disabled={obj.hasOwnProperty("isSubGraph")?"disabled":""}/>
+                    {obj.hasOwnProperty("isSubGraph")?"":
+                        <Button variant="secondary" onClick={(e) => this.changeNTrueLabel(e,obj)}>
+                            Apply
+                        </Button>
+                    }
+                </InputGroup.Prepend>
 
                 <InputGroup.Prepend>
-                    <InputGroup.Text>Number of labels (nfeats)</InputGroup.Text>
+                    <InputGroup.Text>Number of feats (features)</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl defaultValue={obj.nfeats} onChange={(e) => {obj.nfeats = e.target.value;}} disabled={obj.hasOwnProperty("isSubGraph")?"disabled":""}/>
+                <InputGroup.Prepend>
+                    <FormControl defaultValue={obj.hasOwnProperty("isSubGraph")?obj.graphOrigin.nfeats:obj.nfeats} disabled={obj.hasOwnProperty("isSubGraph")?"disabled":""}/>
+                    {obj.hasOwnProperty("isSubGraph")?"":
+                        <Button variant="secondary" onClick={(e) => this.changeNFeat(e,obj)}>
+                            Apply
+                        </Button>
+                    }
+                </InputGroup.Prepend>
                 
                 {obj.hasOwnProperty("isSubGraph")?
                     <Button variant="secondary" onClick={() => this.props.parent.Tree.current.addNewEmptyData(this.props.parent.FM.cloneToNewGraph(obj),obj.graphOrigin.title + " - " + obj.title)}> 
@@ -165,36 +215,47 @@ export default class ObjDetails extends React.Component {
                 <InputGroup.Prepend>
                     <InputGroup.Text>Number of nodes</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl defaultValue={obj.nnodes} disabled/>
+                <FormControl defaultValue={obj.nodes.length} disabled/>
 
                 <InputGroup.Prepend>
-                    <InputGroup.Text>Number of labels (nlabels)</InputGroup.Text>
+                    <InputGroup.Text>Number of labels (classes)</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl defaultValue={obj.nlabels} onChange={(e) => {obj.nlabels = e.target.value;}}/>
+                <InputGroup.Prepend>
+                    <FormControl defaultValue={obj.nlabels} disabled={obj.hasOwnProperty("isSubGraph")?"disabled":""}/>
+                    <Button variant="secondary" onClick={() => {}}>
+                        Apply
+                    </Button>
+                </InputGroup.Prepend>
 
                 <InputGroup.Prepend>
-                    <InputGroup.Text>Number of feats (nfeats)</InputGroup.Text>
+                    <InputGroup.Text>Number of feats (features)</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl defaultValue={obj.nfeats} onChange={(e) => {obj.nfeats = e.target.value;}}/>
+                <InputGroup.Prepend>
+                    <FormControl defaultValue={obj.nfeats}disabled={obj.hasOwnProperty("isSubGraph")?"disabled":""}/>
+                    <Button variant="secondary" onClick={() => {}}>
+                        Apply
+                    </Button>
+                </InputGroup.Prepend>
+
                 <InputGroup.Prepend>
                     <InputGroup.Text>df</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl defaultValue={obj.df} onChange={(e) => {obj.df = e.target.value;}}/>
+                <FormControl defaultValue={obj.df} onChange={(e) => {obj.df = e.target.value;}} disabled/>
 
                 <InputGroup.Prepend>
                     <InputGroup.Text>bestk</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl defaultValue={obj.bestk} onChange={(e) => {obj.bestk = e.target.value;}}/>
+                <FormControl defaultValue={obj.bestk} onChange={(e) => {obj.bestk = e.target.value;}} disabled/>
 
                 <InputGroup.Prepend>
                     <InputGroup.Text>mindens</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl defaultValue={obj.maxdens} onChange={(e) => {obj.mindens = e.target.value;}}/>
+                <FormControl defaultValue={obj.maxdens} onChange={(e) => {obj.mindens = e.target.value;}} disabled/>
 
                 <InputGroup.Prepend>
                     <InputGroup.Text>maxdens</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl defaultValue={obj.maxdens} onChange={(e) => {obj.maxdens = e.target.value;}} />
+                <FormControl defaultValue={obj.maxdens} onChange={(e) => {obj.maxdens = e.target.value;}}  disabled/>
 
                 <InputGroup.Prepend>
                     <InputGroup.Text>ordered_list_of_nodes</InputGroup.Text>

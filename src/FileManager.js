@@ -197,7 +197,7 @@ export default class FileManager{
 
   cloneToNewGraph(obj, convertToSubGraphNode = false){ //arrumar
     var newData= {
-      nnodes: obj.nnodes, nlabels: obj.nlabels, nfeats: obj.nfeats, title: "Clone of "+obj.title, description:obj.description, 
+      nlabels: obj.nlabels, nfeats: obj.nfeats, title: "Clone of "+obj.title, description:obj.description, 
       open: false, inicial_nlabels: obj.inicial_nlabels, inicial_nfeats: obj.inicial_nfeats, isGraph: true, positionDuplicate: [],
       nodes: [],
       edges:[]
@@ -213,7 +213,7 @@ export default class FileManager{
   cloneNodes(newData, obj, convertToSubGraphNode = false){ //arrumar
     var nodes = []
     if(convertToSubGraphNode){
-      for(var i = 0; i < obj.nnodes; i++){
+      for(var i = 0; i < obj.nodes.length; i++){
         nodes[i] = {
         graph: newData,
         feat: [],
@@ -240,7 +240,7 @@ export default class FileManager{
 
   readGraph(dv, title, description){
     var graph= {
-      nnodes: -1, nlabels: -1, nfeats: -1, title: title, description:description, open: false, inicial_nlabels: -1, inicial_nfeats: -1, isGraph: true, positionDuplicate: [],
+      nlabels: -1, nfeats: -1, title: title, description:description, open: false, inicial_nlabels: -1, inicial_nfeats: -1, isGraph: true, positionDuplicate: [],
       nodes: [],
       edges:[]
     };
@@ -248,16 +248,16 @@ export default class FileManager{
     graph.saveInFile = "writeGraph"
 
     var cont = 0;
-    graph.nnodes = dv.getInt32(cont,true);
+    var nnodes = dv.getInt32(cont,true);
     graph.nlabels = dv.getInt32(cont=cont+4,true);
     graph.nfeats = dv.getInt32(cont=cont+4,true);
 
-    if(graph.nnodes < 0 || graph.nlabels < 0 || graph.nfeats < 0 || (3 + graph.nnodes*(2+graph.nfeats))*4 !== dv.byteLength){
+    if(nnodes < 0 || graph.nlabels < 0 || graph.nfeats < 0 || (3 + nnodes*(2+graph.nfeats))*4 !== dv.byteLength){
       this.parent.addText("Error in the graph/data reading","textErr")
       return;
     }
 
-    for(var i = 0; i < graph.nnodes; i++){
+    for(var i = 0; i < nnodes; i++){
       graph.nodes[i] = {
       graph: graph,
       feat: [  ],
@@ -281,8 +281,6 @@ export default class FileManager{
       graph.nodes[i].self = graph.nodes[i];
       graph.nodes[i].getDetails = "detailsGraphNode"
     }
-
-    graph.nnodes = graph.nodes.length
     
     if(graph.positionDuplicate.length){
       this.parent.addText("Warning! Some nodes had same position (ID), so new positions were given to them","textWar")
@@ -292,13 +290,13 @@ export default class FileManager{
 
   writeGraph(graph, file){
     console.log("b")
-    const buf = Buffer.allocUnsafe((3 + graph.nnodes*(2+graph.nfeats))*4);
+    const buf = Buffer.allocUnsafe((3 + graph.nodes.length*(2+graph.nfeats))*4);
     
     var cont = 0;
-    buf.writeInt32LE(graph.nnodes,cont);
+    buf.writeInt32LE(graph.nodes.length,cont);
     buf.writeInt32LE(graph.nlabels,cont=cont+4);
     buf.writeInt32LE(graph.nfeats,cont=cont+4);
-    for(var i = 0; i < graph.nnodes; i++){
+    for(var i = 0; i < graph.nodes.length; i++){
       buf.writeInt32LE(graph.nodes[i].id,cont=cont+4);
       buf.writeInt32LE(graph.nodes[i].truelabel,cont=cont+4);
       for(var j = 0; j < graph.nfeats; j++){
@@ -314,28 +312,23 @@ export default class FileManager{
     subGraph.getDetails = "detailsGraph"
     subGraph.saveInFile = "writeSubGraph"
 
-    subGraph.nnodes = dv.getInt32(cont,true);
-    subGraph.nlabels = dv.getInt32(cont=cont+4,true);
-    subGraph.nfeats = dv.getInt32(cont=cont+4,true);
+    var nnodes = dv.getInt32(cont,true);
+    var nlabels = dv.getInt32(cont=cont+4,true);
+    var nfeats = dv.getInt32(cont=cont+4,true);
     var id;
     console.log(subGraph, dv)
-    if(subGraph.nnodes < 0 || subGraph.nlabels < 0 || subGraph.nfeats < 0 || (3 + subGraph.nnodes*(2+subGraph.nfeats))*4 !== dv.byteLength){
+    if(nnodes < 0 || nlabels < 0 || nfeats < 0 || (3 + nnodes*(2+nfeats))*4 !== dv.byteLength){
       this.parent.addText("Error in the graph/data reading","textErr")
       return;
     }
 
-    for(var i = 0; i < subGraph.nnodes; i++){
+    for(var i = 0; i < nnodes; i++){
       id = dv.getInt32(cont=cont+4,true);
       var node = this.parent.Tree.current.state.activeData.graph.nodes.find(element => element.id === id);
       if(node != undefined)
         subGraph.nodes.push(node)
-      cont += 4 + subGraph.nfeats * 4
+      cont += 4 + nfeats * 4
     }
-    
-    subGraph.nnodes = subGraph.nodes.length+1;
-    subGraph.nlabels = graphOrigin.nlabels;
-    subGraph.nfeats = graphOrigin.nfeats;
-
     return(subGraph)
   }
   
@@ -359,7 +352,7 @@ export default class FileManager{
 
   readModelFile(dv, title, description){
     var modelFile= {
-      nnodes: -1, nlabels: -1, nfeats: -1, df: -1, bestk: -1, K: -1, mindens: -1, maxdens: -1, title: title, open: false, description:description, ordered_list_of_nodes: [], isModelFile: true,
+      nlabels: -1, nfeats: -1, df: -1, bestk: -1, K: -1, mindens: -1, maxdens: -1, title: title, open: false, description:description, ordered_list_of_nodes: [], isModelFile: true,
       positionDuplicate: [],
       nodes: [],
       edges:[]
@@ -369,7 +362,7 @@ export default class FileManager{
     modelFile.saveInFile = "writeModelFile"
     
     var cont = 0;
-    modelFile.nnodes = dv.getInt32(cont,true);
+    var nnodes = dv.getInt32(cont,true);
     modelFile.nlabels = dv.getInt32(cont=cont+4,true);
     modelFile.nfeats = dv.getInt32(cont=cont+4,true);
     modelFile.df = dv.getFloat32(cont=cont+4,true);
@@ -378,12 +371,12 @@ export default class FileManager{
     modelFile.mindens = dv.getFloat32(cont=cont+4,true);
     modelFile.maxdens = dv.getFloat32(cont=cont+4,true);
     
-    if(modelFile.nnodes < 0 || modelFile.nlabels < 0 || modelFile.nfeats < 0 || (8 + modelFile.nnodes*(7+modelFile.nfeats+1))*4 != dv.byteLength){
+    if(nnodes < 0 || modelFile.nlabels < 0 || modelFile.nfeats < 0 || (8 + nnodes*(7+modelFile.nfeats+1))*4 != dv.byteLength){
       this.parent.addText("Error in the graph/data reading","textErr")
       return;
     }
 
-    for(var i = 0; i < modelFile.nnodes; i++){
+    for(var i = 0; i < nnodes; i++){
       modelFile.nodes[i] = {
       feat: [  ],
       id: dv.getInt32(cont=cont+4,true),
@@ -413,7 +406,7 @@ export default class FileManager{
       modelFile.nodes[i].self = modelFile.nodes[i];
       modelFile.nodes[i].getDetails = "detailsModelFileNode"
     }
-    for(i = 0; i < modelFile.nnodes; i++){
+    for(i = 0; i < nnodes; i++){
       modelFile.ordered_list_of_nodes[i] = dv.getInt32(cont=cont+4,true);
     }
 
@@ -431,7 +424,7 @@ export default class FileManager{
       }
     }
 
-    if((8 + modelFile.nnodes*(7+modelFile.nfeats)+ modelFile.ordered_list_of_nodes.length)*4 !== dv.byteLength){
+    if((8 + nnodes*(7+modelFile.nfeats)+ modelFile.ordered_list_of_nodes.length)*4 !== dv.byteLength){
       this.parent.addText("Error in the graph/data reading","textErr")
       return;
     }
@@ -444,10 +437,10 @@ export default class FileManager{
   }
 
   writeModelFile(modelFile, file){
-    const buf = Buffer.allocUnsafe((8 + modelFile.nnodes*(7+modelFile.nfeats) + modelFile.ordered_list_of_nodes.length)*4);
+    const buf = Buffer.allocUnsafe((8 + modelFile.nodes.length*(7+modelFile.nfeats) + modelFile.ordered_list_of_nodes.length)*4);
     
     var cont = 0;
-    buf.writeInt32LE(modelFile.nnodes,cont);
+    buf.writeInt32LE(modelFile.nodes.length,cont);
     buf.writeInt32LE(modelFile.nlabels,cont=cont+4);
     buf.writeInt32LE(modelFile.nfeats,cont=cont+4);
     buf.writeFloatLE(modelFile.df,cont=cont+4);
@@ -455,7 +448,7 @@ export default class FileManager{
     buf.writeFloatLE(modelFile.K,cont=cont+4);
     buf.writeFloatLE(modelFile.mindens,cont=cont+4);
     buf.writeFloatLE(modelFile.maxdens,cont=cont+4);
-    for(var i = 0; i < modelFile.nnodes; i++){
+    for(var i = 0; i < modelFile.nodes.length; i++){
       buf.writeInt32LE(modelFile.nodes[i].id,cont=cont+4);
       buf.writeInt32LE(modelFile.nodes[i].truelabel,cont=cont+4);
       buf.writeInt32LE(modelFile.nodes[i].pred,cont=cont+4);
@@ -467,7 +460,7 @@ export default class FileManager{
         buf.writeFloatLE(modelFile.nodes[i].feat[j],cont=cont+4);
       }
     }
-    for(i = 0; i < modelFile.nnodes; i++){
+    for(i = 0; i < modelFile.nodes.length; i++){
       buf.writeInt32LE(modelFile.ordered_list_of_nodes[i],cont=cont+4);
     }
     this.FS.writeFile(file,Buffer.from(buf));

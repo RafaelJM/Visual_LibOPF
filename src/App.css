@@ -278,6 +278,11 @@ button.list{
   margin-top: 5px;
 }
 
+.details .input-group-prepend .btn{
+  margin-top: 0px;
+  margin-bottom: 5px;
+}
+
 .details .form-control{
   margin-bottom: 5px;
 }
