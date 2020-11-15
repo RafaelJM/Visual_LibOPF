@@ -27,11 +27,16 @@ export default class TreeData extends React.Component {
             this.props.parent.CSigma.current.loadSugGraph(this.state.activeData.graph);
     }
 
-    deleteData(num){
+    deleteData(data){
         this.setState({
-            activeData: (Object.is(this.state.activeData,this.state.treeData[num])? null : this.activeData),
-            treeData: (this.state.treeData.length == 1 ? [] : this.state.treeData.slice(0,num).concat(this.state.treeData.slice(num+1,this.state.treeData.length)))
+            activeData: (Object.is(this.state.activeData,data)? null : this.activeData),
+            treeData: this.state.treeData.filter(o => {if(!Object.is(o,data))return(o)})
         },() => this.resetAllLoadedInfo())
+    }
+
+    deleteObject(obj,childrenTitle){
+        obj.data[childrenTitle].children = obj.data[childrenTitle].children.filter(o => {if(!Object.is(o,obj))return(o)})
+        this.setState({},() => this.resetAllLoadedInfo())
     }
 
     addNewEmptyData(data, title = ""){
@@ -73,6 +78,8 @@ export default class TreeData extends React.Component {
             auxData[key.title] = key;
         }))
 
+        data.data = auxData;
+
         this.setState({
             treeData: this.state.treeData.concat(auxData),
             activeData: auxData
@@ -82,10 +89,14 @@ export default class TreeData extends React.Component {
     }
 
     addBuffer(buffer){
+        console.log(buffer)
         this.setState( prevState => {
             Object.keys(buffer).map((key, i) => {
                 if(i >= 4) return;
-                prevState.activeData.children[i].children = prevState.activeData.children[i].children.concat(buffer[key])
+                if(buffer[key]){
+                    buffer[key].filter((e) => {e.data = prevState.activeData})
+                    prevState.activeData.children[i].children = prevState.activeData.children[i].children.concat(buffer[key])
+                }
             })
             return {
                 prevState
@@ -139,6 +150,14 @@ export default class TreeData extends React.Component {
     }
 
     readData(title, description) {   
+        this.readOPFFile((reader) => {
+            var loadedFile = this.props.parent.FM.readGraph(new DataView(reader.result),title,description);
+            this.props.parent.Tree.current.addNewEmptyData(loadedFile);
+            this.props.parent.OPFFunctions.current.loadFunctions()
+        })
+    }
+
+    readOPFFile(onLoadFunction){
         var element = document.createElement('input');
                     
         element.setAttribute('type', 'file')
@@ -152,11 +171,7 @@ export default class TreeData extends React.Component {
             var reader = new FileReader();
             
             reader.readAsArrayBuffer(element.files[0]);
-            reader.onload = function() {     
-                var loadedFile = scope.props.parent.FM.readGraph(new DataView(reader.result),title,description);
-                scope.props.parent.Tree.current.addNewEmptyData(loadedFile);
-                scope.props.parent.OPFFunctions.current.loadFunctions()
-            }
+            reader.onload = () => onLoadFunction(reader)
 
             document.body.removeChild(element);
         })
@@ -198,9 +213,9 @@ export default class TreeData extends React.Component {
             html = html.concat(this.generateTree(data))
         })
         return (
-            <div>
+            <div class="tree">
                 <Button variant="secondary" onClick={() => this.readData("Graph Data", "Loaded by the user")}>
-                +
+                Read
                 </Button>
                 <Button variant="secondary"
                 onClick={() => {
@@ -218,10 +233,10 @@ export default class TreeData extends React.Component {
                     document.body.removeChild(element);
                 }}
                 >
-                download
+                Export
                 </Button>
                 <Button variant="secondary" onClick={() => this.readJSON()}>
-                load
+                Inport
                 </Button>
                 {html}
             </div>

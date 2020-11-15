@@ -4,6 +4,7 @@ export default class CustomSigma extends React.Component {
     constructor(props){
       super(props)
       props.sigma.bind('clickNode',(e) => {
+        console.log(e)
         if(this.state.loadedGraph.hasOwnProperty("distances")){
           if(this.selectedNode == null){
             this.selectedNode = e.data.node;
@@ -12,7 +13,7 @@ export default class CustomSigma extends React.Component {
             this.selectedNode = null
           }
         }else{
-          props.parent.ObjDetails.current.loadDetails(e.data.node)
+          props.parent.ObjDetails.current.loadDetails(e.data.node.self)
         }
       })
       this.selectedNode = null
@@ -69,6 +70,22 @@ export default class CustomSigma extends React.Component {
           }
           catch(e){
             this.props.parent.addText("Error! "+e,"textErr")
+            if(e.includes("exists")){
+              if(e.includes("node")){
+                if (window.confirm("Error! "+e + " You need to change the position (ID) of the nodes to see this graph, ok?")){
+                  for(var i in Graph.nodes){
+                    Graph.nodes[i].id = i
+                  }
+                  this.loadSugGraph(Graph)
+                }
+              }
+              if(e.includes("edge")){
+                for(var i in Graph.nodes){
+                  Graph.edges[i].id = i
+                }
+                this.loadSugGraph(Graph)
+              }
+            }
           }
         })
       }

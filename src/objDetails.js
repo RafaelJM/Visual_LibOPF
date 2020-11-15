@@ -51,23 +51,23 @@ export default class ObjDetails extends React.Component {
                 <FormControl defaultValue={obj.description} onChange={(e) => {obj.description = e.target.value;}}/>
 
                 <InputGroup.Prepend>
-                    <InputGroup.Text>Number of nodes</InputGroup.Text>
+                    <InputGroup.Text>Number of nodes (nnodes)</InputGroup.Text>
                 </InputGroup.Prepend>
                 <FormControl defaultValue={obj.nnodes} disabled/>
 
                 <InputGroup.Prepend>
-                    <InputGroup.Text>nlabels</InputGroup.Text>
+                    <InputGroup.Text>Number of labels (nlabels)</InputGroup.Text>
                 </InputGroup.Prepend>
                 <FormControl defaultValue={obj.nlabels} onChange={(e) => {obj.nlabels = e.target.value;}} disabled={obj.hasOwnProperty("isSubGraph")?"disabled":""}/>
 
                 <InputGroup.Prepend>
-                    <InputGroup.Text>nfeats</InputGroup.Text>
+                    <InputGroup.Text>Number of labels (nfeats)</InputGroup.Text>
                 </InputGroup.Prepend>
                 <FormControl defaultValue={obj.nfeats} onChange={(e) => {obj.nfeats = e.target.value;}} disabled={obj.hasOwnProperty("isSubGraph")?"disabled":""}/>
                 
                 {obj.hasOwnProperty("isSubGraph")?
                     <Button variant="secondary" onClick={() => this.props.parent.Tree.current.addNewEmptyData(this.props.parent.FM.cloneToNewGraph(obj),obj.graphOrigin.title + " - " + obj.title)}> 
-                    clone to data
+                    Clone to data
                     </Button>
                     :
                     <spam>
@@ -86,17 +86,18 @@ export default class ObjDetails extends React.Component {
                     </spam>
                 }
                 <Button variant="secondary" onClick={() => this.downloadOPFFFile(obj,obj.title+".dat")}>
-                download as OPF file
+                Download graph as OPF file
                 </Button>
-                <Button variant="secondary" onClick={() => {
+                <Button variant="danger" onClick={() => {
                     if (window.confirm('Do you want to delete '+obj.title+" ?" )) {
-                        var i = -1;
-                        this.props.parent.Tree.current.state.treeData.find(e => {i++; return(Object.is(e.graph,obj))})
-                        this.props.parent.Tree.current.deleteData(i);
+                        if(obj.hasOwnProperty("isSubGraph"))
+                            this.props.parent.Tree.current.deleteObject(obj,"SubGraphs");
+                        else
+                            this.props.parent.Tree.current.deleteData(obj.data);
                         return;
                     }
                 }}>
-                delete
+                Delete
                 </Button>
             </div>
 
@@ -109,7 +110,7 @@ export default class ObjDetails extends React.Component {
                 <InputGroup.Prepend>
                     <InputGroup.Text>Title</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl defaultValue={obj.title} onChange={(e) => {obj.title = e.target.value; this.props.parent.Tree.current.setState({});this.props.parent.GraphMenu.current.updateInfo();}}/>
+                <FormControl defaultValue={obj.title} onChange={(e) => {obj.title = e.target.value; obj.label = e.target.value; this.props.parent.Tree.current.setState({});this.props.parent.GraphMenu.current.updateInfo();}}/>
 
                 <InputGroup.Prepend>
                     <InputGroup.Text>Node position (ID)</InputGroup.Text>
@@ -119,17 +120,16 @@ export default class ObjDetails extends React.Component {
                 <InputGroup.Prepend>
                     <InputGroup.Text>True label (class)</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl defaultValue={obj.truelabel} onChange={(e) => {
-                    if(obj.graph.nlabels >= e.target.value){
-                        obj.truelabel = e.target.value; 
-                        obj.color = this.props.parent.FM.colors[e.target.value];
-                        this.props.parent.CSigma.current.updateNode(obj);
-                      }
-                      else{
-                        e.target.value = obj.truelabel
-                        console.log("erro")
-                      }
-                }}/>
+                <FormControl as="select" onChange={(e) => {
+                     obj.truelabel = e.target.value; 
+                     obj.color = this.props.parent.FM.colors[e.target.value];
+                     this.props.parent.CSigma.current.updateNode(obj);
+                }}>
+
+                    {[...Array(obj.graph.nlabels).keys()].map((num,index) => {
+                        return(<option value={num+1} selected={obj.truelabel === (num+1)? "selected" : ""}>{num+1}</option>)
+                    })}
+                </FormControl>
 
                 {obj.feat.map((feat, indexFeat) => (
                     <div>
@@ -142,8 +142,8 @@ export default class ObjDetails extends React.Component {
                     </div>
                 ))}
 
-                <Button variant="secondary" onClick={() => {}}>
-                delete
+                <Button variant="danger" onClick={() => {}}>
+                Delete
                 </Button>
             </div>
         )
@@ -168,14 +168,14 @@ export default class ObjDetails extends React.Component {
                 <FormControl defaultValue={obj.nnodes} disabled/>
 
                 <InputGroup.Prepend>
-                    <InputGroup.Text>nlabels</InputGroup.Text>
+                    <InputGroup.Text>Number of labels (nlabels)</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl defaultValue={obj.nlabels} onChange={(e) => {obj.nlabels = e.target.value;}} disabled={obj.hasOwnProperty("isSubGraph")?"disabled":""}/>
+                <FormControl defaultValue={obj.nlabels} onChange={(e) => {obj.nlabels = e.target.value;}}/>
 
                 <InputGroup.Prepend>
-                    <InputGroup.Text>nfeats</InputGroup.Text>
+                    <InputGroup.Text>Number of feats (nfeats)</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl defaultValue={obj.nfeats} onChange={(e) => {obj.nfeats = e.target.value;}} disabled={obj.hasOwnProperty("isSubGraph")?"disabled":""}/>
+                <FormControl defaultValue={obj.nfeats} onChange={(e) => {obj.nfeats = e.target.value;}}/>
                 <InputGroup.Prepend>
                     <InputGroup.Text>df</InputGroup.Text>
                 </InputGroup.Prepend>
@@ -194,20 +194,26 @@ export default class ObjDetails extends React.Component {
                 <InputGroup.Prepend>
                     <InputGroup.Text>maxdens</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl defaultValue={obj.maxdens} onChange={(e) => {obj.maxdens = e.target.value;}}/>
+                <FormControl defaultValue={obj.maxdens} onChange={(e) => {obj.maxdens = e.target.value;}} />
 
                 <InputGroup.Prepend>
                     <InputGroup.Text>ordered_list_of_nodes</InputGroup.Text>
                 </InputGroup.Prepend>
                 <FormControl defaultValue={obj.ordered_list_of_nodes} disabled/>
                 <Button variant="secondary" onClick={() => this.props.parent.Tree.current.addNewEmptyData(this.props.parent.FM.cloneToNewGraph(obj,true),"Clone of " + obj.title)}> 
-                clone to data
+                Clone to data
                 </Button>
                 <Button variant="secondary" onClick={() => this.downloadOPFFFile(obj,obj.title+".opf")}>
-                download as OPF file
+                Download ModelFile as OPF file
                 </Button>
                 <Button variant="secondary" onClick={() => {}}>
-                delete
+                Run function again
+                </Button>
+                <Button variant="danger" onClick={() => {
+                    if (window.confirm('Do you want to delete '+obj.title+" ?" ))
+                        this.props.parent.Tree.current.deleteObject(obj,"ModelFiles");
+                }}>
+                Delete
                 </Button>
             </div>
         )
@@ -271,9 +277,15 @@ export default class ObjDetails extends React.Component {
     detailsDistances(obj){
         return(
             <div>
-            <Button variant="secondary" onClick={() => this.downloadOPFFFile(obj,obj.title+".dis")}>
-            download as OPF file
-            </Button>
+                <Button variant="secondary" onClick={() => this.downloadOPFFFile(obj,obj.title+".dis")}>
+                Download as OPF file
+                </Button>
+                <Button variant="danger" onClick={() => {
+                    if (window.confirm('Do you want to delete '+obj.title+" ?" ))
+                        this.props.parent.Tree.current.deleteObject(obj,"Distances");
+                }}>
+                Delete
+                </Button>
             </div>
         )
     }
@@ -307,9 +319,6 @@ export default class ObjDetails extends React.Component {
                 :
                 ""
             }
-            <Button variant="secondary" onClick={() => this.downloadOPFFFile(obj,obj.title+".txt")}>
-            download as OPF file
-            </Button>
             <Button variant="secondary" onClick={() => {
               var functionInfo = {opfFunction: this.props.parent.OPFFunctions.current.functionDetails["opf_accuracy"], objs: [obj.subGraph,obj]}
               this.props.parent.FM.runCFunction(functionInfo)
@@ -326,6 +335,15 @@ export default class ObjDetails extends React.Component {
             }}>
             Calculate accuracy for each label (class)
             </Button>
+            <Button variant="secondary" onClick={() => this.downloadOPFFFile(obj,obj.title+".txt")}>
+            Download as OPF file
+            </Button>
+            <Button variant="danger" onClick={() => {
+                if (window.confirm('Do you want to delete '+obj.title+" ?" ))
+                    this.props.parent.Tree.current.deleteObject(obj,"Classifications");
+            }}>
+            Delete
+            </Button>
             </div>
         )
     }
@@ -334,13 +352,40 @@ export default class ObjDetails extends React.Component {
         this.setState({
             details: [
                 <p>SubGraph is a subset of the Data. Choose some nodes to create a new SubGraph or upload a Data file, the nodes that have same position will be added to the new SubGraph:</p>,
-                
+                <Button variant="secondary" onClick={() => {
+                    this.props.parent.Tree.current.readOPFFile((reader) => {
+                        var loadedFile = this.props.parent.FM.readSubGraph(new DataView(reader.result),"ModelFile","loaded by the user",obj);
+                        loadedFile.data = obj.data;
+                        if(loadedFile)
+                            obj.data.SubGraphs.children.push(loadedFile)
+                        this.props.parent.Tree.current.setState({})
+                        this.props.parent.OPFFunctions.current.loadFunctions();
+                    })
+                }}>
+                    Load SubGraph by opf file
+                </Button>
             ]
         })
     }
 
-    addModelFiles(c) {
-        
+    addModelFiles(obj) {
+        this.setState({
+            details: [
+                <p>ModelFile is a classificad graph, you can load by a file, load from another data or make one with some training phase function</p>,
+                <Button variant="secondary" onClick={() => {
+                    this.props.parent.Tree.current.readOPFFile((reader) => {
+                        var loadedFile = this.props.parent.FM.readModelFile(new DataView(reader.result),"ModelFile","loaded by the user");
+                        loadedFile.data = obj.data;
+                        if(loadedFile)
+                            obj.data.ModelFiles.children.push(loadedFile)
+                        this.props.parent.Tree.current.setState({})
+                        this.props.parent.OPFFunctions.current.loadFunctions();
+                    })
+                }}>
+                    Load ModelFile by opf file
+                </Button>
+            ]
+        })
     }
 
     addDistance(c) {
@@ -353,7 +398,7 @@ export default class ObjDetails extends React.Component {
 
     render(){
         return(
-        <div>
+        <div class="details">
             {this.state.details}
         </div>
         )

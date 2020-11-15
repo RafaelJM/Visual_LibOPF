@@ -139,8 +139,8 @@ button.list{
 
 
 .objects-menu {
-  width: 220px;
-  height: calc(100vh - 30px);
+  width: 230px;
+  height: calc(100vh - 15px);
   min-height: 100px;
   right: 5px;
   top: 5px;
@@ -186,7 +186,7 @@ button.list{
 
 
 .functions-menu {
-  width: calc(100vw - 30px - 235px);
+  width: calc(100vw - 30px - 245px);
   height: 230px;
   min-width: 360px;
   bottom: 10px;
@@ -267,6 +267,19 @@ button.list{
 
 .graph-menu.clicked .button {
   transform: rotate(0deg);
+}
+
+.details{
+  text-align:center;
+}
+
+
+.details .btn{
+  margin-top: 5px;
+}
+
+.details .form-control{
+  margin-bottom: 5px;
 }
 
 .graph-menu .tab-content .content {

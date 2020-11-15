@@ -180,7 +180,10 @@ export default class FileManager{
       var dir = this.FS.readdir("files/");
       var file = dir.find(e => e.substr(-3) === out)
       if(file){
-        buffer[out][buffer[out].length] =  Object.assign({}, extraInfo, this.outInfo[out]((this.isDv.hasOwnProperty(out)?new DataView(this.FS.readFile("files/"+file, null).buffer):"files/"+file),this.getName[out](file),description,graphOrigin,modelFileOrigin,extraInfo))
+        var obj = this.outInfo[out]((this.isDv.hasOwnProperty(out)?new DataView(this.FS.readFile("files/"+file, null).buffer):"files/"+file),this.getName[out](file),description,graphOrigin,modelFileOrigin,extraInfo)
+        console.log(obj)
+        if(obj)
+          buffer[out][buffer[out].length] =  Object.assign({}, extraInfo, obj)
         this.FS.unlink("files/"+file);
       }
     })
@@ -202,32 +205,32 @@ export default class FileManager{
     newData.getDetails = "detailsGraph"
     newData.saveInFile = "writeGraph"
 
-    newData.nodes = this.cloneNodes(obj,convertToSubGraphNode)
+    newData.nodes = this.cloneNodes(newData,obj,convertToSubGraphNode)
 
     return(newData);
   }
 
-  cloneNodes(obj, convertToSubGraphNode = false){ //arrumar
+  cloneNodes(newData, obj, convertToSubGraphNode = false){ //arrumar
     var nodes = []
     if(convertToSubGraphNode){
       for(var i = 0; i < obj.nnodes; i++){
         nodes[i] = {
-        graph: obj,
-        feat: [  ],
+        graph: newData,
+        feat: [],
         id: obj.nodes[i].id,//position
         truelabel: obj.nodes[i].truelabel,
         x:obj.nodes[i].x, y:obj.nodes[i].y, size:obj.nodes[i].size, color:obj.nodes[i].color, title:obj.nodes[i].title, label:obj.nodes[i].label, self:null};
         for(var j = 0; j < obj.nfeats; j++){
-          obj.nodes[i].feat[j] = obj.nodes[i].feat[j];
+          nodes[i].feat[j] = obj.nodes[i].feat[j];
         }
 
-        nodes[i].self = obj.nodes[i];
+        nodes[i].self = nodes[i];
         nodes[i].getDetails = "detailsGraphNode"
       }
     } else {
       for(var i in obj.nodes){
         var node = Object.assign({}, obj.nodes[i])
-        node.graph = obj
+        node.graph = newData
         node.self = node
         nodes = nodes.concat(node)
       }
@@ -278,6 +281,8 @@ export default class FileManager{
       graph.nodes[i].self = graph.nodes[i];
       graph.nodes[i].getDetails = "detailsGraphNode"
     }
+
+    graph.nnodes = graph.nodes.length
     
     if(graph.positionDuplicate.length){
       this.parent.addText("Warning! Some nodes had same position (ID), so new positions were given to them","textWar")
@@ -310,15 +315,26 @@ export default class FileManager{
     subGraph.saveInFile = "writeSubGraph"
 
     subGraph.nnodes = dv.getInt32(cont,true);
-    subGraph.nlabels = graphOrigin.nlabels;
-    subGraph.nfeats = graphOrigin.nfeats;
-    cont += 8;
+    subGraph.nlabels = dv.getInt32(cont=cont+4,true);
+    subGraph.nfeats = dv.getInt32(cont=cont+4,true);
     var id;
+    console.log(subGraph, dv)
+    if(subGraph.nnodes < 0 || subGraph.nlabels < 0 || subGraph.nfeats < 0 || (3 + subGraph.nnodes*(2+subGraph.nfeats))*4 !== dv.byteLength){
+      this.parent.addText("Error in the graph/data reading","textErr")
+      return;
+    }
+
     for(var i = 0; i < subGraph.nnodes; i++){
       id = dv.getInt32(cont=cont+4,true);
-      subGraph.nodes = subGraph.nodes.concat(this.parent.Tree.current.state.activeData.graph.nodes.find(element => element.id === id))
+      var node = this.parent.Tree.current.state.activeData.graph.nodes.find(element => element.id === id);
+      if(node != undefined)
+        subGraph.nodes.push(node)
       cont += 4 + subGraph.nfeats * 4
     }
+    
+    subGraph.nnodes = subGraph.nodes.length+1;
+    subGraph.nlabels = graphOrigin.nlabels;
+    subGraph.nfeats = graphOrigin.nfeats;
 
     return(subGraph)
   }
@@ -361,6 +377,12 @@ export default class FileManager{
     modelFile.K = dv.getFloat32(cont=cont+4,true);
     modelFile.mindens = dv.getFloat32(cont=cont+4,true);
     modelFile.maxdens = dv.getFloat32(cont=cont+4,true);
+    
+    if(modelFile.nnodes < 0 || modelFile.nlabels < 0 || modelFile.nfeats < 0 || (8 + modelFile.nnodes*(7+modelFile.nfeats+1))*4 != dv.byteLength){
+      this.parent.addText("Error in the graph/data reading","textErr")
+      return;
+    }
+
     for(var i = 0; i < modelFile.nnodes; i++){
       modelFile.nodes[i] = {
       feat: [  ],
@@ -395,9 +417,7 @@ export default class FileManager{
       modelFile.ordered_list_of_nodes[i] = dv.getInt32(cont=cont+4,true);
     }
 
-    console.log("a",modelFile.ordered_list_of_nodes)
     for(var ID in modelFile.ordered_list_of_nodes){
-      console.log(ID)
       if(modelFile.nodes[ID].pred !== -1){
         modelFile.edges = modelFile.edges.concat({
           id: modelFile.edges.length,
@@ -411,9 +431,15 @@ export default class FileManager{
       }
     }
 
+    if((8 + modelFile.nnodes*(7+modelFile.nfeats)+ modelFile.ordered_list_of_nodes.length)*4 !== dv.byteLength){
+      this.parent.addText("Error in the graph/data reading","textErr")
+      return;
+    }
+
     if(modelFile.positionDuplicate.length){
       this.parent.addText("Warning! Some nodes had same position (ID), so new positions were given to them","textWar")
     }
+
     return(modelFile);
   }
 
@@ -452,20 +478,34 @@ export default class FileManager{
       var classification = {isClassification: true, classification: this.FS.readFile(file,{encoding: 'utf8'}).split("\n"), title: title, description:description, subGraph: subGraph, modelFileClassificator: modelFileClassificator}
       classification.getDetails = "detailsClassification"
       classification.saveInFile = "writeClassification"
-      classification.nodes = this.cloneNodes(classification.modelFileClassificator)
-      classification.edges = classification.modelFileClassificator.edges
+      classification.nodes = this.cloneNodes(classification,subGraph) 
+      classification.edges = []
+
+      for(var i in classification.nodes){
+        if(modelFileClassificator.nodes.find(e => e.id === classification.nodes[i].id)){
+          if (window.confirm("Error! Same position (ID) in ModelFile node and SubGraph/Graph node, need to change all position (ID) JUST in this function operation, ok?" )) {
+            var cont = Math.max.apply(Math, modelFileClassificator.nodes.map(function(o) { return o.id; }))+1;
+            classification.nodes.filter((e) => {e.id = cont=cont+1})
+            break;
+          }
+          else{
+            return;
+          }
+        }
+      }
 
       for(var i = 0; i < extraInfo.predList.length-1; i++){
         if(extraInfo.predList[i] !== -1){
-          classification.edges = classification.edges.concat({
-            id: classification.edges.length,
-            source: classification.subGraph.nodes[i].id,
-            target: classification.modelFileClassificator.nodes[extraInfo.predList[i]].id,
+          classification.edges.push({
+            id: classification.edges.length + modelFileClassificator.edges.length,
+            source: classification.nodes[i].id,
+            target: modelFileClassificator.nodes[extraInfo.predList[i]].id,
             type: "tapered", //arrow
           })
         }
       }
-      classification.nodes = classification.nodes.concat(this.cloneNodes(classification.subGraph))
+      classification.edges = classification.edges.concat(classification.modelFileClassificator.edges)
+      classification.nodes = classification.nodes.concat(this.cloneNodes(classification,modelFileClassificator))
       return(classification)
     }
     else

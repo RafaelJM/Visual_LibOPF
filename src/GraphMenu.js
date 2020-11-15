@@ -19,7 +19,7 @@ export default class GraphMenu extends React.Component {
                         }}>
                             <option selected disabled hidden>Select node</option>
                             {this.props.customSigma.current.state.loadedGraph.nodes.map((node,index) => {
-                                return(<option value={index}>Node {node.id}</option>)
+                                return(<option value={index}>{node.title}</option>)
                             })}
                         </FormControl>
                         <p class="graph-text">___________________________________________</p>
