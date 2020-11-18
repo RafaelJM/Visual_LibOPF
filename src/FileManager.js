@@ -197,7 +197,7 @@ export default class FileManager{
 
   cloneToNewGraph(obj, convertToSubGraphNode = false){ //arrumar
     var newData= {
-      nlabels: obj.nlabels, nfeats: obj.nfeats, title: "Clone of "+obj.title, description:obj.description, 
+      nlabels: (obj.nlabels?obj.nlabels:obj.graphOrigin.nlabels), nfeats: (obj.nlabels?obj.nfeats:obj.graphOrigin.nfeats), title: "Clone of "+obj.title, description:obj.description, 
       open: false, inicial_nlabels: obj.inicial_nlabels, inicial_nfeats: obj.inicial_nfeats, isGraph: true, positionDuplicate: [],
       nodes: [],
       edges:[]
@@ -331,6 +331,27 @@ export default class FileManager{
     }
     return(subGraph)
   }
+
+  createSubGraphByIndex(indexes, title, description, graphOrigin){
+    var subGraph = {title: title, description:description, nodes:[], edges:[], graphOrigin:graphOrigin, isSubGraph: true}
+    subGraph.getDetails = "detailsGraph"
+    subGraph.saveInFile = "writeSubGraph"
+
+    var nnodes = indexes.length;
+    var nlabels = graphOrigin.nlabels;
+    var nfeats = graphOrigin.nfeats;
+    if(nnodes < 0 || nlabels < 0 || nfeats < 0){
+      this.parent.addText("Error in the graph/data create","textErr")
+      return;
+    }
+
+    for(var i in indexes){
+      var node = graphOrigin.nodes[indexes[i]];
+      if(node != undefined)
+        subGraph.nodes.push(node)
+    }
+    return(subGraph)
+  }
   
   writeSubGraph(graph, file){
     console.log("g",graph)
@@ -404,6 +425,7 @@ export default class FileManager{
       modelFile.nodes[i].type = "circle"
       modelFile.nodes[i].label = modelFile.nodes[i].title;
       modelFile.nodes[i].self = modelFile.nodes[i];
+      modelFile.nodes[i].modelFile = modelFile
       modelFile.nodes[i].getDetails = "detailsModelFileNode"
     }
     for(i = 0; i < nnodes; i++){

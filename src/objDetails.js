@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import {InputGroup, FormControl, Button} from 'react-bootstrap';
 import { CSVLink, CSVDownload } from "react-csv";
 
@@ -6,10 +7,6 @@ export default class ObjDetails extends React.Component {
     constructor(props){
         super(props)
         this.state = {details: []}
-      }
-
-    loadNodeSelect(){ //put input more easy
-        this.setState({ details:[]})
     }
 
     loadDetails(obj){
@@ -43,7 +40,7 @@ export default class ObjDetails extends React.Component {
                 return;
             }
         }
-        e.target.parentNode.childNodes[0].value = ""
+        e.target.parentNode.childNodes[0].value = "" //arrumar, colocar um alerta
     }
 
     changeNFeat(e,obj){
@@ -65,7 +62,7 @@ export default class ObjDetails extends React.Component {
             obj.nfeats = num
             return;
         }
-        e.target.parentNode.childNodes[0].value = ""
+        e.target.parentNode.childNodes[0].value = "" //arrumar, colocar um alerta
     }
     
     detailsGraph(obj){ //arrumar, work with nlabels nfeats details
@@ -95,8 +92,8 @@ export default class ObjDetails extends React.Component {
                     <InputGroup.Text>Number of labels (classes)</InputGroup.Text>
                 </InputGroup.Prepend>
                 <InputGroup.Prepend>
-                    <FormControl defaultValue={obj.hasOwnProperty("isSubGraph")?obj.graphOrigin.nlabels:obj.nlabels} disabled={obj.hasOwnProperty("isSubGraph")?"disabled":""}/>
-                    {obj.hasOwnProperty("isSubGraph")?"":
+                    <FormControl defaultValue={obj.isSubGraph?obj.graphOrigin.nlabels:obj.nlabels} disabled={obj.isSubGraph?"disabled":""}/>
+                    {obj.isSubGraph?"":
                         <Button variant="secondary" onClick={(e) => this.changeNTrueLabel(e,obj)}>
                             Apply
                         </Button>
@@ -107,15 +104,15 @@ export default class ObjDetails extends React.Component {
                     <InputGroup.Text>Number of feats (features)</InputGroup.Text>
                 </InputGroup.Prepend>
                 <InputGroup.Prepend>
-                    <FormControl defaultValue={obj.hasOwnProperty("isSubGraph")?obj.graphOrigin.nfeats:obj.nfeats} disabled={obj.hasOwnProperty("isSubGraph")?"disabled":""}/>
-                    {obj.hasOwnProperty("isSubGraph")?"":
+                    <FormControl defaultValue={obj.isSubGraph?obj.graphOrigin.nfeats:obj.nfeats} disabled={obj.isSubGraph?"disabled":""}/>
+                    {obj.isSubGraph?"":
                         <Button variant="secondary" onClick={(e) => this.changeNFeat(e,obj)}>
                             Apply
                         </Button>
                     }
                 </InputGroup.Prepend>
                 
-                {obj.hasOwnProperty("isSubGraph")?
+                {obj.isSubGraph?
                     <Button variant="secondary" onClick={() => this.props.parent.Tree.current.addNewEmptyData(this.props.parent.FM.cloneToNewGraph(obj),obj.graphOrigin.title + " - " + obj.title)}> 
                     Clone to data
                     </Button>
@@ -130,17 +127,104 @@ export default class ObjDetails extends React.Component {
                         <Button variant="secondary" onClick={() => {this.addDistance(obj)}}>
                         Add Distances
                         </Button>
-                        <Button variant="secondary" onClick={() => {this.addClassification(obj)}}>
-                        Add Classification
-                        </Button>
                     </spam>
                 }
+                <div>
+                    <Button variant="secondary" onClick={(e) => {
+                        if(obj.isSubGraph){
+                            e.target.parentNode.childNodes[0].setAttribute("hidden","hidden")
+                            e.target.parentNode.childNodes[1].removeAttribute("hidden")
+                        }
+                        else{
+                            var node = {
+                                graph: obj,
+                                feat: [  ],
+                                id: Math.max.apply(Math, obj.nodes.map(function(o) { return o.id; }))+1,//position
+                                truelabel: 1,
+                                x:0, y:0, size:0.5, color:null, title:"", label:"", self:null};
+                            for(var j = 0; j < obj.nfeats; j++){
+                                node.feat[j] = 0;
+                            }                    
+                            node.x = node.feat[0];
+                            node.y = node.feat[1];
+                            node.color = this.props.parent.FM.colors[node.truelabel]
+                            node.title = "Node "+node.id.toString();
+                            node.label = node.title;
+                            node.self = node;
+                            node.getDetails = "detailsGraphNode"
+
+                            obj.nodes.push(node)
+                            this.props.parent.CSigma.current.loadSugGraph(obj)
+                            this.setState({details:this.detailsGraph(obj)})
+                        }
+                    }}>
+                    Add new node
+                    </Button>
+                    <div class="add-remove-node" hidden>
+                        <FormControl as="select">
+                            <option selected disabled hidden>Select the node</option>
+                            {obj.data.graph.nodes.map((node,index) => {
+                                if(!obj.nodes.find(n => Object.is(n,node))) 
+                                    return(<option value={index}>{node.title}</option>)
+                            })}
+                        </FormControl>
+                        <Button variant="secondary" onClick={(e) => {
+                            obj.nodes.push(obj.data.graph.nodes[e.target.parentNode.childNodes[0].value])
+                            e.target.parentNode.parentNode.childNodes[1].setAttribute("hidden","hidden")
+                            e.target.parentNode.parentNode.childNodes[0].removeAttribute("hidden")
+                            this.props.parent.CSigma.current.loadSugGraph(obj)
+                            this.setState({details:this.detailsGraph(obj)})
+                        }}>
+                        Add the node
+                        </Button>
+                    </div>
+                </div>
+                <div>
+                    <Button variant="secondary" onClick={(e) => {
+                        e.target.parentNode.childNodes[0].setAttribute("hidden","hidden")
+                        e.target.parentNode.childNodes[1].removeAttribute("hidden")
+                    }}>
+                    Remove a node
+                    </Button>
+                    <div class="add-remove-node" hidden>
+                        <FormControl as="select">
+                            <option selected disabled hidden>Select the node</option>
+                            {obj.nodes.map((node,index) => {
+                                return(<option value={index}>{node.title}</option>)
+                            })}
+                        </FormControl>
+                        <Button variant="secondary" onClick={(e) => {
+                            var node = obj.nodes[e.target.parentNode.childNodes[0].value];
+                            if(obj.isSubGraph) {
+                                if(window.confirm('Do you want to delete the node '+node.title+" ?"))
+                                    obj.nodes = obj.nodes.filter(n => {if(!Object.is(n,node)) return(n)})
+                            } else {
+                                if(window.confirm('Do you want to delete the node '+node.title+" from the Graph AND from all SubGraphs?")){
+                                    obj.data.graph.nodes = obj.data.graph.nodes.filter(n => {if(!Object.is(n,node)) return(n)})
+                                    obj.data.SubGraphs = obj.data.SubGraphs.children.filter(subGraph => {
+                                        var changed = false;
+                                        subGraph.nodes = subGraph.nodes.filter(n => {if(!Object.is(n,node)) return(n); else changed = true;})
+                                        if(changed)
+                                        this.props.parent.addText("Warning! The subgraph "+ subGraph.title +" lost the node "+ node.title ,"textWar")
+                                    })
+
+                                }
+                            }
+                            e.target.parentNode.parentNode.childNodes[1].setAttribute("hidden","hidden")
+                            e.target.parentNode.parentNode.childNodes[0].removeAttribute("hidden")
+                            this.props.parent.CSigma.current.loadSugGraph(obj)
+                            this.setState({details:this.detailsGraph(obj)})
+                        }}>
+                        Remove the node
+                        </Button>
+                    </div>
+                </div>
                 <Button variant="secondary" onClick={() => this.downloadOPFFFile(obj,obj.title+".dat")}>
                 Download graph as OPF file
                 </Button>
                 <Button variant="danger" onClick={() => {
                     if (window.confirm('Do you want to delete '+obj.title+" ?" )) {
-                        if(obj.hasOwnProperty("isSubGraph"))
+                        if(obj.isSubGraph)
                             this.props.parent.Tree.current.deleteObject(obj,"SubGraphs");
                         else
                             this.props.parent.Tree.current.deleteData(obj.data);
@@ -220,22 +304,12 @@ export default class ObjDetails extends React.Component {
                 <InputGroup.Prepend>
                     <InputGroup.Text>Number of labels (classes)</InputGroup.Text>
                 </InputGroup.Prepend>
-                <InputGroup.Prepend>
-                    <FormControl defaultValue={obj.nlabels} disabled={obj.hasOwnProperty("isSubGraph")?"disabled":""}/>
-                    <Button variant="secondary" onClick={() => {}}>
-                        Apply
-                    </Button>
-                </InputGroup.Prepend>
+                <FormControl defaultValue={obj.nlabels} disabled/>
 
                 <InputGroup.Prepend>
                     <InputGroup.Text>Number of feats (features)</InputGroup.Text>
                 </InputGroup.Prepend>
-                <InputGroup.Prepend>
-                    <FormControl defaultValue={obj.nfeats}disabled={obj.hasOwnProperty("isSubGraph")?"disabled":""}/>
-                    <Button variant="secondary" onClick={() => {}}>
-                        Apply
-                    </Button>
-                </InputGroup.Prepend>
+                <FormControl defaultValue={obj.nfeats} disabled/>
 
                 <InputGroup.Prepend>
                     <InputGroup.Text>df</InputGroup.Text>
@@ -262,13 +336,30 @@ export default class ObjDetails extends React.Component {
                 </InputGroup.Prepend>
                 <FormControl defaultValue={obj.ordered_list_of_nodes} disabled/>
                 <Button variant="secondary" onClick={() => this.props.parent.Tree.current.addNewEmptyData(this.props.parent.FM.cloneToNewGraph(obj,true),"Clone of " + obj.title)}> 
-                Clone to data
+                Clone to Data
+                </Button>
+                <Button variant="secondary" onClick={() => {
+                    var didntFind = []
+                    var loadedFile = this.props.parent.FM.createSubGraphByIndex(
+                        Array.from(obj.nodes, node => {
+                            var index = obj.data.graph.nodes.findIndex(o => o.id === node.id)
+                            if(index != -1)
+                                return(index)
+                            else
+                                didntFind.push(node.id)
+                        })
+                    ,"Subgraph","created by the user",obj.data.graph)
+                    if(loadedFile && loadedFile.nodes.length)
+                        obj.data.SubGraphs.children.push(loadedFile)
+                    if(didntFind.length)
+                        this.props.parent.addText("Didn't find some nodes, node ids: "+didntFind.toString(),"textErr")
+                    this.props.parent.Tree.current.setState({})
+                    this.props.parent.OPFFunctions.current.loadFunctions();
+                }}> 
+                Clone to SubGraph
                 </Button>
                 <Button variant="secondary" onClick={() => this.downloadOPFFFile(obj,obj.title+".opf")}>
                 Download ModelFile as OPF file
-                </Button>
-                <Button variant="secondary" onClick={() => {}}>
-                Run function again
                 </Button>
                 <Button variant="danger" onClick={() => {
                     if (window.confirm('Do you want to delete '+obj.title+" ?" ))
@@ -412,24 +503,49 @@ export default class ObjDetails extends React.Component {
     addSubGraph(obj) {
         this.setState({
             details: [
-                <p>SubGraph is a subset of the Data. Choose some nodes to create a new SubGraph or upload a Data file, the nodes that have same position will be added to the new SubGraph:</p>,
+                <p>SubGraph is a subset of the Data. Choose some nodes to create a new SubGraph or upload a Data file, the nodes that have same position will be added to the new SubGraph</p>,
                 <Button variant="secondary" onClick={() => {
                     this.props.parent.Tree.current.readOPFFile((reader) => {
                         var loadedFile = this.props.parent.FM.readSubGraph(new DataView(reader.result),"ModelFile","loaded by the user",obj);
                         loadedFile.data = obj.data;
-                        if(loadedFile)
+                        if(loadedFile && loadedFile.nodes.length)
                             obj.data.SubGraphs.children.push(loadedFile)
                         this.props.parent.Tree.current.setState({})
                         this.props.parent.OPFFunctions.current.loadFunctions();
                     })
                 }}>
                     Load SubGraph by opf file
+                </Button>,
+                <div>
+                    <Button variant="secondary" onClick={(e) => e.target.parentNode.childNodes[1].removeAttribute('hidden')}>
+                        Select graph nodes
+                    </Button>
+                    <div hidden class="multiple">
+                        <FormControl as="select" multiple size="2000">
+                            {obj.nodes.map((node,index) => {
+                                return(<option value={index}>{node.title + " | Label: " + node.truelabel}</option>)
+                            })}
+                        </FormControl>
+                        <Button variant="secondary" onClick={(e) => {
+                            var loadedFile = this.props.parent.FM.createSubGraphByIndex(Array.from(e.target.parentNode.childNodes[0], option => {if(option.selected)return(option.value)}) ,"Subgraph","created by the user",obj)
+                            if(loadedFile && loadedFile.nodes.length)
+                                obj.data.SubGraphs.children.push(loadedFile)
+                            this.props.parent.Tree.current.setState({})
+                            this.props.parent.OPFFunctions.current.loadFunctions();
+
+                        }}>
+                            Create
+                        </Button>
+                    </div>
+                </div>,
+                <Button variant="secondary" onClick={() => this.setState({details:this.detailsGraph(obj)})}>
+                    Back
                 </Button>
             ]
         })
     }
 
-    addModelFiles(obj) {
+    addModelFiles(obj, data = null) {
         this.setState({
             details: [
                 <p>ModelFile is a classificad graph, you can load by a file, load from another data or make one with some training phase function</p>,
@@ -444,19 +560,109 @@ export default class ObjDetails extends React.Component {
                     })
                 }}>
                     Load ModelFile by opf file
+                </Button>,
+                <div>
+                  <Button variant="secondary" onClick={(e) => e.target.parentNode.childNodes[1].removeAttribute('hidden')} disabled={this.props.parent.Tree.current.state.treeData.length > 1?"":"disabled"}>
+                    Load ModelFile from another Data
+                  </Button>
+                  <div hidden>
+                      <FormControl as="select" onChange={(e) => {
+                          this.addModelFiles(obj,this.props.parent.Tree.current.state.treeData[e.target.value]);
+                      }}>
+                        {data? "" : <option selected disabled hidden>Select a Data</option>}
+                          {this.props.parent.Tree.current.state.treeData.map((data2,index) => {
+                              return(<option value={index} selected={Object.is(data2,data)? "selected" : ""} disabled={Object.is(data2,obj.data)?"disabled":""}>{data2.graph.title}</option>)
+                          })}
+                      </FormControl>
+                    {data?
+                          <div>
+                            {data.ModelFiles.children.length? [<FormControl as="select">
+                                <option selected disabled hidden>Select a ModelFile</option>
+                                {data.ModelFiles.children.map((ModelFile,index) => {
+                                    return(<option value={index}>{ModelFile.title}</option>)
+                                })}
+                            </FormControl>,
+                            <Button variant="secondary" onClick={(e) => {
+                                var loadedFile = Object.assign({}, data.ModelFiles.children[e.target.parentNode.childNodes[0].value]) //This is a parcial clone
+                                loadedFile.data = obj.data;
+                                console.log(data,loadedFile)
+                                if(data && loadedFile)
+                                    obj.data.ModelFiles.children.push(loadedFile)
+                                this.props.parent.Tree.current.setState({})
+                                this.props.parent.OPFFunctions.current.loadFunctions();                                
+                            }}>
+                                Inport
+                            </Button>] : 
+                            <p class="textErr"> Don't have any ModelFile in this data</p>}  
+                        </div>
+                    :""}
+                    </div>
+                </div>,
+                <Button variant="secondary" onClick={() => this.setState({details:this.detailsGraph(obj)})}>
+                    Back
                 </Button>
             ]
         })
     }
 
-    addDistance(c) {
-        
+    addDistance(obj, data = null) {
+        this.setState({
+            details: [
+                <p>Distance is a Matrix NxN that have all the distances from one POSITION (ID) to another POSITION (ID)</p>,
+                <Button variant="secondary" onClick={() => {
+                    this.props.parent.Tree.current.readOPFFile((reader) => {
+                        var loadedFile = this.props.parent.FM.readDistances(new DataView(reader.result),"Distance","loaded by the user");
+                        loadedFile.data = obj.data;
+                        if(loadedFile)
+                            obj.data.Distances.children.push(loadedFile)
+                        this.props.parent.Tree.current.setState({})
+                        this.props.parent.OPFFunctions.current.loadFunctions();
+                    })
+                }}>
+                    Load Distance by opf file
+                </Button>,
+                <div>
+                  <Button variant="secondary" onClick={(e) => e.target.parentNode.childNodes[1].removeAttribute('hidden')} disabled={this.props.parent.Tree.current.state.treeData.length > 1?"":"disabled"}>
+                    Load Distance from another Data
+                  </Button>
+                  <div hidden>
+                      <FormControl as="select" onChange={(e) => {
+                          this.addDistance(obj,this.props.parent.Tree.current.state.treeData[e.target.value]);
+                      }}>
+                        {data? "" : <option selected disabled hidden>Select a Data</option>}
+                        {this.props.parent.Tree.current.state.treeData.map((data2,index) => {
+                            return(<option value={index} selected={Object.is(data2,data)? "selected" : ""} disabled={Object.is(data2,obj.data)?"disabled":""}>{data2.graph.title}</option>)
+                        })}
+                      </FormControl>
+                    {data?
+                          <div>
+                            {data.Distances.children.length? [<FormControl as="select">
+                                <option selected disabled hidden>Select a distance</option>
+                                {data.Distances.children.map((Distance,index) => {
+                                    return(<option value={index}>{Distance.title}</option>)
+                                })}
+                            </FormControl>,
+                            <Button variant="secondary" onClick={(e) => {
+                                var loadedFile = Object.assign({}, data.Distances.children[e.target.parentNode.childNodes[0].value]) //This is a parcial clone
+                                loadedFile.data = obj.data;
+                                if(data && loadedFile)
+                                    obj.data.Distances.children.push(loadedFile)
+                                this.props.parent.Tree.current.setState({})
+                                this.props.parent.OPFFunctions.current.loadFunctions();                                
+                            }}>
+                                Inport
+                            </Button>] : 
+                            <p class="textErr"> Don't have any distance in this data</p>}  
+                        </div>
+                    :""}
+                    </div>
+                </div>,
+                <Button variant="secondary" onClick={() => this.setState({details:this.detailsGraph(obj)})}>
+                    Back
+                </Button>
+            ]
+        })
     }
-
-    addClassification(c) {
-        
-    }
-
     render(){
         return(
         <div class="details">

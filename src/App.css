@@ -320,3 +320,12 @@ button.list{
   cursor: pointer;
 }
 
+.multiple .form-control{
+  margin-top: 5px;
+  margin-bottom: -1px;
+}
+
+.add-remove-node .form-control{
+  margin-top: 5px;
+  
+}
