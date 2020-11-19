@@ -13,7 +13,7 @@ void c_opf_cluster(int *argc, char **argv)
 	
 	errorOccurred = 0;
 	opf_PrecomputedDistance = 0;
-	int i, n, op;
+	int i, n, op, p;
 	float value;
 	char fileName[256];
 
@@ -33,9 +33,19 @@ void c_opf_cluster(int *argc, char **argv)
 	fprintf(stdout, "\nReading data file ...");
 	Subgraph *g = ReadSubgraph(argv[1]); if(errorOccurred) return;
 
-	if (opf_PrecomputedDistance)
-	{
+	if (opf_PrecomputedDistance){
 		opf_DistanceValue = opf_ReadDistances(argv[5], &n); if(errorOccurred) return;
+		int maxPosition = 0;
+		for (p = 0; p < g->nnodes; p++)
+		{
+			if(g->node[p].position > maxPosition)
+				maxPosition = g->node[p].position;
+		}
+		if(maxPosition >= n){
+			errorOccurred = 1;
+			fprintf(stderr, "\nError! Some positions have no pre-calculated distance, the matrix size must be equal to or less than the maximum position of the nodes");
+			return;
+		}
 	}
 
 	op = atoi(argv[3]);

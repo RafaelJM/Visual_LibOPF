@@ -24,7 +24,7 @@ void c_opf_learn(int *argc, char **argv)
 
 	float Acc, time;
 	char fileName[512];
-	int i, n;
+	int i, n, p;
 	timer tic, toc;
 	FILE *f = NULL;
 
@@ -38,6 +38,22 @@ void c_opf_learn(int *argc, char **argv)
 
 	if (opf_PrecomputedDistance){
 		opf_DistanceValue = opf_ReadDistances(argv[3], &n); if(errorOccurred) return;
+		int maxPosition = 0;
+		for (p = 0; p < gEval->nnodes; p++)
+		{
+			if(gEval->node[p].position > maxPosition)
+				maxPosition = gEval->node[p].position;
+		}
+		for (p = 0; p < gTrain->nnodes; p++)
+		{
+			if(gTrain->node[p].position > maxPosition)
+				maxPosition = gTrain->node[p].position;
+		}
+		if(maxPosition >= n){
+			errorOccurred = 1;
+			fprintf(stderr, "\nError! Some positions have no pre-calculated distance, the matrix size must be equal to or less than the maximum position of the nodes");
+			return;
+		}
 	}
 
 	fprintf(stdout, "\nLearning from errors in the evaluation set...");

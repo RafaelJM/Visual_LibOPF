@@ -24,7 +24,7 @@ void c_opfknn_train(int *argc, char **argv)
 		return;
 	}
 
-	int n, i, kmax = atoi(argv[3]);
+	int n, i, kmax = atoi(argv[3]), p;
 	char fileName[256];
 	FILE *f = NULL;
 	timer tic, toc;
@@ -42,6 +42,22 @@ void c_opfknn_train(int *argc, char **argv)
 
 	if (opf_PrecomputedDistance){
 		opf_DistanceValue = opf_ReadDistances(argv[4], &n); if(errorOccurred) return;
+		int maxPosition = 0;
+		for (p = 0; p < Train->nnodes; p++)
+		{
+			if(Train->node[p].position > maxPosition)
+				maxPosition =Train->node[p].position;
+		}
+		for (p = 0; p < Eval->nnodes; p++)
+		{
+			if(Eval->node[p].position > maxPosition)
+				maxPosition = Eval->node[p].position;
+		}
+		if(maxPosition >= n){
+			errorOccurred = 1;
+			fprintf(stderr, "\nError! Some positions have no pre-calculated distance, the matrix size must be equal to or less than the maximum position of the nodes");
+			return;
+		}
 	}
 
 	fprintf(stdout, "\nTraining OPF classifier ...");

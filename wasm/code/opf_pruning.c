@@ -23,7 +23,7 @@ void c_opf_pruning(int *argc, char **argv)
 		return;
 	}
 
-	int n, i, isize, fsize;
+	int n, i, isize, fsize, p;
 	float time, desiredAcc = atof(argv[3]), prate;
 	char fileName[256];
 	FILE *f = NULL;
@@ -39,6 +39,22 @@ void c_opf_pruning(int *argc, char **argv)
 
 	if (opf_PrecomputedDistance){
 		opf_DistanceValue = opf_ReadDistances(argv[4], &n); if(errorOccurred) return;
+		int maxPosition = 0;
+		for (p = 0; p < gEval->nnodes; p++)
+		{
+			if(gEval->node[p].position > maxPosition)
+				maxPosition = gEval->node[p].position;
+		}
+		for (p = 0; p < gTrain->nnodes; p++)
+		{
+			if(gTrain->node[p].position > maxPosition)
+				maxPosition = gTrain->node[p].position;
+		}
+		if(maxPosition >= n){
+			errorOccurred = 1;
+			fprintf(stderr, "\nError! Some positions have no pre-calculated distance, the matrix size must be equal to or less than the maximum position of the nodes");
+			return;
+		}
 	}
 
 	isize = gTrain->nnodes;

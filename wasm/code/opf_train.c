@@ -22,7 +22,7 @@ void c_opf_train(int *argc, char **argv)
 		return;
 	}
 
-	int n, i;
+	int n, i, p;
 	char fileName[256];
 	FILE *f = NULL;
 	timer tic, toc;
@@ -39,6 +39,17 @@ void c_opf_train(int *argc, char **argv)
 
 	if (opf_PrecomputedDistance){
 		opf_DistanceValue = opf_ReadDistances(argv[2], &n); if(errorOccurred) return;
+		int maxPosition = 0;
+		for (p = 0; p < g->nnodes; p++)
+		{
+			if(g->node[p].position > maxPosition)
+				maxPosition = g->node[p].position;
+		}
+		if(maxPosition >= n){
+			errorOccurred = 1;
+			fprintf(stderr, "\nError! Some positions have no pre-calculated distance, the matrix size must be equal to or less than the maximum position of the nodes");
+			return;
+		}
 	}
 
 	fprintf(stdout, "\nTraining OPF classifier ...");

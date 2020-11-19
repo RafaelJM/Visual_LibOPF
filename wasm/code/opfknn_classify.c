@@ -22,7 +22,7 @@ void c_opfknn_classify(int *argc, char **argv)
 		return;
 	}
 
-	int n, i;
+	int n, i, p;
 	float time;
 	char fileName[256];
 	FILE *f = NULL;
@@ -39,6 +39,22 @@ void c_opfknn_classify(int *argc, char **argv)
 
 	if (opf_PrecomputedDistance){
 		opf_DistanceValue = opf_ReadDistances(argv[3], &n); if(errorOccurred) return;
+		int maxPosition = 0;
+		for (p = 0; p < gTest->nnodes; p++)
+		{
+			if(gTest->node[p].position > maxPosition)
+				maxPosition =gTest->node[p].position;
+		}
+		for (p = 0; p < gTrain->nnodes; p++)
+		{
+			if(gTrain->node[p].position > maxPosition)
+				maxPosition = gTrain->node[p].position;
+		}
+		if(maxPosition >= n){
+			errorOccurred = 1;
+			fprintf(stderr, "\nError! Some positions have no pre-calculated distance, the matrix size must be equal to or less than the maximum position of the nodes");
+			return;
+		}
 	}
 
 	fprintf(stdout, "\nClassifying test set ...");

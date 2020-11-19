@@ -66,6 +66,7 @@ export default class ObjDetails extends React.Component {
     detailsGraph(obj){ //arrumar, work with nlabels nfeats details
         return(
             <div>
+                <p className="details-division">Object properties</p>
                 <InputGroup.Prepend>
                     <InputGroup.Text>Title</InputGroup.Text>
                 </InputGroup.Prepend>
@@ -109,13 +110,27 @@ export default class ObjDetails extends React.Component {
                         </Button>
                     }
                 </InputGroup.Prepend>
-                
+
+                {obj.time?
+                <div>
+                    <InputGroup.Prepend>
+                        <InputGroup.Text>Processing time</InputGroup.Text>
+                    </InputGroup.Prepend>
+                    <FormControl defaultValue={obj.time} disabled/>
+                </div>
+                :""}
+
+                <p className="details-division">Object options</p>
+                <Button variant="secondary" onClick={() => this.downloadOPFFFile(obj,obj.title+".dat")}>
+                Download graph as OPF file
+                </Button>
                 {obj.isSubGraph?
                     <Button variant="secondary" onClick={() => this.props.parent.Tree.current.addNewEmptyData(this.props.parent.FM.cloneToNewGraph(obj),obj.graphOrigin.title + " - " + obj.title)}> 
                     Clone to data
                     </Button>
                     :
                     <span>
+                        <p className="details-division">Add objects</p>
                         <Button variant="secondary" onClick={() => {this.addSubGraph(obj)}}>
                         Add SubGraph
                         </Button>
@@ -127,6 +142,7 @@ export default class ObjDetails extends React.Component {
                         </Button>
                     </span>
                 }
+                <p className="details-division">Nodes options</p>
                 <div>
                     <Button variant="secondary" onClick={(e) => {
                         if(obj.isSubGraph){
@@ -222,9 +238,7 @@ export default class ObjDetails extends React.Component {
                         </Button>
                     </div>
                 </div>
-                <Button variant="secondary" onClick={() => this.downloadOPFFFile(obj,obj.title+".dat")}>
-                Download graph as OPF file
-                </Button>
+                <p className="details-division">Delete this object</p>
                 <Button variant="danger" onClick={() => {
                     if (window.confirm('Do you want to delete '+obj.title+" ?" )) {
                         if(obj.isSubGraph)
@@ -244,6 +258,7 @@ export default class ObjDetails extends React.Component {
     detailsGraphNode(obj){
         return(
             <div>
+                <p className="details-division">Object properties</p>
                 <InputGroup.Prepend>
                     <InputGroup.Text>Title</InputGroup.Text>
                 </InputGroup.Prepend>
@@ -279,6 +294,8 @@ export default class ObjDetails extends React.Component {
                     </div>
                 ))}
 
+                <p className="details-division">Delete this object</p>
+
                 <Button variant="danger" onClick={() => {}}>
                 Delete
                 </Button>
@@ -289,6 +306,7 @@ export default class ObjDetails extends React.Component {
     detailsModelFile(obj){ //arrumar: ask to learn again
         return(
             <div>
+                <p className="details-division">Object properties</p>
                 <InputGroup.Prepend>
                     <InputGroup.Text>Title</InputGroup.Text>
                 </InputGroup.Prepend>
@@ -317,27 +335,52 @@ export default class ObjDetails extends React.Component {
                 <InputGroup.Prepend>
                     <InputGroup.Text>df</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl defaultValue={obj.df} onChange={(e) => {obj.df = e.target.value;}} disabled/>
+                <FormControl defaultValue={obj.df} disabled/>
+
+                <InputGroup.Prepend>
+                    <InputGroup.Text>K</InputGroup.Text>
+                </InputGroup.Prepend>
+                <FormControl defaultValue={obj.K} disabled/>
 
                 <InputGroup.Prepend>
                     <InputGroup.Text>bestk</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl defaultValue={obj.bestk} onChange={(e) => {obj.bestk = e.target.value;}} disabled/>
+                <FormControl defaultValue={obj.bestk} disabled/>
 
                 <InputGroup.Prepend>
                     <InputGroup.Text>mindens</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl defaultValue={obj.maxdens} onChange={(e) => {obj.mindens = e.target.value;}} disabled/>
+                <FormControl defaultValue={obj.maxdens} disabled/>
 
                 <InputGroup.Prepend>
                     <InputGroup.Text>maxdens</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl defaultValue={obj.maxdens} onChange={(e) => {obj.maxdens = e.target.value;}}  disabled/>
+                <FormControl defaultValue={obj.maxdens} disabled/>
 
                 <InputGroup.Prepend>
                     <InputGroup.Text>ordered_list_of_nodes</InputGroup.Text>
                 </InputGroup.Prepend>
                 <FormControl defaultValue={obj.ordered_list_of_nodes} disabled/>
+                
+                {obj.time?
+                <div>
+                    <InputGroup.Prepend>
+                        <InputGroup.Text>Processing time</InputGroup.Text>
+                    </InputGroup.Prepend>
+                    <FormControl defaultValue={obj.time} disabled/>
+                </div>
+                :""}
+
+                {obj.pruningRate?
+                <div>
+                    <InputGroup.Prepend>
+                        <InputGroup.Text>Pruning rate</InputGroup.Text>
+                    </InputGroup.Prepend>
+                    <FormControl defaultValue={obj.pruningRate} disabled/>
+                </div>
+                :""}
+
+                <p className="details-division">Object options</p>
                 <Button variant="secondary" onClick={() => this.props.parent.Tree.current.addNewEmptyData(this.props.parent.FM.cloneToNewGraph(obj,true),"Clone of " + obj.title)}> 
                 Clone to Data
                 </Button>
@@ -364,6 +407,7 @@ export default class ObjDetails extends React.Component {
                 <Button variant="secondary" onClick={() => this.downloadOPFFFile(obj,obj.title+".opf")}>
                 Download ModelFile as OPF file
                 </Button>
+                <p className="details-division">Delete this object</p>
                 <Button variant="danger" onClick={() => {
                     if (window.confirm('Do you want to delete '+obj.title+" ?" ))
                         this.props.parent.Tree.current.deleteObject(obj,"ModelFiles");
@@ -377,6 +421,7 @@ export default class ObjDetails extends React.Component {
     detailsModelFileNode(obj){
         return(
             <div>
+                <p className="details-division">Object properties</p>
                 <InputGroup.Prepend>
                     <InputGroup.Text>Title</InputGroup.Text>
                 </InputGroup.Prepend>
@@ -432,9 +477,24 @@ export default class ObjDetails extends React.Component {
     detailsDistances(obj){
         return(
             <div>
+                <p className="details-division">Object properties</p>
+                <InputGroup.Prepend>
+                    <InputGroup.Text>Position range</InputGroup.Text>
+                </InputGroup.Prepend>
+                <FormControl defaultValue={"0 - "+obj.distances.length} disabled/>
+                {obj.time?
+                <div>
+                    <InputGroup.Prepend>
+                        <InputGroup.Text>Processing time</InputGroup.Text>
+                    </InputGroup.Prepend>
+                    <FormControl defaultValue={obj.time} disabled/>
+                </div>
+                :""}
+                <p className="details-division">Object options</p>
                 <Button variant="secondary" onClick={() => this.downloadOPFFFile(obj,obj.title+".dis")}>
                 Download as OPF file
                 </Button>
+                <p className="details-division">Delete this object</p>
                 <Button variant="danger" onClick={() => {
                     if (window.confirm('Do you want to delete '+obj.title+" ?" ))
                         this.props.parent.Tree.current.deleteObject(obj,"Distances");
@@ -448,57 +508,70 @@ export default class ObjDetails extends React.Component {
     detailsClassification(obj){
         return(
             <div>
-            {
-                obj.hasOwnProperty("accuracy") ?
-                <span>
+                <p className="details-division">Object properties</p>
+
+                {obj.time?
+                <div>
                     <InputGroup.Prepend>
-                        <InputGroup.Text>Accuracy</InputGroup.Text>
+                        <InputGroup.Text>Processing time</InputGroup.Text>
                     </InputGroup.Prepend>
-                    <FormControl Value={obj.accuracy} disabled/>
-                </span>
-                :
-                ""
-            }
-            {
-                obj.hasOwnProperty("accuracy4Label") ?
-                <span>
-                    <InputGroup.Prepend>
-                        <InputGroup.Text>Accuracy for each label</InputGroup.Text>
-                    </InputGroup.Prepend>
-                    {Object.entries(obj.accuracy4Label).map((label, value) => (
-                        <span key={value}>
-                            {obj.accuracy4Label[value] !== "" ? <FormControl Value={"Label "+(value+1)+": "+obj.accuracy4Label[value]} disabled/> : ""}
-                        </span>
-                    ))}
-                </span>
-                :
-                ""
-            }
-            <Button variant="secondary" onClick={() => {
-              var functionInfo = {opfFunction: this.props.parent.OPFFunctions.current.functionDetails["opf_accuracy"], objs: [obj.subGraph,obj]}
-              this.props.parent.FM.runCFunction(functionInfo)
-              obj.accuracy = this.props.parent.FM.readCOutFiles(functionInfo, "Created by the function opf_accuracylabel",obj.data).acc[0]["0"];
-              this.setState({details:this.detailsClassification(obj)})
-            }}>
-            Calculate accuracy
-            </Button>
-            <Button variant="secondary" onClick={() => {
-              var functionInfo = {opfFunction: this.props.parent.OPFFunctions.current.functionDetails["opf_accuracy4label"], objs: [obj.subGraph,obj]}
-              this.props.parent.FM.runCFunction(functionInfo)
-              obj.accuracy4Label = this.props.parent.FM.readCOutFiles(functionInfo, "Created by the function opf_accuracy4label",obj.data).acc[0];
-              this.setState({details:this.detailsClassification(obj)})
-            }}>
-            Calculate accuracy for each label (class)
-            </Button>
-            <Button variant="secondary" onClick={() => this.downloadOPFFFile(obj,obj.title+".txt")}>
-            Download as OPF file
-            </Button>
-            <Button variant="danger" onClick={() => {
-                if (window.confirm('Do you want to delete '+obj.title+" ?" ))
-                    this.props.parent.Tree.current.deleteObject(obj,"Classifications");
-            }}>
-            Delete
-            </Button>
+                    <FormControl defaultValue={obj.time} disabled/>
+                </div>
+                :""}
+
+                {
+                    obj.hasOwnProperty("accuracy") ?
+                    <span>
+                        <InputGroup.Prepend>
+                            <InputGroup.Text>Accuracy</InputGroup.Text>
+                        </InputGroup.Prepend>
+                        <FormControl Value={obj.accuracy} disabled/>
+                    </span>
+                    :
+                    ""
+                }
+                {
+                    obj.hasOwnProperty("accuracy4Label") ?
+                    <span>
+                        <InputGroup.Prepend>
+                            <InputGroup.Text>Accuracy for each label</InputGroup.Text>
+                        </InputGroup.Prepend>
+                        {Object.entries(obj.accuracy4Label).map((label, value) => (
+                            <span key={value}>
+                                {obj.accuracy4Label[value] !== "" ? <FormControl Value={"Label "+(value+1)+": "+obj.accuracy4Label[value]} disabled/> : ""}
+                            </span>
+                        ))}
+                    </span>
+                    :
+                    ""
+                }
+                <p className="details-division">Object options</p>
+                <Button variant="secondary" onClick={() => {
+                    var functionInfo = {opfFunction: this.props.parent.OPFFunctions.current.functionDetails["opf_accuracy"], objs: [obj.subGraph,obj]}
+                    this.props.parent.FM.runCFunction(functionInfo)
+                    obj.accuracy = this.props.parent.FM.readCOutFiles(functionInfo, "Created by the function opf_accuracylabel",obj.data).acc[0]["0"];
+                    this.setState({details:this.detailsClassification(obj)})
+                }}>
+                Calculate accuracy
+                </Button>
+                <Button variant="secondary" onClick={() => {
+                    var functionInfo = {opfFunction: this.props.parent.OPFFunctions.current.functionDetails["opf_accuracy4label"], objs: [obj.subGraph,obj]}
+                    this.props.parent.FM.runCFunction(functionInfo)
+                    obj.accuracy4Label = this.props.parent.FM.readCOutFiles(functionInfo, "Created by the function opf_accuracy4label",obj.data).acc[0];
+                    this.setState({details:this.detailsClassification(obj)})
+                }}>
+                Calculate accuracy for each label (class)
+                </Button>
+                <Button variant="secondary" onClick={() => this.downloadOPFFFile(obj,obj.title+".txt")}>
+                Download as OPF file
+                </Button>
+                <p className="details-division">Delete this object</p>
+                <Button variant="danger" onClick={() => {
+                    if (window.confirm('Do you want to delete '+obj.title+" ?" ))
+                        this.props.parent.Tree.current.deleteObject(obj,"Classifications");
+                }}>
+                Delete
+                </Button>
             </div>
         )
     }
@@ -620,7 +693,7 @@ export default class ObjDetails extends React.Component {
                 <p>Distance is a Matrix NxN that have all the distances from one POSITION (ID) to another POSITION (ID)</p>
                 <Button variant="secondary" onClick={() => {
                     this.props.parent.Tree.current.readOPFFile((reader) => {
-                        var loadedFile = this.props.parent.FM.readDistances(new DataView(reader.result),obj.data,"Distance","loaded by the user");
+                        var loadedFile = this.props.parent.FM.readDistances(new DataView(reader.result),obj.data,"Distance","loaded by the user",obj.data.graph);
                         if(loadedFile)
                             obj.data.Distances.children.push(loadedFile)
                         this.props.parent.Tree.current.setState({})

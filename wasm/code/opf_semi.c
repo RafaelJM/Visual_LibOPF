@@ -23,7 +23,7 @@ void c_opf_semi(int *argc, char **argv)
     return;
   }
 
-  int n, i;
+  int n, i, p;
   int opf_ComputeEvaluation = 0;
   char fileName[256];
   FILE *f = NULL;
@@ -59,8 +59,31 @@ void c_opf_semi(int *argc, char **argv)
   }
 
   if (opf_PrecomputedDistance){
-    opf_DistanceValue = opf_ReadDistances(argv[4], &n); if(errorOccurred) return;
-  }
+		opf_DistanceValue = opf_ReadDistances(argv[4], &n); if(errorOccurred) return;
+		int maxPosition = 0;
+		for (p = 0; p < g->nnodes; p++)
+		{
+			if(g->node[p].position > maxPosition)
+				maxPosition = g->node[p].position;
+		}
+		for (p = 0; p < gunl->nnodes; p++)
+		{
+			if(gunl->node[p].position > maxPosition)
+				maxPosition = gunl->node[p].position;
+		}
+		if (opf_ComputeEvaluation){
+			for (p = 0; p < geval->nnodes; p++)
+			{
+				if(geval->node[p].position > maxPosition)
+					maxPosition = geval->node[p].position;
+			}	
+		}
+		if(maxPosition >= n){
+			errorOccurred = 1;
+			fprintf(stderr, "\nError! Some positions have no pre-calculated distance, the matrix size must be equal to or less than the maximum position of the nodes");
+			return;
+		}
+	}
 
   fprintf(stdout, "\nTraining Semi OPF classifier ...");
   

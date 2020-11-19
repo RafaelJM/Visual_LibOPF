@@ -201,7 +201,7 @@ var Module = typeof Module !== 'undefined' ? Module : {};
     }
   
    }
-   loadPackage({"files": [{"filename": "/files/0.temp", "start": 0, "end": 0, "audio": 0}, {"filename": "/files/1.temp", "start": 0, "end": 0, "audio": 0}, {"filename": "/files/2.temp", "start": 0, "end": 0, "audio": 0}, {"filename": "/files/3.temp", "start": 0, "end": 0, "audio": 0}, {"filename": "/files/4.temp", "start": 0, "end": 0, "audio": 0}], "remote_package_size": 0, "package_uuid": "451d886b-c484-4e77-947e-afa19c72bfd3"});
+   loadPackage({"files": [{"filename": "/files/0.temp", "start": 0, "end": 0, "audio": 0}, {"filename": "/files/1.temp", "start": 0, "end": 0, "audio": 0}, {"filename": "/files/2.temp", "start": 0, "end": 0, "audio": 0}, {"filename": "/files/3.temp", "start": 0, "end": 0, "audio": 0}, {"filename": "/files/4.temp", "start": 0, "end": 0, "audio": 0}], "remote_package_size": 0, "package_uuid": "a5d3a8b1-238d-4e07-a649-c442083f2ea6"});
   
   })();
   
@@ -1360,11 +1360,11 @@ function updateGlobalBufferAndViews(buf) {
 }
 
 var STATIC_BASE = 1024,
-    STACK_BASE = 5259120,
+    STACK_BASE = 5260208,
     STACKTOP = STACK_BASE,
-    STACK_MAX = 16240,
-    DYNAMIC_BASE = 5259120,
-    DYNAMICTOP_PTR = 16080;
+    STACK_MAX = 17328,
+    DYNAMIC_BASE = 5260208,
+    DYNAMICTOP_PTR = 17168;
 
 assert(STACK_BASE % 16 === 0, 'stack must start aligned');
 assert(DYNAMIC_BASE % 16 === 0, 'heap must start aligned');
@@ -1890,33 +1890,33 @@ var ASM_CONSTS = {
  1427: function() {FS.syncfs(true, function (err) { });},  
  1798: function() {FS.syncfs(function (err) { });},  
  1829: function() {FS.syncfs(true, function (err) { });},  
- 2195: function() {FS.syncfs(function (err) { });},  
- 2226: function() {FS.syncfs(true, function (err) { });},  
- 2851: function() {FS.syncfs(function (err) { });},  
- 2882: function() {FS.syncfs(true, function (err) { });},  
- 3540: function() {FS.syncfs(function (err) { });},  
- 3571: function() {FS.syncfs(true, function (err) { });},  
- 3844: function() {FS.syncfs(function (err) { });},  
- 3875: function() {FS.syncfs(true, function (err) { });},  
- 4241: function() {FS.syncfs(function (err) { });},  
- 4272: function() {FS.syncfs(true, function (err) { });},  
- 4771: function() {FS.syncfs(function (err) { });},  
- 4802: function() {FS.syncfs(true, function (err) { });},  
- 5109: function() {FS.syncfs(function (err) { });},  
- 5140: function() {FS.syncfs(true, function (err) { });},  
- 5380: function() {FS.syncfs(function (err) { });},  
- 5411: function() {FS.syncfs(true, function (err) { });},  
- 5895: function() {FS.syncfs(function (err) { });},  
- 5926: function() {FS.syncfs(true, function (err) { });},  
- 6506: function() {FS.syncfs(function (err) { });},  
- 6726: function() {FS.syncfs(true, function (err) { });},  
- 7225: function() {FS.syncfs(function (err) { });},  
- 7256: function() {FS.syncfs(true, function (err) { });},  
- 7651: function() {FS.syncfs(function (err) { });},  
- 7682: function() {FS.syncfs(true, function (err) { });},  
- 8051: function() {FS.syncfs(function (err) { });},  
- 8082: function() {FS.syncfs(true, function (err) { });},  
- 8548: function() {FS.syncfs(function (err) { });}
+ 2331: function() {FS.syncfs(function (err) { });},  
+ 2362: function() {FS.syncfs(true, function (err) { });},  
+ 3123: function() {FS.syncfs(function (err) { });},  
+ 3154: function() {FS.syncfs(true, function (err) { });},  
+ 3812: function() {FS.syncfs(function (err) { });},  
+ 3843: function() {FS.syncfs(true, function (err) { });},  
+ 4116: function() {FS.syncfs(function (err) { });},  
+ 4147: function() {FS.syncfs(true, function (err) { });},  
+ 4513: function() {FS.syncfs(function (err) { });},  
+ 4544: function() {FS.syncfs(true, function (err) { });},  
+ 5179: function() {FS.syncfs(function (err) { });},  
+ 5210: function() {FS.syncfs(true, function (err) { });},  
+ 5517: function() {FS.syncfs(function (err) { });},  
+ 5548: function() {FS.syncfs(true, function (err) { });},  
+ 5788: function() {FS.syncfs(function (err) { });},  
+ 5819: function() {FS.syncfs(true, function (err) { });},  
+ 6439: function() {FS.syncfs(function (err) { });},  
+ 6470: function() {FS.syncfs(true, function (err) { });},  
+ 7186: function() {FS.syncfs(function (err) { });},  
+ 7406: function() {FS.syncfs(true, function (err) { });},  
+ 7905: function() {FS.syncfs(function (err) { });},  
+ 7936: function() {FS.syncfs(true, function (err) { });},  
+ 8467: function() {FS.syncfs(function (err) { });},  
+ 8498: function() {FS.syncfs(true, function (err) { });},  
+ 9003: function() {FS.syncfs(function (err) { });},  
+ 9034: function() {FS.syncfs(true, function (err) { });},  
+ 9636: function() {FS.syncfs(function (err) { });}
 };
 
 function _emscripten_asm_const_iii(code, sigPtr, argbuf) {
@@ -1926,7 +1926,7 @@ function _emscripten_asm_const_iii(code, sigPtr, argbuf) {
 
 
 
-// STATICTOP = STATIC_BASE + 15216;
+// STATICTOP = STATIC_BASE + 16304;
 /* global initializers */  __ATINIT__.push({ func: function() { ___wasm_call_ctors() } });
 
 
@@ -5359,7 +5359,7 @@ function _emscripten_asm_const_iii(code, sigPtr, argbuf) {
     }
 
   function _emscripten_get_sbrk_ptr() {
-      return 16080;
+      return 17168;
     }
 
   function _emscripten_memcpy_big(dest, src, num) {

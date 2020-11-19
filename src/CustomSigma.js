@@ -128,6 +128,14 @@ export default class CustomSigma extends React.Component {
       if(this.selectedNode.id !== node.id){
         if(this.props.sigma.graph.edges().length)
           this.props.sigma.graph.dropEdge(1);
+        if(distancesObj.distances.length < this.selectedNode.id){
+          this.props.parent.addText("Position ("+this.selectedNode.id+") of node "+this.selectedNode.label+" is not calculated!","textErr")
+          return;
+        }
+        if(distancesObj.distances.length < node.id){
+          this.props.parent.addText("Position ("+node.id+") of node "+node.label+" is not calculated!","textErr")
+          return;
+        }
         this.props.sigma.graph.addEdge({
           id: 1,
           label: distancesObj.distances[this.selectedNode.id][node.id],
@@ -136,7 +144,10 @@ export default class CustomSigma extends React.Component {
           type: "line", //arrow
         })
         this.props.sigma.refresh();
-        this.props.parent.addText("Distance between "+this.selectedNode.title+" and "+node.title+" is "+distancesObj.distances[this.selectedNode.id][node.id],"textOut")
+        if(distancesObj.distances[this.selectedNode.id][node.id])
+          this.props.parent.addText("Distance between "+this.selectedNode.title+" and "+node.title+" is "+distancesObj.distances[this.selectedNode.id][node.id],"textOut")
+        else
+          this.props.parent.addText("The distance is 0, the distance is not pre calculated or de nodes have same feats","textErr")
       }
     }
     

@@ -44,6 +44,7 @@ class MyFirstGrid extends React.Component {
 
 
     this.logOut = []
+    this.key = 0;
 
     this.today = new Date();   
 
@@ -81,7 +82,7 @@ class MyFirstGrid extends React.Component {
 
   addText(text,cla){
     if(text !== "")
-      this.logOut = [<div className={cla}>{this.today.getHours() + ":" + this.today.getMinutes() + " " + text}</div>].concat(this.logOut);
+      this.logOut = [<div className={cla} key={this.key+=1}>{this.today.getHours() + ":" + this.today.getMinutes() + " " + text}</div>].concat(this.logOut);
     if(cla === "textErr"){
       this.openMenu([2])
     }

@@ -196,7 +196,7 @@ export default class FileManager{
   cloneToNewGraph(obj, convertToSubGraphNode = false){ //arrumar
     var newData= {
       nlabels: (obj.nlabels?obj.nlabels:obj.graphOrigin.nlabels), nfeats: (obj.nlabels?obj.nfeats:obj.graphOrigin.nfeats), title: "Clone of "+obj.title, description:obj.description, 
-      open: false, inicial_nlabels: obj.inicial_nlabels, inicial_nfeats: obj.inicial_nfeats, isGraph: true, positionDuplicate: [],
+      open: false, isGraph: true, positionDuplicate: [],
       nodes: [],
       edges:[]
     };
@@ -241,7 +241,7 @@ export default class FileManager{
   readGraph(dv, data, title, description){
     if(data && !data.hasOwnProperty("SubGraphs"))this.parent.addText("Error Data","textErr")
     var graph= {
-      nlabels: -1, nfeats: -1, title: title, description:description, open: false, inicial_nlabels: -1, inicial_nfeats: -1, isGraph: true, positionDuplicate: [], data,
+      nlabels: -1, nfeats: -1, title: title, description:description, open: false, isGraph: true, positionDuplicate: [], data,
       nodes: [],
       edges:[]
     };
@@ -374,9 +374,7 @@ export default class FileManager{
     if(data && !data.hasOwnProperty("SubGraphs"))this.parent.addText("Error Data","textErr")
     var modelFile= {
       nlabels: -1, nfeats: -1, df: -1, bestk: -1, K: -1, mindens: -1, maxdens: -1, title: title, open: false, description:description, ordered_list_of_nodes: [], isModelFile: true, data,
-      positionDuplicate: [],
-      nodes: [],
-      edges:[]
+      positionDuplicate: [], nodes: [], edges:[]
     };
 
     modelFile.getDetails = "detailsModelFile"
@@ -540,7 +538,7 @@ export default class FileManager{
   }
 
   readDistances(dv, data, title, description, graph){ //Arrumar: Test if is necessary to link node ids
-    if(data && !data.hasOwnProperty("SubGraphs"))this.parent.addText("Error Data","textErr")
+    if(data && !data.hasOwnProperty("SubGraphs")) this.parent.addText("Error Data","textErr")
     var cont = 0;
     var nsamples = dv.getInt32(cont,true);
     var distances = new Array(nsamples);
@@ -550,28 +548,26 @@ export default class FileManager{
         distances[i][j] = dv.getFloat32(cont=cont+4,true);
       }
     }
-
-    var dists = {isDistances: true, "distances": distances, title: title, description:description, graph:graph, data:data}
+    var dists = {isDistances: true, distances: distances, title: title, description:description, graph:graph, data:data}
 
     dists.getDetails = "detailsDistances"
     dists.saveInFile = "writeDistances"
     dists.nodes = dists.graph.nodes
 
+    console.log(dists)
     return(dists)
   }
 
-  writeDistances(distances, file){
-    const buf = Buffer.allocUnsafe((1 + (distances.length^2))*4);
-
+  writeDistances(dis, file){
+    console.log((1 + (Math.pow(dis.distances[0].length, 2)))*4)
+    const buf = Buffer.allocUnsafe((1 + (Math.pow(dis.distances[0].length, 2)))*4);
     var cont = 0;
-    buf.writeInt32LE(distances.length,cont);
-
-    for(var i=0; i<distances.length; i++) {
-      for(var j=0; j<distances.length; j++) {
-        buf.writeFloatLE(distances[i][j],cont=cont+4);
+    buf.writeInt32LE(dis.distances.length,cont);
+    for(var i=0; i<dis.distances[0].length; i++) {
+      for(var j=0; j<dis.distances[0].length; j++) {
+        buf.writeFloatLE(dis.distances[i][j],cont=cont+4);
       }
     }
-    
     this.FS.writeFile(file,Buffer.from(buf));
   }
 }

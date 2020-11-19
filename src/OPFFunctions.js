@@ -56,7 +56,7 @@ export default class FunctionManager extends React.Component {
                 }
               }
               return(
-                [this.entrace_Graph("S","The Data to calculate"),
+                [this.entrace_OnlyData("S","The Data to calculate"),
                 this.entrace_Select(this.distancesDict,"Distance calculation option","Distance Calculation"),
                 this.entrace_Select(this.yesNoDict,"Distance normalization?","Is to Normalize?")]
               )
@@ -156,14 +156,20 @@ export default class FunctionManager extends React.Component {
       return(this.entrace_Select(aux,description,"Datas"))
     }
 
-    entrace_Graph(type, description,placeholder){
+    entrace_OnlyData(type, description,placeholder){
         if(type === "S"){
-          return(this.entrace_Select([this.props.parent.Tree.current.state.activeData.graph].concat(this.props.parent.Tree.current.state.activeData.SubGraphs.children),description,"SubGraph"))//arrumar , divide grapg/subgraph?
-        }
-        else{
-          return(this.entrace_Select(this.props.parent.Tree.current.state.activeData.ModelFiles.children,description,"ModelFile"))
+          return(this.entrace_Select([this.props.parent.Tree.current.state.activeData.graph],description,"Data",))//arrumar , divide grapg/subgraph?
         }
     }
+
+    entrace_Graph(type, description,placeholder){
+      if(type === "S"){
+        return(this.entrace_Select([this.props.parent.Tree.current.state.activeData.graph].concat(this.props.parent.Tree.current.state.activeData.SubGraphs.children),description,"SubGraph"))//arrumar , divide grapg/subgraph?
+      }
+      else{
+        return(this.entrace_Select(this.props.parent.Tree.current.state.activeData.ModelFiles.children,description,"ModelFile"))
+      }
+  }
 
     entrace_Select(dict,description,objectInfo, none = false){
         var ref = React.createRef();
@@ -242,7 +248,6 @@ export default class FunctionManager extends React.Component {
                 <option value="opf_cluster" title={this.functionDetails["opf_cluster"].description}>opf_cluster</option>
                 <option value="opf_pruning" title={this.functionDetails["opf_pruning"].description}>opf_pruning</option>
                 <option value="opfknn_train" title={this.functionDetails["opfknn_train"].description}>opfknn_train</option>
-                <option value="opf_accuracy" title={this.functionDetails["opf_accuracy"].description}>opf_accuracy</option>
               </optgroup>
               <optgroup label="Classifing phase"> 
                 <option value="opf_classify" title={this.functionDetails["opf_classify"].description} disabled={this.props.parent.Tree.current.state.activeData && this.props.parent.Tree.current.state.activeData.ModelFiles.children.length? "" : "disabled"}>opf_classify</option>
@@ -272,6 +277,7 @@ export default class FunctionManager extends React.Component {
               }
               this.props.parent.FM.runCFunction(functionInfo)
               this.props.parent.Tree.current.addBuffer(this.props.parent.FM.readCOutFiles(functionInfo, "Created by the function "+key,this.props.parent.Tree.current.state.activeData));
+              console.log(functionInfo.objs)
             }}>Run</Button>
           </span>
         )
