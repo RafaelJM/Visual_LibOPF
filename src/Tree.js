@@ -1,7 +1,7 @@
 import Tree from 'react-animated-tree'
 import React from 'react';
 import {parse, stringify} from 'flatted';
-import {FormControl, Form, OverlayTrigger, Tooltip, Button} from 'react-bootstrap';
+import {Button} from 'react-bootstrap';
 
 export default class TreeData extends React.Component {
     constructor(props) {
@@ -30,12 +30,12 @@ export default class TreeData extends React.Component {
     deleteData(data){
         this.setState({
             activeData: (Object.is(this.state.activeData,data)? null : this.activeData),
-            treeData: this.state.treeData.filter(o => {if(!Object.is(o,data))return(o)})
+            treeData: this.state.treeData.filter(o => {return(!Object.is(o,data))})
         },() => this.resetAllLoadedInfo())
     }
 
     deleteObject(obj,childrenTitle){
-        obj.data[childrenTitle].children = obj.data[childrenTitle].children.filter(o => {if(!Object.is(o,obj))return(o)})
+        obj.data[childrenTitle].children = obj.data[childrenTitle].children.filter(o => {return(!Object.is(o,obj))})
         this.setState({},() => this.resetAllLoadedInfo())
     }
 
@@ -74,7 +74,7 @@ export default class TreeData extends React.Component {
             }]
         }
 
-        auxData.children.map(((key) => {
+        auxData.children.forEach((key => {
             auxData[key.title] = key;
         }))
 
@@ -89,14 +89,11 @@ export default class TreeData extends React.Component {
     }
 
     addBuffer(buffer){
-        console.log(buffer)
         this.setState( prevState => {
-            Object.keys(buffer).map((key, i) => {
+            Object.keys(buffer).forEach((key, i) => {
                 if(i >= 4) return;
-                if(buffer[key]){
-                    buffer[key].filter((e) => {e.data = prevState.activeData})
+                if(buffer[key])
                     prevState.activeData.children[i].children = prevState.activeData.children[i].children.concat(buffer[key])
-                }
             })
             return {
                 prevState
@@ -118,29 +115,37 @@ export default class TreeData extends React.Component {
         verticalAlign: 'middle'
     }
 
+    treeStyles = {
+        color: 'black',
+        fill: 'black',
+        width: '100%',
+        verticalAlign: 'middle',
+        fontWeight: "450"
+    }
+
     generateSpamData(c){
         return(
             <span style={this.typeStyles}>
-                <img class="tree-image" src="information.png" alt="" onClick={() => {this.props.parent.ObjDetails.current.loadDetails(c.graph);}}/>
-                <img class="tree-image" src={Object.is(this.props.parent.CSigma.current.state.loadedGraph,c.graph)?"eye2.png":"eye1.png"} onClick={() => {this.props.parent.CSigma.current.loadSugGraph(c.graph)}}/> 
+                <img alt="Object info" className="tree-image" src="information.png"  onClick={() => {this.props.parent.ObjDetails.current.loadDetails(c.graph);}}/>
+                <img alt="See object" className="tree-image" src={Object.is(this.props.parent.CSigma.current.state.loadedGraph,c.graph)?"eye2.png":"eye1.png"} onClick={() => {this.props.parent.CSigma.current.loadSugGraph(c.graph)}}/> 
             </span>)        
     }
 
     generateSpamChildren(c){
         return(<span style={this.typeStyles}>
-            <img class="tree-image" src="information.png" alt="" onClick={() => {this.props.parent.ObjDetails.current.loadDetails(c);}}/>
-            <img class="tree-image" src={Object.is(this.props.parent.CSigma.current.state.loadedGraph,c)?"eye2.png":"eye1.png"} onClick={() => {this.props.parent.CSigma.current.loadSugGraph(c)}}/>
+            <img alt="Object info" className="tree-image" src="information.png"  onClick={() => {this.props.parent.ObjDetails.current.loadDetails(c);}}/>
+            <img alt="See object" className="tree-image" src={Object.is(this.props.parent.CSigma.current.state.loadedGraph,c)?"eye2.png":"eye1.png"} onClick={() => {this.props.parent.CSigma.current.loadSugGraph(c)}}/>
         </span>)
     }
     
-    generateTree(data){ //Arrumar! bold
+    generateTree(data,i){
         return(
-            <Tree content={data.graph.title} style={(Object.is(data,this.state.activeData)? Object.assign({}, {fontWeight: "700"}, this.treeStyles): this.treeStyles)} type={this.generateSpamData(data)} open style={this.treeStyles}>
-                {data.children.map((c) => 
+            <Tree content={data.graph.title} key={i} style={(Object.is(data,this.state.activeData)?Object.assign({}, {fontWeight: "700"}):this.treeStyles)} type={this.generateSpamData(data)} open>
+                {data.children.map((c,index) => 
                     (c.children.length ?
-                    <Tree content={c.title} style={this.typeStyles} open>
-                        {c.children.map((c2) => 
-                            <Tree content={c2.title} style={this.typeStyles} type={this.generateSpamChildren(c2)} style={this.treeStyles}/>
+                    <Tree content={c.title} key={index} style={this.treeStyles} open>
+                        {c.children.map((c2,index2) => 
+                            <Tree content={c2.title} key={index2} style={this.treeStyles} type={this.generateSpamChildren(c2)}/>
                         )}
                     </Tree> 
                     : "")
@@ -151,8 +156,8 @@ export default class TreeData extends React.Component {
 
     readData(title, description) {   
         this.readOPFFile((reader) => {
-            var loadedFile = this.props.parent.FM.readGraph(new DataView(reader.result),title,description);
-            this.props.parent.Tree.current.addNewEmptyData(loadedFile);
+            var loadedFile = this.props.parent.FM.readGraph(new DataView(reader.result),null,title,description);
+            this.addNewEmptyData(loadedFile);
             this.props.parent.OPFFunctions.current.loadFunctions()
         })
     }
@@ -163,9 +168,7 @@ export default class TreeData extends React.Component {
         element.setAttribute('type', 'file')
         element.setAttribute('accept' , this.props.parent.inputAccept);
         element.setAttribute('value' , '0');
-        const scope = this;
         element.addEventListener('change', function() {    
-            console.log(element)
             if(element.files.length === 0) return;
             
             var reader = new FileReader();
@@ -209,35 +212,34 @@ export default class TreeData extends React.Component {
 
     render() {         
         var html = []
-        this.state.treeData.map((data) => {
-            html = html.concat(this.generateTree(data))
-        })
+        this.state.treeData.forEach((data,index) => html = html.concat(this.generateTree(data,index)))
         return (
-            <div class="tree">
-                <Button variant="secondary" onClick={() => this.readData("Graph Data", "Loaded by the user")}>
-                Read
-                </Button>
-                <Button variant="secondary"
-                onClick={() => {
-                    var element = document.createElement('a');
-                    
-                    element.setAttribute('href', URL.createObjectURL(new Blob([stringify(this.props.parent.Tree.current.state)])))
-                    element.setAttribute('download', "state at " + this.props.parent.today.getHours() + ":" + this.props.parent.today.getMinutes() + ".txt");
-                    element.setAttribute('target', "blank");
+            <div className="tree">
+                <span className="tree-buttons">
+                    <Button variant="secondary" onClick={() => this.readData("Graph Data", "Loaded by the user")}>
+                    Read
+                    </Button>
+                    <Button variant="secondary"
+                    onClick={() => {
+                        var element = document.createElement('a');
+                        
+                        element.setAttribute('href', URL.createObjectURL(new Blob([stringify(this.state)])))
+                        element.setAttribute('download', "state at " + this.props.parent.today.getHours() + ":" + this.props.parent.today.getMinutes() + ".txt");
+                        element.setAttribute('target', "blank");
 
-                    element.style.display = 'none';
-                    document.body.appendChild(element);
+                        element.style.display = 'none';
+                        document.body.appendChild(element);
 
-                    element.click();
+                        element.click();
 
-                    document.body.removeChild(element);
-                }}
-                >
-                Export
-                </Button>
-                <Button variant="secondary" onClick={() => this.readJSON()}>
-                Inport
-                </Button>
+                        document.body.removeChild(element);
+                    }} disabled={this.state.treeData.length?"":"disabled"}>
+                    Export
+                    </Button>
+                    <Button variant="secondary" onClick={() => this.readJSON()}>
+                    Inport
+                    </Button>
+                </span>
                 {html}
             </div>
         );

@@ -1,7 +1,6 @@
 import React from 'react';
 
 import {Sigma} from 'react-sigma';
-import SplitPane, { Pane } from 'react-split-pane';
 import Cookies from 'universal-cookie';
 
 import './App.css';
@@ -43,6 +42,7 @@ class MyFirstGrid extends React.Component {
     this.inferiorRef = React.createRef()
     this.main = React.createRef()
 
+
     this.logOut = []
 
     this.today = new Date();   
@@ -53,7 +53,6 @@ class MyFirstGrid extends React.Component {
       
     }
   }
-
   graphMenuClick(num){
     this.graphMenu.current.childNodes[1].childNodes[num].classList.add('show')
     this.graphMenu.current.childNodes[1].childNodes[Math.abs(num-1)].classList.remove('show')
@@ -82,7 +81,7 @@ class MyFirstGrid extends React.Component {
 
   addText(text,cla){
     if(text !== "")
-      this.logOut = [<div class={cla}>{this.today.getHours() + ":" + this.today.getMinutes() + " " + text}</div>].concat(this.logOut);
+      this.logOut = [<div className={cla}>{this.today.getHours() + ":" + this.today.getMinutes() + " " + text}</div>].concat(this.logOut);
     if(cla === "textErr"){
       this.openMenu([2])
     }
@@ -92,42 +91,42 @@ class MyFirstGrid extends React.Component {
   render() {  
     return (
       <div ref={this.main}>
-        <div class="graph-menu" >
-          <img class="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}}/>
-          <div class="panel" id="panel"  ref={this.graphMenu}>
-            <div class="holder-tabs">
-                <button class="js -trigger-tabs tab__link is-active" onClick={(e)=>this.graphMenuClick(0)}>Info</button>
-                <button class="js-trigger-tabs tab__link" onClick={(e)=>this.graphMenuClick(1)}>Options</button>
+        <div className="graph-menu" >
+          <img className="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}}/>
+          <div className="panel" id="panel"  ref={this.graphMenu}>
+            <div className="holder-tabs">
+                <button className="js -trigger-tabs tab__link is-active" onClick={(e)=>this.graphMenuClick(0)}>Info</button>
+                <button className="js-trigger-tabs tab__link" onClick={(e)=>this.graphMenuClick(1)}>Options</button>
             </div>
-            <div class="tab-content" >
-                <div id="graphMenu" class="content scroll show">
+            <div className="tab-content" >
+                <div id="graphMenu" className="content scroll show">
                   <GraphMenu ref={this.GraphMenu} parent={this} customSigma={this.CSigma}/>
                 </div>
-                <div id="graphInfo" class="content scroll">
+                <div id="graphInfo" className="content scroll">
                   <GraphInfo ref={this.GraphInfo} parent={this}/>
                 </div>
             </div>
           </div>
         </div>
-        <div class="objects-menu" >
-          <img class="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}}/>
-          <div class="panel" id="panel"  ref={this.lateralRef}>
-            <div id="tree" class="tree-content scroll show">
+        <div className="objects-menu" >
+          <img className="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}}/>
+          <div className="panel" id="panel"  ref={this.lateralRef}>
+            <div id="tree" className="tree-content scroll show">
               <TreeData ref={this.Tree} parent={this}/>
             </div>
-            <p class="graph-text">___________________________________________</p>
-            <div id="datails" class="datails-content scroll">
+            <p className="graph-text">___________________________________________</p>
+            <div id="datails" className="datails-content scroll">
               <ObjDetails ref={this.ObjDetails} parent={this}/>
             </div>
           </div>
         </div>
-        <div class="functions-menu" >
-          <img class="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}} />
-          <div class="panel" id="panel"  ref={this.inferiorRef}>
-            <div class="functions-content scroll">      
+        <div className="functions-menu" >
+          <img className="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}} />
+          <div className="panel" id="panel"  ref={this.inferiorRef}>
+            <div className="functions-content scroll">      
               <OPFFunctions ref={this.OPFFunctions} parent={this}/>
             </div>
-            <div class="log-content scroll ">  
+            <div className="log-content scroll ">  
               {this.logOut}
             </div>
           </div>
@@ -136,6 +135,7 @@ class MyFirstGrid extends React.Component {
           <CustomSigma ref={this.CSigma} parent={this} graphMenu={this.GraphMenu}/>
         </Sigma>
       </div>
+
     )
   }
 }
@@ -143,9 +143,9 @@ class MyFirstGrid extends React.Component {
 export default App;
 
 /*
-<div id="fontSizeDecrement" class="docs-font-size-inc-dec-action-button goog-toolbar-button goog-inline-block" style="user-select: none;" role="button" aria-disabled="false" aria-hidden="false" data-tooltip="Diminuir tamanho da fonte (Ctrl+Shift+,)" aria-label="Diminuir tamanho da fonte (Ctrl+Shift+vírgula)"><div class="goog-toolbar-button-outer-box goog-inline-block" aria-hidden="true" style="user-select: none;"><div class="goog-toolbar-button-inner-box goog-inline-block" style="user-select: none;"><div class="docs-icon goog-inline-block " style="user-select: none;"><div class="docs-icon-img-container docs-icon-img docs-icon-decrease-22" aria-hidden="true" style="user-select: none;">&nbsp;</div></div></div></div></div>
-<div id="fontSizeSelect" class="docs-font-size-inc-dec-combobox goog-toolbar-combo-button goog-inline-block" style="user-select: none;" role="combobox" aria-disabled="false" aria-hidden="false" aria-expanded="false" aria-haspopup="true" aria-activedescendant=":2b" data-tooltip="Tamanho da fonte" aria-label="Tamanho da fonte"><div class="goog-toolbar-combo-button-outer-box goog-inline-block" style="user-select: none;"><div class="goog-toolbar-combo-button-inner-box goog-inline-block" style="user-select: none;"><div class="goog-inline-block goog-toolbar-combo-button-caption" id=":2b" role="option" aria-selected="true" aria-setsize="16" aria-posinset="0" style="user-select: none;" aria-label="Lista Tamanho da fonte. 43 selecionado."><input class="goog-toolbar-combo-button-input jfk-textinput" autocomplete="off" type="text" aria-autocomplete="both" tabindex="-1" aria-label="Tamanho da fonte" style="user-select: none;"></div></div></div></div>
-<div id="fontSizeIncrement" class="docs-font-size-inc-dec-action-button goog-toolbar-button goog-inline-block" style="user-select: none;" role="button" aria-disabled="false" aria-hidden="false" data-tooltip="Aumentar tamanho da fonte (Ctrl+Shift+.)" aria-label="Aumentar tamanho da fonte (Ctrl+Shift+ponto final)"><div class="goog-toolbar-button-outer-box goog-inline-block" aria-hidden="true" style="user-select: none;"><div class="goog-toolbar-button-inner-box goog-inline-block" style="user-select: none;"><div class="docs-icon goog-inline-block " style="user-select: none;"><div class="docs-icon-img-container docs-icon-img docs-icon-increase-22" aria-hidden="true" style="user-select: none;">&nbsp;</div></div></div></div></div>
+<div id="fontSizeDecrement" className="docs-font-size-inc-dec-action-button goog-toolbar-button goog-inline-block" style="user-select: none;" role="button" aria-disabled="false" aria-hidden="false" data-tooltip="Diminuir tamanho da fonte (Ctrl+Shift+,)" aria-label="Diminuir tamanho da fonte (Ctrl+Shift+vírgula)"><div className="goog-toolbar-button-outer-box goog-inline-block" aria-hidden="true" style="user-select: none;"><div className="goog-toolbar-button-inner-box goog-inline-block" style="user-select: none;"><div className="docs-icon goog-inline-block " style="user-select: none;"><div className="docs-icon-img-container docs-icon-img docs-icon-decrease-22" aria-hidden="true" style="user-select: none;">&nbsp;</div></div></div></div></div>
+<div id="fontSizeSelect" className="docs-font-size-inc-dec-combobox goog-toolbar-combo-button goog-inline-block" style="user-select: none;" role="combobox" aria-disabled="false" aria-hidden="false" aria-expanded="false" aria-haspopup="true" aria-activedescendant=":2b" data-tooltip="Tamanho da fonte" aria-label="Tamanho da fonte"><div className="goog-toolbar-combo-button-outer-box goog-inline-block" style="user-select: none;"><div className="goog-toolbar-combo-button-inner-box goog-inline-block" style="user-select: none;"><div className="goog-inline-block goog-toolbar-combo-button-caption" id=":2b" role="option" aria-selected="true" aria-setsize="16" aria-posinset="0" style="user-select: none;" aria-label="Lista Tamanho da fonte. 43 selecionado."><input className="goog-toolbar-combo-button-input jfk-textinput" autocomplete="off" type="text" aria-autocomplete="both" tabindex="-1" aria-label="Tamanho da fonte" style="user-select: none;"></div></div></div></div>
+<div id="fontSizeIncrement" className="docs-font-size-inc-dec-action-button goog-toolbar-button goog-inline-block" style="user-select: none;" role="button" aria-disabled="false" aria-hidden="false" data-tooltip="Aumentar tamanho da fonte (Ctrl+Shift+.)" aria-label="Aumentar tamanho da fonte (Ctrl+Shift+ponto final)"><div className="goog-toolbar-button-outer-box goog-inline-block" aria-hidden="true" style="user-select: none;"><div className="goog-toolbar-button-inner-box goog-inline-block" style="user-select: none;"><div className="docs-icon goog-inline-block " style="user-select: none;"><div className="docs-icon-img-container docs-icon-img docs-icon-increase-22" aria-hidden="true" style="user-select: none;">&nbsp;</div></div></div></div></div>
 https://docs.google.com/presentation/d/1PdUh4z1GbMol1i1YQC98LH5Qq_51crWn64QmxMj1ULQ/edit#slide=id.p
 */
 
@@ -154,49 +154,49 @@ https://docs.google.com/presentation/d/1PdUh4z1GbMol1i1YQC98LH5Qq_51crWn64QmxMj1
 /*
 
 <div ref={this.main}>
-        <div class="menu" >
-          <img class="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}}/>
-          <div class="panel" id="panel" >
+        <div className="menu" >
+          <img className="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}}/>
+          <div className="panel" id="panel" >
             <Menu ref={this.Menu} parent={this}/>
           </div>
         </div>
-        <div class="lateral" >
-          <img class="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}}/>
-          <div class="panel" id="panel"  ref={this.lateralRef}>
-            <div class="holder-tabs">
-                <button class="js -trigger-tabs tab__link is-active" onClick={(e)=>this.lateralClick(0)}>Details</button>
-                <button class="js-trigger-tabs tab__link" onClick={(e)=>this.lateralClick(1)}>Objects</button>
+        <div className="lateral" >
+          <img className="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}}/>
+          <div className="panel" id="panel"  ref={this.lateralRef}>
+            <div className="holder-tabs">
+                <button className="js -trigger-tabs tab__link is-active" onClick={(e)=>this.lateralClick(0)}>Details</button>
+                <button className="js-trigger-tabs tab__link" onClick={(e)=>this.lateralClick(1)}>Objects</button>
             </div>
-            <div class="tab-content" >
-                <div id="conteudo-1" class="content scroll show">
+            <div className="tab-content" >
+                <div id="conteudo-1" className="content scroll show">
                   <ObjDetails ref={this.ObjDetails} parent={this}/>
                 </div>
-                <div id="conteudo-2" class="content scroll">
+                <div id="conteudo-2" className="content scroll">
                   <TreeData ref={this.Tree} parent={this}/>
                 </div>
             </div>
           </div>
         </div>
-        <div class="inferior" >
-          <img class="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}} />
-          <div class="panel" id="panel"  ref={this.inferiorRef}>
-            <div class="holder-tabs">
-                <button class="js-trigger-tabs tab__link is-active" onClick={(e)=>this.inferiorClick(0)}>Functions</button>
-                <button class="js-trigger-tabs tab__link" onClick={(e)=>this.inferiorClick(1)}>Log</button>
+        <div className="inferior" >
+          <img className="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}} />
+          <div className="panel" id="panel"  ref={this.inferiorRef}>
+            <div className="holder-tabs">
+                <button className="js-trigger-tabs tab__link is-active" onClick={(e)=>this.inferiorClick(0)}>Functions</button>
+                <button className="js-trigger-tabs tab__link" onClick={(e)=>this.inferiorClick(1)}>Log</button>
             </div>
-            <div class="tab-content">
-              <div id="conteudo-1" class="content scroll show">
+            <div className="tab-content">
+              <div id="conteudo-1" className="content scroll show">
                 <OPFFunctions ref={this.OPFFunctions} parent={this}/>
               </div>
-              <div id="conteudo-2" class="content scroll">
+              <div id="conteudo-2" className="content scroll">
                 {this.logOut}
               </div>
             </div>
           </div>
         </div>
-        <div class="graph-menu clicked">
-          <img class="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}} />
-          <div class="panel scroll" id="panel"  ref={this.graphMenu}>
+        <div className="graph-menu clicked">
+          <img className="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}} />
+          <div className="panel scroll" id="panel"  ref={this.graphMenu}>
             <GraphMenu ref={this.GraphMenu} parent={this} customSigma={this.CSigma}/>
           </div>
         </div>

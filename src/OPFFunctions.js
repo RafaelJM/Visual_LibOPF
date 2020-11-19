@@ -8,6 +8,7 @@ export default class FunctionManager extends React.Component {
         this.yesNoDict = [{title:"No", value:0},{title:"Yes", value:1}];
         this.distancesDict = [{title:"Euclidean", value:1},{title:"Chi-Squar", value:2},{title:"Manhattan", value:3},{title:"Canberra", value:4},{title:"Squared Chord", value:5},{title:"Squared Chi-Squared", value:6},{title:"BrayCurtis", value:7}];
         this.activeFunction = null;
+        this.key = 5;
         this.functionDetails = {
           
             opf_accuracy: {function: "opf_accuracy", description: "Computes the OPF accuracy",
@@ -143,6 +144,10 @@ export default class FunctionManager extends React.Component {
         this.state = {return: []}
     }
 
+    getKey(){
+      return(this.key+=1)
+    }
+
     entrace_Datas(description){
       var aux = [];
       for(var i in this.props.parent.Tree.current.state.treeData){
@@ -163,7 +168,7 @@ export default class FunctionManager extends React.Component {
     entrace_Select(dict,description,objectInfo, none = false){
         var ref = React.createRef();
         return (
-          <OverlayTrigger getvalue={() => {return((ref.current.value === "" ? {title:"none", value:""} : dict[ref.current.value]))}} overlay={<Tooltip id="tooltip-disabled">{description}</Tooltip>}>
+          <OverlayTrigger key={this.getKey()} getvalue={() => {return((ref.current.value === "" ? {title:"none", value:""} : dict[ref.current.value]))}} overlay={<Tooltip id="tooltip-disabled">{description}</Tooltip>}>
             <span className="d-inline-block">
                 <Form.Control
                 as="select"
@@ -173,7 +178,7 @@ export default class FunctionManager extends React.Component {
                 >
                 {none ? <option value="">None</option> : null}
                 {dict.map((option, index) => (
-                    <option value={index}>{option.title}</option>
+                    <option value={index} key={index}>{option.title}</option>
                 ))}
                 </Form.Control>
             </span>            
@@ -184,7 +189,7 @@ export default class FunctionManager extends React.Component {
     entrace_Number(min, max, step, placeholder, objectInfo, description, percentage = false){
         var ref = React.createRef();
         return (
-          <OverlayTrigger getvalue={() => {return({description:placeholder, value:(ref.current.value / (percentage ? 100 : 1))})}} overlay={<Tooltip id="tooltip-disabled">{description}</Tooltip>}>
+          <OverlayTrigger key={this.getKey()} getvalue={() => {return({description:placeholder, value:(ref.current.value / (percentage ? 100 : 1))})}} overlay={<Tooltip id="tooltip-disabled">{description}</Tooltip>}>
             <span className="d-inline-block">
                 <input ref={ref} type="number" min={min} max={max} step={step} placeholder={placeholder}/>
                 {percentage ? <span>%</span> : null}
@@ -195,30 +200,35 @@ export default class FunctionManager extends React.Component {
 
     loadFunctions(){
       this.setState({return: []}, () => {this.setState({return: [
-        <span className="d-inline-block">
+        <span key={0} className="d-inline-block">
           {this.props.parent.Tree.current.state.treeData.length > 1 ? [
-            <span class="function text">Active data: </span>,
-            <span className="d-inline-block">
-                <FormControl as="select" custom title="Select a function" onChange={(e) => {
-                  this.props.parent.Tree.current.setState({activeData: this.props.parent.Tree.current.state.treeData[e.target.value]},()=>this.loadFunctions())}}>
+            <span key={0} className="function text">Active data: </span>,
+            <span key={1} className="d-inline-block">
+                <FormControl as="select" custom title="Select a function" defaultValue={this.props.parent.Tree.current.state.treeData.findIndex(o => Object.is(o,this.props.parent.Tree.current.state.activeData))}
+                onChange={(e) => this.props.parent.Tree.current.setState({activeData: this.props.parent.Tree.current.state.treeData[e.target.value]},()=>this.loadFunctions())}>
                   {this.props.parent.Tree.current.state.treeData.map((data,index) => {
-                      return(<option value={index} selected={Object.is(data,this.props.parent.Tree.current.state.activeData)?"selected":""}>{data.graph.title}</option>)
+                      return(<option value={index} key={index}>{data.graph.title}</option>)
                   })}
                 </FormControl>
-                </span>  ]
+                </span>]
           : ""}
-          <span class="function text"> Run function: </span>
+          <span className="function text"> Run function: </span>
           <span className="d-inline-block">
             <Form.Control
-              as="select"
+              as="select" defaultValue="default"
               disabled={this.props.parent.Tree.current.state.treeData.length ? "" : "disabled"}
               custom title="Select a function" onChange={(e) => {
               if(this.props.parent.Tree.current.state.treeData.length){
-                this.state.return[1] = this.loadFunctionEntrance(e.target.value);
-                this.setState({});
+                e.persist()
+                this.setState( prevState => {
+                  prevState.return[1] = this.loadFunctionEntrance(e.target.value);
+                  return {
+                      prevState
+                  }
+                })
               }
             }}>
-              <option selected disabled hidden>Select a function</option>
+              <option value="default" disabled hidden>Select a function</option>
               <optgroup label="Data manipulation">
                 <option value="opf_split" title={this.functionDetails["opf_split"].description}>opf_split</option>
                 <option value="opf_normalize" title={this.functionDetails["opf_normalize"].description}>opf_normalize</option>
@@ -245,23 +255,23 @@ export default class FunctionManager extends React.Component {
     }
 
     loadFunctionEntrance(key){
+      this.key = 5;
       var entrances = this.functionDetails[key].entraces()
       if(entrances.length){
         return(
-          <span>
-            <span class="function text">  ( </span>
-            <option selected disabled hidden> Paramters: </option>
+          <span key={1}>
+            <span className="function text">  Paramters: ( </span>
               {entrances.map((entrace, index) => (
-              [<b>{((index !== 0) ? (" , ") : (""))}</b>,entrace]
+              [<b key={index}>{((index !== 0) ? (" , ") : (""))}</b>,entrace]
             ))}
-            <span class="function text"> )  </span>
+            <span className="function text"> )  </span>
             <Button variant="secondary" onClick={() => {
               var functionInfo = {opfFunction: this.functionDetails[key], objs:[]};
-              entrances.map((entrace, index) => {
-                functionInfo.objs = functionInfo.objs.concat(entrace.props.getvalue())
-              })
+              for(var i in entrances){
+                functionInfo.objs.push(entrances[i].props.getvalue())
+              }
               this.props.parent.FM.runCFunction(functionInfo)
-              this.props.parent.Tree.current.addBuffer(this.props.parent.FM.readCOutFiles(functionInfo, "Created by the function "+key));
+              this.props.parent.Tree.current.addBuffer(this.props.parent.FM.readCOutFiles(functionInfo, "Created by the function "+key,this.props.parent.Tree.current.state.activeData));
             }}>Run</Button>
           </span>
         )

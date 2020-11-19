@@ -137,9 +137,12 @@ button.list{
   font-weight: bold;
 }
 
+.tree-buttons{
+  margin-left: 7px;
+}
 
 .objects-menu {
-  width: 230px;
+  width: 238px;
   height: calc(100vh - 15px);
   min-height: 100px;
   right: 5px;
@@ -168,7 +171,7 @@ button.list{
   overflow-y: scroll;
   overflow-x: hidden;
   position: relative;
-  height: 50%;
+  height: 40%;
   margin-left: 10px;
   margin-top: 10px;
   margin-bottom: -25px;
@@ -178,7 +181,7 @@ button.list{
   overflow-y: scroll;
   overflow-x: hidden;
   position: relative;
-  height: calc(50% - 30px);
+  height: calc(60% - 30px);
   margin-left: 10px;
   margin-top: -15px;
 }
@@ -328,4 +331,12 @@ button.list{
 .add-remove-node .form-control{
   margin-top: 5px;
   
+}
+
+.details-division{
+  margin-top: 3px;
+  margin-bottom: 2px;
+  font-size: 15px;
+  font-weight: bold;
+
 }

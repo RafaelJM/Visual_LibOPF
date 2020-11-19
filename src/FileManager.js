@@ -9,11 +9,11 @@ export default class FileManager{
     this.FS = this.Module.FS;
     this.isDv={dat:"",cla:"",dis:""}
     this.outInfo = {
-      dat: (dv, title, description, graphOrigin) => {return(this.readSubGraph(dv, title, description, graphOrigin))},
-      cla: (dv, title, description) => {return(this.readModelFile(dv, title, description))},
-      dis: (dv, title, description, graph) => {return(this.readDistances(dv, title, description, graph))},
+      dat: (dv, data, title, description, graphOrigin) => {return(this.readSubGraph(dv, data, title, description, graphOrigin))},
+      cla: (dv, data, title, description) => {return(this.readModelFile(dv, data, title, description))},
+      dis: (dv, data, title, description, graph) => {return(this.readDistances(dv, data, title, description, graph))},
       //-----
-      out: (file, title, description, subGraph, modelFileClassificator,extraInfo) => {return(this.readClassification(file, title, description, subGraph, modelFileClassificator,extraInfo))},
+      out: (file, data, title, description, subGraph, modelFileClassificator,extraInfo) => {return(this.readClassification(file, data, title, description, subGraph, modelFileClassificator,extraInfo))},
       acc: (file) => {return(this.FS.readFile(file,{encoding: 'utf8'}).split("\n"))},//this.readAccuracy(file))},
       pra: (file) => {return({pruningRate: this.FS.readFile(file,{encoding: 'utf8'}).split("\n")[0]})},
       pre: (file) => {return({predList: this.FS.readFile(file,{encoding: 'utf8'}).split("\n")})},
@@ -73,8 +73,6 @@ export default class FileManager{
       "#dba2e6", "#76fc1b", "#608fa4", "#20f6ba", "#07d7f6", "#dce77a", "#77ecca"]
   }
 
-//arrumar os console.log("erro")
-//ARRUMAR PARA MOSTRAR ALTERAÇÃO NA DISTANCIA SE ALTERAR FEAT
 /*
   quick_Sort(origArray) {
     if (origArray.length <= 1) { 
@@ -141,7 +139,7 @@ export default class FileManager{
     cwrap(ptrNum,ptrArr); //testar, will wait?
   }
 
-  readCOutFiles(functionInfo, description){
+  readCOutFiles(functionInfo, description, data){
     var buffer = {dat: [],cla: [],dis: [],out: [], acc:[]}
 
     if(!this.FS.readdir("files/").find(e => e.length > 6)){
@@ -149,11 +147,11 @@ export default class FileManager{
       return(buffer);
     }
 
-    if(functionInfo.opfFunction.function == "opf_merge" || functionInfo.opfFunction.function == "opf_normalize"){
+    if(functionInfo.opfFunction.function === "opf_merge" || functionInfo.opfFunction.function === "opf_normalize"){
       var file = this.FS.readdir("files/").find(e => e.substr(-3) === "dat");
       if(file){
-        var loadedFile = this.readGraph(new DataView(this.FS.readFile("files/"+file, null).buffer),"Graph Data",description);                    
-        this.parent.Tree.current.addNewEmptyData(loadedFile,(functionInfo.opfFunction.function == "opf_normalize"? "Normalized Data" : "Marged data"));
+        var loadedFile = this.readGraph(new DataView(this.FS.readFile("files/"+file, null).buffer),data,"Graph Data",description);                    
+        this.parent.Tree.current.addNewEmptyData(loadedFile,(functionInfo.opfFunction.function === "opf_normalize"? "Normalized Data" : "Marged data"));
         this.parent.OPFFunctions.current.loadFunctions()
         this.FS.unlink("files/"+file);
       }
@@ -164,28 +162,28 @@ export default class FileManager{
 
     var graphOrigin = functionInfo.objs.find(e => e.isGraph || e.isSubGraph)
     var modelFileOrigin = functionInfo.objs.find(e => e.isModelFile)
-    console.log(graphOrigin,modelFileOrigin)
     
     var extraInfo = {}
     functionInfo.opfFunction.extraOutInfo.map((out, index) => {
       var dir = this.FS.readdir("files/");
       var file = dir.find(e => e.substr(-3) === out)
       if(file){
-        extraInfo = Object.assign({}, extraInfo, this.outInfo[out]((this.isDv.hasOwnProperty(out)?new DataView(this.FS.readFile("files/"+file, null).buffer):"files/"+file),this.getName[out](file),description,graphOrigin,modelFileOrigin))
+        extraInfo = Object.assign({}, extraInfo, this.outInfo[out]((this.isDv.hasOwnProperty(out)?new DataView(this.FS.readFile("files/"+file, null).buffer):"files/"+file),data,this.getName[out](file),description,graphOrigin,modelFileOrigin))
         this.FS.unlink("files/"+file);
       }
+      return(null);
     })
 
     functionInfo.opfFunction.out.map((out, index) => {
       var dir = this.FS.readdir("files/");
       var file = dir.find(e => e.substr(-3) === out)
       if(file){
-        var obj = this.outInfo[out]((this.isDv.hasOwnProperty(out)?new DataView(this.FS.readFile("files/"+file, null).buffer):"files/"+file),this.getName[out](file),description,graphOrigin,modelFileOrigin,extraInfo)
-        console.log(obj)
+        var obj = this.outInfo[out]((this.isDv.hasOwnProperty(out)?new DataView(this.FS.readFile("files/"+file, null).buffer):"files/"+file),data,this.getName[out](file),description,graphOrigin,modelFileOrigin,extraInfo)
         if(obj)
           buffer[out][buffer[out].length] =  Object.assign({}, extraInfo, obj)
         this.FS.unlink("files/"+file);
       }
+      return(null);
     })
 
     if(this.FS.readdir("files/").find(e => e.length > 6)) 
@@ -206,6 +204,8 @@ export default class FileManager{
     newData.saveInFile = "writeGraph"
 
     newData.nodes = this.cloneNodes(newData,obj,convertToSubGraphNode)
+
+    newData.data = newData;
 
     return(newData);
   }
@@ -228,7 +228,7 @@ export default class FileManager{
         nodes[i].getDetails = "detailsGraphNode"
       }
     } else {
-      for(var i in obj.nodes){
+      for(i in obj.nodes){
         var node = Object.assign({}, obj.nodes[i])
         node.graph = newData
         node.self = node
@@ -238,9 +238,10 @@ export default class FileManager{
     return(nodes)
   }
 
-  readGraph(dv, title, description){
+  readGraph(dv, data, title, description){
+    if(data && !data.hasOwnProperty("SubGraphs"))this.parent.addText("Error Data","textErr")
     var graph= {
-      nlabels: -1, nfeats: -1, title: title, description:description, open: false, inicial_nlabels: -1, inicial_nfeats: -1, isGraph: true, positionDuplicate: [],
+      nlabels: -1, nfeats: -1, title: title, description:description, open: false, inicial_nlabels: -1, inicial_nfeats: -1, isGraph: true, positionDuplicate: [], data,
       nodes: [],
       edges:[]
     };
@@ -268,7 +269,8 @@ export default class FileManager{
         graph.nodes[i].feat[j] = dv.getFloat32(cont=cont+4,true);
       }
 
-      if(graph.nodes.slice(0,-1).find(e => e.id === graph.nodes[i].id)){
+      let id = graph.nodes[i].id;
+      if(graph.nodes.slice(0,-1).find(e => e.id === id)){
         graph.positionDuplicate.push(i)
         graph.nodes[i].id = Math.max.apply(Math, graph.nodes.map(function(o) { return o.id; }))+1
       }
@@ -289,7 +291,6 @@ export default class FileManager{
   }
 
   writeGraph(graph, file){
-    console.log("b")
     const buf = Buffer.allocUnsafe((3 + graph.nodes.length*(2+graph.nfeats))*4);
     
     var cont = 0;
@@ -306,8 +307,9 @@ export default class FileManager{
     this.FS.writeFile(file,Buffer.from(buf));
   }
   
-  readSubGraph(dv, title, description, graphOrigin){
-    var subGraph = {title: title, description:description, nodes:[], edges:[], graphOrigin:graphOrigin, isSubGraph: true}
+  readSubGraph(dv, data, title, description, graphOrigin){
+    if(data && !data.hasOwnProperty("SubGraphs"))this.parent.addText("Error Data","textErr")
+    var subGraph = {title: title, description:description, nodes:[], edges:[], graphOrigin:graphOrigin, isSubGraph: true, data}
     var cont = 0;
     subGraph.getDetails = "detailsGraph"
     subGraph.saveInFile = "writeSubGraph"
@@ -315,17 +317,15 @@ export default class FileManager{
     var nnodes = dv.getInt32(cont,true);
     var nlabels = dv.getInt32(cont=cont+4,true);
     var nfeats = dv.getInt32(cont=cont+4,true);
-    var id;
-    console.log(subGraph, dv)
     if(nnodes < 0 || nlabels < 0 || nfeats < 0 || (3 + nnodes*(2+nfeats))*4 !== dv.byteLength){
       this.parent.addText("Error in the graph/data reading","textErr")
       return;
     }
 
     for(var i = 0; i < nnodes; i++){
-      id = dv.getInt32(cont=cont+4,true);
+      let id = dv.getInt32(cont=cont+4,true);
       var node = this.parent.Tree.current.state.activeData.graph.nodes.find(element => element.id === id);
-      if(node != undefined)
+      if(node !== undefined)
         subGraph.nodes.push(node)
       cont += 4 + nfeats * 4
     }
@@ -333,7 +333,7 @@ export default class FileManager{
   }
 
   createSubGraphByIndex(indexes, title, description, graphOrigin){
-    var subGraph = {title: title, description:description, nodes:[], edges:[], graphOrigin:graphOrigin, isSubGraph: true}
+    var subGraph = {title: title, description:description, nodes:[], edges:[], graphOrigin:graphOrigin, isSubGraph: true, data: graphOrigin.data}
     subGraph.getDetails = "detailsGraph"
     subGraph.saveInFile = "writeSubGraph"
 
@@ -347,14 +347,13 @@ export default class FileManager{
 
     for(var i in indexes){
       var node = graphOrigin.nodes[indexes[i]];
-      if(node != undefined)
+      if(node !== undefined)
         subGraph.nodes.push(node)
     }
     return(subGraph)
   }
   
   writeSubGraph(graph, file){
-    console.log("g",graph)
     const buf = Buffer.allocUnsafe((3 + graph.nodes.length*(2+graph.graphOrigin.nfeats))*4);
     
     var cont = 0;
@@ -371,9 +370,10 @@ export default class FileManager{
     this.FS.writeFile(file,Buffer.from(buf));
   }
 
-  readModelFile(dv, title, description){
+  readModelFile(dv, data, title, description){
+    if(data && !data.hasOwnProperty("SubGraphs"))this.parent.addText("Error Data","textErr")
     var modelFile= {
-      nlabels: -1, nfeats: -1, df: -1, bestk: -1, K: -1, mindens: -1, maxdens: -1, title: title, open: false, description:description, ordered_list_of_nodes: [], isModelFile: true,
+      nlabels: -1, nfeats: -1, df: -1, bestk: -1, K: -1, mindens: -1, maxdens: -1, title: title, open: false, description:description, ordered_list_of_nodes: [], isModelFile: true, data,
       positionDuplicate: [],
       nodes: [],
       edges:[]
@@ -392,7 +392,7 @@ export default class FileManager{
     modelFile.mindens = dv.getFloat32(cont=cont+4,true);
     modelFile.maxdens = dv.getFloat32(cont=cont+4,true);
     
-    if(nnodes < 0 || modelFile.nlabels < 0 || modelFile.nfeats < 0 || (8 + nnodes*(7+modelFile.nfeats+1))*4 != dv.byteLength){
+    if(nnodes < 0 || modelFile.nlabels < 0 || modelFile.nfeats < 0 || (8 + nnodes*(7+modelFile.nfeats+1))*4 !== dv.byteLength){
       this.parent.addText("Error in the graph/data reading","textErr")
       return;
     }
@@ -407,12 +407,13 @@ export default class FileManager{
       pathval: dv.getFloat32(cont=cont+4,true),
       radius: dv.getFloat32(cont=cont+4,true),
       dens: dv.getFloat32(cont=cont+4,true),
-      x:0, y:0, size:0.5, color:null, title:"", label:"", self:null}; //nodelabel == LABEL FROM OPF
+      x:0, y:0, size:0.5, color:null, title:"", label:"", self:null}; //nodelabel === LABEL FROM OPF
       for(var j = 0; j < modelFile.nfeats; j++){
         modelFile.nodes[i].feat[j] = dv.getFloat32(cont=cont+4,true);
       }
 
-      if(modelFile.nodes.slice(0,-1).find(e => e.id === modelFile.nodes[i].id)){
+      let id = modelFile.nodes[i].id;
+      if(modelFile.nodes.slice(0,-1).find(e => e.id === id)){
         modelFile.positionDuplicate.push(i)
         modelFile.nodes[i].id = Math.max.apply(Math, modelFile.nodes.map(function(o) { return o.id; }))+1
       }
@@ -488,19 +489,21 @@ export default class FileManager{
     this.FS.writeFile(file,Buffer.from(buf));
   }
 
-  readClassification(file, title, description, subGraph, modelFileClassificator,extraInfo){ //Arrumar: Test if is necessary to link node ids
+  readClassification(file, data, title, description, subGraph, modelFileClassificator,extraInfo){ //Arrumar: Test if is necessary to link node ids
+    if(data && !data.hasOwnProperty("SubGraphs"))this.parent.addText("Error Data","textErr")
     if(extraInfo){
-      var classification = {isClassification: true, classification: this.FS.readFile(file,{encoding: 'utf8'}).split("\n"), title: title, description:description, subGraph: subGraph, modelFileClassificator: modelFileClassificator}
+      var classification = {isClassification: true, classification: this.FS.readFile(file,{encoding: 'utf8'}).split("\n"), title: title, description:description, subGraph: subGraph, modelFileClassificator: modelFileClassificator, data}
       classification.getDetails = "detailsClassification"
       classification.saveInFile = "writeClassification"
       classification.nodes = this.cloneNodes(classification,subGraph) 
       classification.edges = []
 
       for(var i in classification.nodes){
-        if(modelFileClassificator.nodes.find(e => e.id === classification.nodes[i].id)){
+        let id = classification.nodes[i].id;
+        if(modelFileClassificator.nodes.find(e => e.id === id)){
           if (window.confirm("Error! Same position (ID) in ModelFile node and SubGraph/Graph node, need to change all position (ID) JUST in this function operation, ok?" )) {
-            var cont = Math.max.apply(Math, modelFileClassificator.nodes.map(function(o) { return o.id; }))+1;
-            classification.nodes.filter((e) => {e.id = cont=cont+1})
+            let cont = Math.max.apply(Math, modelFileClassificator.nodes.map(function(o) { return o.id; }))+1;
+            classification.nodes.forEach(e => {e.id = cont=cont+1})
             break;
           }
           else{
@@ -509,7 +512,7 @@ export default class FileManager{
         }
       }
 
-      for(var i = 0; i < extraInfo.predList.length-1; i++){
+      for(i = 0; i < extraInfo.predList.length-1; i++){
         if(extraInfo.predList[i] !== -1){
           classification.edges.push({
             id: classification.edges.length + modelFileClassificator.edges.length,
@@ -536,7 +539,8 @@ export default class FileManager{
     this.FS.writeFile(file,aux,{encoding: 'utf8'});
   }
 
-  readDistances(dv, title, description, graph){ //Arrumar: Test if is necessary to link node ids
+  readDistances(dv, data, title, description, graph){ //Arrumar: Test if is necessary to link node ids
+    if(data && !data.hasOwnProperty("SubGraphs"))this.parent.addText("Error Data","textErr")
     var cont = 0;
     var nsamples = dv.getInt32(cont,true);
     var distances = new Array(nsamples);
@@ -547,7 +551,7 @@ export default class FileManager{
       }
     }
 
-    var dists = {isDistances: true, "distances": distances, title: title, description:description, graph:graph}
+    var dists = {isDistances: true, "distances": distances, title: title, description:description, graph:graph, data:data}
 
     dists.getDetails = "detailsDistances"
     dists.saveInFile = "writeDistances"

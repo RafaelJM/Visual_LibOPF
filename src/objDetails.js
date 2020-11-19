@@ -1,7 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import {InputGroup, FormControl, Button} from 'react-bootstrap';
-import { CSVLink, CSVDownload } from "react-csv";
 
 export default class ObjDetails extends React.Component {  
     constructor(props){
@@ -10,7 +8,7 @@ export default class ObjDetails extends React.Component {
     }
 
     loadDetails(obj){
-        console.log(obj)
+        console.log("datails",obj)
         this.setState({ details:[]}, () => {
             this.setState({ details: this[obj.getDetails](obj)})
         });
@@ -50,12 +48,12 @@ export default class ObjDetails extends React.Component {
             if(obj.nodes[0].feat.length > num){
                 if (!window.confirm("You are trying to reduce the amount of features of the base, some features will be lost forever, ok?"))
                     return;
-                obj.nodes.filter(n => {
+                obj.nodes.forEach(n => {
                     n.feat = n.feat.slice(0, num);
                 })
             }
             else{
-                obj.nodes.filter(n => {
+                obj.nodes.forEach(n => {
                     n.feat = n.feat.concat(Array(num - n.feat.length).fill(0));
                 })
             }
@@ -117,7 +115,7 @@ export default class ObjDetails extends React.Component {
                     Clone to data
                     </Button>
                     :
-                    <spam>
+                    <span>
                         <Button variant="secondary" onClick={() => {this.addSubGraph(obj)}}>
                         Add SubGraph
                         </Button>
@@ -127,7 +125,7 @@ export default class ObjDetails extends React.Component {
                         <Button variant="secondary" onClick={() => {this.addDistance(obj)}}>
                         Add Distances
                         </Button>
-                    </spam>
+                    </span>
                 }
                 <div>
                     <Button variant="secondary" onClick={(e) => {
@@ -160,16 +158,19 @@ export default class ObjDetails extends React.Component {
                     }}>
                     Add new node
                     </Button>
-                    <div class="add-remove-node" hidden>
-                        <FormControl as="select">
-                            <option selected disabled hidden>Select the node</option>
+                    <div className="add-remove-node" hidden>
+                        <FormControl as="select" defaultValue="default">
+                            <option value="default" disabled hidden>Select the node</option>
                             {obj.data.graph.nodes.map((node,index) => {
                                 if(!obj.nodes.find(n => Object.is(n,node))) 
-                                    return(<option value={index}>{node.title}</option>)
+                                    return(<option value={index} key={index}>{node.title}</option>)
+                                return("");
                             })}
                         </FormControl>
                         <Button variant="secondary" onClick={(e) => {
-                            obj.nodes.push(obj.data.graph.nodes[e.target.parentNode.childNodes[0].value])
+                            var value = e.target.parentNode.childNodes[0].value;
+                            if(!value || value === "default") return;
+                            obj.nodes.push(obj.data.graph.nodes[value])
                             e.target.parentNode.parentNode.childNodes[1].setAttribute("hidden","hidden")
                             e.target.parentNode.parentNode.childNodes[0].removeAttribute("hidden")
                             this.props.parent.CSigma.current.loadSugGraph(obj)
@@ -186,24 +187,26 @@ export default class ObjDetails extends React.Component {
                     }}>
                     Remove a node
                     </Button>
-                    <div class="add-remove-node" hidden>
-                        <FormControl as="select">
-                            <option selected disabled hidden>Select the node</option>
+                    <div className="add-remove-node" hidden>
+                        <FormControl as="select" defaultValue="default">
+                            <option value="default" disabled hidden>Select the node</option>
                             {obj.nodes.map((node,index) => {
-                                return(<option value={index}>{node.title}</option>)
+                                return(<option value={index} key={index}>{node.title}</option>)
                             })}
                         </FormControl>
                         <Button variant="secondary" onClick={(e) => {
-                            var node = obj.nodes[e.target.parentNode.childNodes[0].value];
+                            var value = e.target.parentNode.childNodes[0].value;
+                            if(!value || value === "default") return;
+                            var node = obj.nodes[value];
                             if(obj.isSubGraph) {
                                 if(window.confirm('Do you want to delete the node '+node.title+" ?"))
-                                    obj.nodes = obj.nodes.filter(n => {if(!Object.is(n,node)) return(n)})
+                                    obj.nodes = obj.nodes.filter(n => {return(!Object.is(n,node))})
                             } else {
                                 if(window.confirm('Do you want to delete the node '+node.title+" from the Graph AND from all SubGraphs?")){
-                                    obj.data.graph.nodes = obj.data.graph.nodes.filter(n => {if(!Object.is(n,node)) return(n)})
-                                    obj.data.SubGraphs = obj.data.SubGraphs.children.filter(subGraph => {
+                                    obj.data.graph.nodes = obj.data.graph.nodes.filter(n => {return(!Object.is(n,node))})
+                                    obj.data.SubGraphs = obj.data.SubGraphs.children.forEach(subGraph => {
                                         var changed = false;
-                                        subGraph.nodes = subGraph.nodes.filter(n => {if(!Object.is(n,node)) return(n); else changed = true;})
+                                        subGraph.nodes = subGraph.nodes.filter(n => {if(!Object.is(n,node)) return(true); else {changed = true;return(false)}})
                                         if(changed)
                                         this.props.parent.addText("Warning! The subgraph "+ subGraph.title +" lost the node "+ node.title ,"textWar")
                                     })
@@ -254,21 +257,21 @@ export default class ObjDetails extends React.Component {
                 <InputGroup.Prepend>
                     <InputGroup.Text>True label (class)</InputGroup.Text>
                 </InputGroup.Prepend>
-                <FormControl as="select" onChange={(e) => {
+                <FormControl as="select" defaultValue={obj.truelabel} onChange={(e) => {
                      obj.truelabel = e.target.value; 
                      obj.color = this.props.parent.FM.colors[e.target.value];
                      this.props.parent.CSigma.current.updateNode(obj);
                 }}>
 
                     {[...Array(obj.graph.nlabels).keys()].map((num,index) => {
-                        return(<option value={num+1} selected={obj.truelabel === (num+1)? "selected" : ""}>{num+1}</option>)
+                        return(<option value={num+1} key={index}>{num+1}</option>)
                     })}
                 </FormControl>
 
                 {obj.feat.map((feat, indexFeat) => (
-                    <div>
+                    <div key={indexFeat}>
                         <InputGroup.Prepend>
-                            <InputGroup.Text>Feat {indexFeat}</InputGroup.Text>
+                            <InputGroup.Text>Feat {indexFeat + 1}</InputGroup.Text>
                         </InputGroup.Prepend>
                         <FormControl defaultValue={feat} onChange={(e) => {
                             obj.feat[indexFeat] = e.target.value; 
@@ -340,15 +343,15 @@ export default class ObjDetails extends React.Component {
                 </Button>
                 <Button variant="secondary" onClick={() => {
                     var didntFind = []
-                    var loadedFile = this.props.parent.FM.createSubGraphByIndex(
-                        Array.from(obj.nodes, node => {
-                            var index = obj.data.graph.nodes.findIndex(o => o.id === node.id)
-                            if(index != -1)
-                                return(index)
-                            else
-                                didntFind.push(node.id)
-                        })
-                    ,"Subgraph","created by the user",obj.data.graph)
+                    var idArray = []
+                    obj.nodes.forEach(node => {
+                        var index = obj.data.graph.nodes.findIndex(o => o.id === node.id)
+                        if(index !== -1)
+                            idArray.push(index)
+                        else
+                            didntFind.push(node.id)
+                    })
+                    var loadedFile = this.props.parent.FM.createSubGraphByIndex(idArray,"Subgraph","created by the user",obj.data.graph)
                     if(loadedFile && loadedFile.nodes.length)
                         obj.data.SubGraphs.children.push(loadedFile)
                     if(didntFind.length)
@@ -415,9 +418,9 @@ export default class ObjDetails extends React.Component {
                 <FormControl defaultValue={obj.dens} disabled/>
 
                 {obj.feat.map((feat, indexFeat) => (
-                    <div>
+                    <div key={indexFeat}>
                         <InputGroup.Prepend>
-                            <InputGroup.Text>Feat {indexFeat}</InputGroup.Text>
+                            <InputGroup.Text>Feat {indexFeat + 1}</InputGroup.Text>
                         </InputGroup.Prepend>
                         <FormControl defaultValue={feat} disabled/>
                     </div>
@@ -463,8 +466,8 @@ export default class ObjDetails extends React.Component {
                         <InputGroup.Text>Accuracy for each label</InputGroup.Text>
                     </InputGroup.Prepend>
                     {Object.entries(obj.accuracy4Label).map((label, value) => (
-                        <span>
-                            {obj.accuracy4Label[value] != "" ? <FormControl Value={"Label "+(value+1)+": "+obj.accuracy4Label[value]} disabled/> : ""}
+                        <span key={value}>
+                            {obj.accuracy4Label[value] !== "" ? <FormControl Value={"Label "+(value+1)+": "+obj.accuracy4Label[value]} disabled/> : ""}
                         </span>
                     ))}
                 </span>
@@ -474,7 +477,7 @@ export default class ObjDetails extends React.Component {
             <Button variant="secondary" onClick={() => {
               var functionInfo = {opfFunction: this.props.parent.OPFFunctions.current.functionDetails["opf_accuracy"], objs: [obj.subGraph,obj]}
               this.props.parent.FM.runCFunction(functionInfo)
-              obj.accuracy = this.props.parent.FM.readCOutFiles(functionInfo, "Created by the function opf_accuracylabel").acc[0]["0"];
+              obj.accuracy = this.props.parent.FM.readCOutFiles(functionInfo, "Created by the function opf_accuracylabel",obj.data).acc[0]["0"];
               this.setState({details:this.detailsClassification(obj)})
             }}>
             Calculate accuracy
@@ -482,7 +485,7 @@ export default class ObjDetails extends React.Component {
             <Button variant="secondary" onClick={() => {
               var functionInfo = {opfFunction: this.props.parent.OPFFunctions.current.functionDetails["opf_accuracy4label"], objs: [obj.subGraph,obj]}
               this.props.parent.FM.runCFunction(functionInfo)
-              obj.accuracy4Label = this.props.parent.FM.readCOutFiles(functionInfo, "Created by the function opf_accuracy4label").acc[0];
+              obj.accuracy4Label = this.props.parent.FM.readCOutFiles(functionInfo, "Created by the function opf_accuracy4label",obj.data).acc[0];
               this.setState({details:this.detailsClassification(obj)})
             }}>
             Calculate accuracy for each label (class)
@@ -502,12 +505,12 @@ export default class ObjDetails extends React.Component {
   
     addSubGraph(obj) {
         this.setState({
-            details: [
-                <p>SubGraph is a subset of the Data. Choose some nodes to create a new SubGraph or upload a Data file, the nodes that have same position will be added to the new SubGraph</p>,
+            details: 
+            <div>
+                <p>SubGraph is a subset of the Data. Choose some nodes to create a new SubGraph or upload a Data file, the nodes that have same position will be added to the new SubGraph</p>
                 <Button variant="secondary" onClick={() => {
                     this.props.parent.Tree.current.readOPFFile((reader) => {
-                        var loadedFile = this.props.parent.FM.readSubGraph(new DataView(reader.result),"ModelFile","loaded by the user",obj);
-                        loadedFile.data = obj.data;
+                        var loadedFile = this.props.parent.FM.readSubGraph(new DataView(reader.result),obj.data,"new SubGraph","loaded by the user",obj);
                         if(loadedFile && loadedFile.nodes.length)
                             obj.data.SubGraphs.children.push(loadedFile)
                         this.props.parent.Tree.current.setState({})
@@ -515,19 +518,21 @@ export default class ObjDetails extends React.Component {
                     })
                 }}>
                     Load SubGraph by opf file
-                </Button>,
+                </Button>
                 <div>
                     <Button variant="secondary" onClick={(e) => e.target.parentNode.childNodes[1].removeAttribute('hidden')}>
                         Select graph nodes
                     </Button>
-                    <div hidden class="multiple">
+                    <div hidden className="multiple">
                         <FormControl as="select" multiple size="2000">
                             {obj.nodes.map((node,index) => {
-                                return(<option value={index}>{node.title + " | Label: " + node.truelabel}</option>)
+                                return(<option value={index} key={index}>{node.title + " | Label: " + node.truelabel}</option>)
                             })}
                         </FormControl>
                         <Button variant="secondary" onClick={(e) => {
-                            var loadedFile = this.props.parent.FM.createSubGraphByIndex(Array.from(e.target.parentNode.childNodes[0], option => {if(option.selected)return(option.value)}) ,"Subgraph","created by the user",obj)
+                            var idArray = []
+                            e.target.parentNode.childNodes[0].childNodes.forEach(option => {if(option.selected) idArray.push(option.value)})
+                            var loadedFile = this.props.parent.FM.createSubGraphByIndex(idArray,"Subgraph","created by the user",obj)
                             if(loadedFile && loadedFile.nodes.length)
                                 obj.data.SubGraphs.children.push(loadedFile)
                             this.props.parent.Tree.current.setState({})
@@ -537,22 +542,22 @@ export default class ObjDetails extends React.Component {
                             Create
                         </Button>
                     </div>
-                </div>,
+                </div>
                 <Button variant="secondary" onClick={() => this.setState({details:this.detailsGraph(obj)})}>
                     Back
                 </Button>
-            ]
+            </div>
         })
     }
 
     addModelFiles(obj, data = null) {
         this.setState({
-            details: [
-                <p>ModelFile is a classificad graph, you can load by a file, load from another data or make one with some training phase function</p>,
+            details:
+            <div>
+                <p>ModelFile is a classificad graph, you can load by a file, load from another data or make one with some training phase function</p>
                 <Button variant="secondary" onClick={() => {
                     this.props.parent.Tree.current.readOPFFile((reader) => {
-                        var loadedFile = this.props.parent.FM.readModelFile(new DataView(reader.result),"ModelFile","loaded by the user");
-                        loadedFile.data = obj.data;
+                        var loadedFile = this.props.parent.FM.readModelFile(new DataView(reader.result),obj.data,"ModelFile","loaded by the user");
                         if(loadedFile)
                             obj.data.ModelFiles.children.push(loadedFile)
                         this.props.parent.Tree.current.setState({})
@@ -560,59 +565,62 @@ export default class ObjDetails extends React.Component {
                     })
                 }}>
                     Load ModelFile by opf file
-                </Button>,
+                </Button>
                 <div>
                   <Button variant="secondary" onClick={(e) => e.target.parentNode.childNodes[1].removeAttribute('hidden')} disabled={this.props.parent.Tree.current.state.treeData.length > 1?"":"disabled"}>
                     Load ModelFile from another Data
                   </Button>
                   <div hidden>
-                      <FormControl as="select" onChange={(e) => {
-                          this.addModelFiles(obj,this.props.parent.Tree.current.state.treeData[e.target.value]);
-                      }}>
-                        {data? "" : <option selected disabled hidden>Select a Data</option>}
-                          {this.props.parent.Tree.current.state.treeData.map((data2,index) => {
-                              return(<option value={index} selected={Object.is(data2,data)? "selected" : ""} disabled={Object.is(data2,obj.data)?"disabled":""}>{data2.graph.title}</option>)
-                          })}
-                      </FormControl>
-                    {data?
-                          <div>
-                            {data.ModelFiles.children.length? [<FormControl as="select">
-                                <option selected disabled hidden>Select a ModelFile</option>
-                                {data.ModelFiles.children.map((ModelFile,index) => {
-                                    return(<option value={index}>{ModelFile.title}</option>)
-                                })}
-                            </FormControl>,
-                            <Button variant="secondary" onClick={(e) => {
-                                var loadedFile = Object.assign({}, data.ModelFiles.children[e.target.parentNode.childNodes[0].value]) //This is a parcial clone
-                                loadedFile.data = obj.data;
-                                console.log(data,loadedFile)
-                                if(data && loadedFile)
-                                    obj.data.ModelFiles.children.push(loadedFile)
-                                this.props.parent.Tree.current.setState({})
-                                this.props.parent.OPFFunctions.current.loadFunctions();                                
-                            }}>
-                                Inport
-                            </Button>] : 
-                            <p class="textErr"> Don't have any ModelFile in this data</p>}  
-                        </div>
-                    :""}
+                        <FormControl as="select" defaultValue={data?this.props.parent.Tree.current.state.treeData.findIndex(o => Object.is(o,data)):"default"}
+                        onChange={(e) => {this.addModelFiles(obj,this.props.parent.Tree.current.state.treeData[e.target.value]);
+                        }}>
+                        {data? "" : <option value="default" disabled hidden>Select a Data</option>}
+                        {this.props.parent.Tree.current.state.treeData.map((data2,index) => {
+                            return(<option value={index} key={index} disabled={Object.is(data2,obj.data)?"disabled":""}>{data2.graph.title}</option>)
+                        })}
+                        </FormControl>
+                        {data?
+                            data.ModelFiles.children.length?
+                            <div>
+                                <FormControl as="select" defaultValue="default">
+                                    <option value="default" disabled hidden>Select a ModelFile</option>
+                                    {data.ModelFiles.children.map((ModelFile,index) => {
+                                        return(<option value={index} key={index}>{ModelFile.title}</option>)
+                                    })}
+                                </FormControl>
+                                <Button variant="secondary" onClick={(e) => {
+                                    var value = e.target.parentNode.childNodes[0].value;
+                                    if(!value || value === "default") return;
+                                    var loadedFile = Object.assign({}, data.ModelFiles.children[value]) //This is a parcial clone
+                                    loadedFile.data = obj.data;
+                                    if(data && loadedFile)
+                                        obj.data.ModelFiles.children.push(loadedFile)
+                                    this.props.parent.Tree.current.setState({})
+                                    this.props.parent.OPFFunctions.current.loadFunctions();                                
+                                }}>
+                                    Inport
+                                </Button> 
+                            </div>
+                            : 
+                            <p className="textErr"> Don't have any ModelFile in this data</p>
+                        :""}
                     </div>
-                </div>,
+                </div>
                 <Button variant="secondary" onClick={() => this.setState({details:this.detailsGraph(obj)})}>
                     Back
                 </Button>
-            ]
+            </div>
         })
     }
 
     addDistance(obj, data = null) {
         this.setState({
-            details: [
-                <p>Distance is a Matrix NxN that have all the distances from one POSITION (ID) to another POSITION (ID)</p>,
+            details: 
+            <div>
+                <p>Distance is a Matrix NxN that have all the distances from one POSITION (ID) to another POSITION (ID)</p>
                 <Button variant="secondary" onClick={() => {
                     this.props.parent.Tree.current.readOPFFile((reader) => {
-                        var loadedFile = this.props.parent.FM.readDistances(new DataView(reader.result),"Distance","loaded by the user");
-                        loadedFile.data = obj.data;
+                        var loadedFile = this.props.parent.FM.readDistances(new DataView(reader.result),obj.data,"Distance","loaded by the user");
                         if(loadedFile)
                             obj.data.Distances.children.push(loadedFile)
                         this.props.parent.Tree.current.setState({})
@@ -620,52 +628,56 @@ export default class ObjDetails extends React.Component {
                     })
                 }}>
                     Load Distance by opf file
-                </Button>,
+                </Button>
                 <div>
-                  <Button variant="secondary" onClick={(e) => e.target.parentNode.childNodes[1].removeAttribute('hidden')} disabled={this.props.parent.Tree.current.state.treeData.length > 1?"":"disabled"}>
-                    Load Distance from another Data
-                  </Button>
-                  <div hidden>
-                      <FormControl as="select" onChange={(e) => {
-                          this.addDistance(obj,this.props.parent.Tree.current.state.treeData[e.target.value]);
-                      }}>
-                        {data? "" : <option selected disabled hidden>Select a Data</option>}
+                    <Button variant="secondary" onClick={(e) => e.target.parentNode.childNodes[1].removeAttribute('hidden')} disabled={this.props.parent.Tree.current.state.treeData.length > 1?"":"disabled"}>
+                        Load Distance from another Data
+                    </Button>
+                    <div hidden>
+                        <FormControl as="select" defaultValue={data?this.props.parent.Tree.current.state.treeData.findIndex(o => Object.is(o,data)):"default"}
+                        onChange={(e) => {this.addDistance(obj,this.props.parent.Tree.current.state.treeData[e.target.value]);
+                        }}>
+                        {data? "" : <option value="default" disabled hidden>Select a Data</option>}
                         {this.props.parent.Tree.current.state.treeData.map((data2,index) => {
-                            return(<option value={index} selected={Object.is(data2,data)? "selected" : ""} disabled={Object.is(data2,obj.data)?"disabled":""}>{data2.graph.title}</option>)
+                            return(<option value={index} key={index} disabled={Object.is(data2,obj.data)?"disabled":""}>{data2.graph.title}</option>)
                         })}
-                      </FormControl>
-                    {data?
-                          <div>
-                            {data.Distances.children.length? [<FormControl as="select">
-                                <option selected disabled hidden>Select a distance</option>
-                                {data.Distances.children.map((Distance,index) => {
-                                    return(<option value={index}>{Distance.title}</option>)
-                                })}
-                            </FormControl>,
-                            <Button variant="secondary" onClick={(e) => {
-                                var loadedFile = Object.assign({}, data.Distances.children[e.target.parentNode.childNodes[0].value]) //This is a parcial clone
-                                loadedFile.data = obj.data;
-                                if(data && loadedFile)
-                                    obj.data.Distances.children.push(loadedFile)
-                                this.props.parent.Tree.current.setState({})
-                                this.props.parent.OPFFunctions.current.loadFunctions();                                
-                            }}>
-                                Inport
-                            </Button>] : 
-                            <p class="textErr"> Don't have any distance in this data</p>}  
-                        </div>
-                    :""}
+                        </FormControl>
+                        {data?
+                            data.Distances.children.length?
+                            <div>
+                                <FormControl as="select" defaultValue="default">
+                                    <option value="default" disabled hidden>Select a distance</option>
+                                    {data.Distances.children.map((Distance,index) => {
+                                        return(<option value={index} key={index}>{Distance.title}</option>)
+                                    })}
+                                </FormControl>
+                                <Button variant="secondary" onClick={(e) => {
+                                    var value = e.target.parentNode.childNodes[0].value;
+                                    if(!value || value === "default") return;
+                                    var loadedFile = Object.assign({}, data.Distances.children[value]) //This is a parcial clone
+                                    loadedFile.data = obj.data;
+                                    if(data && loadedFile)
+                                        obj.data.Distances.children.push(loadedFile)
+                                    this.props.parent.Tree.current.setState({})
+                                    this.props.parent.OPFFunctions.current.loadFunctions();                                
+                                }}>
+                                    Inport
+                                </Button> 
+                            </div>
+                            : 
+                            <p className="textErr"> Don't have any Distance in this data</p>
+                        :""}
                     </div>
-                </div>,
+                </div>
                 <Button variant="secondary" onClick={() => this.setState({details:this.detailsGraph(obj)})}>
                     Back
                 </Button>
-            ]
+            </div>
         })
     }
     render(){
         return(
-        <div class="details">
+        <div className="details">
             {this.state.details}
         </div>
         )

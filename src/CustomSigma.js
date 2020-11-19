@@ -4,7 +4,6 @@ export default class CustomSigma extends React.Component {
     constructor(props){
       super(props)
       props.sigma.bind('clickNode',(e) => {
-        console.log(e)
         if(this.state.loadedGraph.hasOwnProperty("distances")){
           if(this.selectedNode == null){
             this.selectedNode = e.data.node;
@@ -69,18 +68,19 @@ export default class CustomSigma extends React.Component {
             this.props.parent.Tree.current.setState({});
           }
           catch(e){
+            var i;
             this.props.parent.addText("Error! "+e,"textErr")
             if(e.includes("exists")){
               if(e.includes("node")){
                 if (window.confirm("Error! "+e + " You need to change the position (ID) of the nodes to see this graph, ok?")){
-                  for(var i in Graph.nodes){
+                  for(i in Graph.nodes){
                     Graph.nodes[i].id = i
                   }
                   this.loadSugGraph(Graph)
                 }
               }
               if(e.includes("edge")){
-                for(var i in Graph.nodes){
+                for(i in Graph.nodes){
                   Graph.edges[i].id = i
                 }
                 this.loadSugGraph(Graph)
@@ -135,14 +135,12 @@ export default class CustomSigma extends React.Component {
           target: this.selectedNode.id,
           type: "line", //arrow
         })
-        console.log(node,this.selectedNode,distancesObj)
         this.props.sigma.refresh();
         this.props.parent.addText("Distance between "+this.selectedNode.title+" and "+node.title+" is "+distancesObj.distances[this.selectedNode.id][node.id],"textOut")
       }
     }
     
     render(){
-      console.log(this.state.loadedGraph)
       return([
       
       ])
