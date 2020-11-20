@@ -243,7 +243,9 @@ export default class TreeData extends React.Component {
                     Inport
                     </Button>
                 </span>
-                {html}
+                <span className="tree-contant">
+                    {html}
+                </span>
             </div>
         );
     }

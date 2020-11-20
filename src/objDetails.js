@@ -479,6 +479,16 @@ export default class ObjDetails extends React.Component {
             <div>
                 <p className="details-division">Object properties</p>
                 <InputGroup.Prepend>
+                    <InputGroup.Text>Title</InputGroup.Text>
+                </InputGroup.Prepend>
+                <FormControl defaultValue={obj.title} onChange={(e) => {obj.title = e.target.value; this.props.parent.Tree.current.setState({});this.props.parent.GraphMenu.current.updateInfo();}}/>
+
+                <InputGroup.Prepend>
+                    <InputGroup.Text>Description</InputGroup.Text>
+                </InputGroup.Prepend>
+                <FormControl defaultValue={obj.description} onChange={(e) => {obj.description = e.target.value;}}/>
+
+                <InputGroup.Prepend>
                     <InputGroup.Text>Position range</InputGroup.Text>
                 </InputGroup.Prepend>
                 <FormControl defaultValue={"0 - "+obj.distances.length} disabled/>
@@ -509,6 +519,16 @@ export default class ObjDetails extends React.Component {
         return(
             <div>
                 <p className="details-division">Object properties</p>
+
+                <InputGroup.Prepend>
+                    <InputGroup.Text>Title</InputGroup.Text>
+                </InputGroup.Prepend>
+                <FormControl defaultValue={obj.title} onChange={(e) => {obj.title = e.target.value; this.props.parent.Tree.current.setState({});this.props.parent.GraphMenu.current.updateInfo();}}/>
+
+                <InputGroup.Prepend>
+                    <InputGroup.Text>Description</InputGroup.Text>
+                </InputGroup.Prepend>
+                <FormControl defaultValue={obj.description} onChange={(e) => {obj.description = e.target.value;}}/>
 
                 {obj.time?
                 <div>

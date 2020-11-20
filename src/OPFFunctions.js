@@ -1,5 +1,5 @@
 import React from 'react';
-import {FormControl, Form, OverlayTrigger, Tooltip, Button} from 'react-bootstrap';
+import {FormControl, Form, OverlayTrigger, Tooltip, Button,InputGroup} from 'react-bootstrap';
 
 export default class FunctionManager extends React.Component {
     constructor(props){
@@ -177,6 +177,7 @@ export default class FunctionManager extends React.Component {
           <OverlayTrigger key={this.getKey()} getvalue={() => {return((ref.current.value === "" ? {title:"none", value:""} : dict[ref.current.value]))}} overlay={<Tooltip id="tooltip-disabled">{description}</Tooltip>}>
             <span className="d-inline-block">
                 <Form.Control
+                classNmae="function-form-option"
                 as="select"
                 description = {description}
                 custom
@@ -197,9 +198,11 @@ export default class FunctionManager extends React.Component {
         return (
           <OverlayTrigger key={this.getKey()} getvalue={() => {return({description:placeholder, value:(ref.current.value / (percentage ? 100 : 1))})}} overlay={<Tooltip id="tooltip-disabled">{description}</Tooltip>}>
             <span className="d-inline-block">
-                <input ref={ref} type="number" min={min} max={max} step={step} placeholder={placeholder}/>
-                {percentage ? <span>%</span> : null}
-            </span>   
+              <InputGroup.Prepend className="function-form-text">
+                <FormControl ref={ref} type="number" min={min} max={max} step={step} placeholder={placeholder}/>
+                {percentage ? <InputGroup.Text>%</InputGroup.Text> : null}
+              </InputGroup.Prepend>
+            </span>
           </OverlayTrigger>
         )
     }

@@ -26,7 +26,23 @@ class MyFirstGrid extends React.Component {
     this.cookies = new Cookies();
 
     if(this.cookies.get("SigmaSettings") === undefined)
-      this.cookies.set('SigmaSettings', {labelThreshold: 999999999, minArrowSize:10, maxNodeSize:9, drawEdges:true, zoomMin:0.000001}, { path: '/' });
+      this.cookies.set('SigmaSettings', {labelThreshold: 999999999, minArrowSize:10, maxNodeSize:9, drawEdges:true, zoomMin:0.000001, labelSize: "proportional", labelSizeRatio: 2, defaultEdgeType: "arrow", colors: [
+        "#5757BD", "#CD5456", "#49BF46", "#c6e1e8", "#B21AD3" ,"#a48a9e" ,"#63b598",
+        "#f205e6" ,"#1c0365" ,"#14a9ad" ,"#4ca2f9" ,"#a4e43f" ,"#d298e2" ,"#6119d0",
+        "#d2737d" ,"#c0a43c" ,"#f2510e" ,"#651be6" ,"#79806e" ,"#61da5e" ,"#cd2f00",
+        "#9348af" ,"#01ac53" ,"#c5a4fb" ,"#996635","#b11573" ,"#4bb473" ,"#75d89e" ,
+        "#2f3f94" ,"#2f7b99" ,"#da967d" ,"#34891f" ,"#b0d87b" ,"#ca4751" ,"#7e50a8" ,
+        "#c4d647" ,"#e0eeb8" ,"#11dec1" ,"#289812" ,"#566ca0" ,"#ffdbe1" ,"#2f1179" ,
+        "#935b6d" ,"#916988" ,"#513d98" ,"#aead3a", "#9e6d71", "#4b5bdc", "#0cd36d",
+        "#250662", "#cb5bea", "#228916", "#ac3e1b", "#df514a", "#539397", "#880977",
+        "#f697c1", "#ba96ce", "#679c9d", "#c6c42c", "#5d2c52", "#48b41b", "#e1cf3b",
+        "#32d5d6", "#17232", "#608572", "#c79bc2", "#00f87c", "#77772a", "#6995ba",
+        "#fc6b57", "#f07815", "#8fd883", "#060e27", "#96e591", "#21d52e", "#d00043",
+        "#b47162", "#1ec227", "#4f0f6f", "#1d1d58", "#947002", "#bde052", "#e08c56",
+        "#28fcfd", "#bb09b", "#36486a", "#d02e29", "#1ae6db", "#3e464c", "#a84a8f",
+        "#911e7e", "#3f16d9", "#0f525f", "#ac7c0a", "#b4c086", "#c9d730", "#30cc49",
+        "#3d6751", "#fb4c03"]
+      }, { path: '/' });
     this.LoadedCookies = {SigmaSettings:this.cookies.get("SigmaSettings")}
 
     this.Menu = React.createRef()
@@ -36,6 +52,7 @@ class MyFirstGrid extends React.Component {
     this.ObjDetails = React.createRef()
     this.OPFFunctions = React.createRef()
     this.GraphMenu = React.createRef()
+    this.GraphInfo = React.createRef()
     this.FM = new FileManager(this, (stateUpdate) => this.setState(stateUpdate))
     
     this.graphMenu = React.createRef()
@@ -55,6 +72,7 @@ class MyFirstGrid extends React.Component {
     }
   }
   graphMenuClick(num){
+    this.GraphInfo.current.loadMenu()
     this.graphMenu.current.childNodes[1].childNodes[num].classList.add('show')
     this.graphMenu.current.childNodes[1].childNodes[Math.abs(num-1)].classList.remove('show')
     this.graphMenu.current.childNodes[0].childNodes[num].classList.add('is-active')
@@ -142,68 +160,3 @@ class MyFirstGrid extends React.Component {
 }
 
 export default App;
-
-/*
-<div id="fontSizeDecrement" className="docs-font-size-inc-dec-action-button goog-toolbar-button goog-inline-block" style="user-select: none;" role="button" aria-disabled="false" aria-hidden="false" data-tooltip="Diminuir tamanho da fonte (Ctrl+Shift+,)" aria-label="Diminuir tamanho da fonte (Ctrl+Shift+vírgula)"><div className="goog-toolbar-button-outer-box goog-inline-block" aria-hidden="true" style="user-select: none;"><div className="goog-toolbar-button-inner-box goog-inline-block" style="user-select: none;"><div className="docs-icon goog-inline-block " style="user-select: none;"><div className="docs-icon-img-container docs-icon-img docs-icon-decrease-22" aria-hidden="true" style="user-select: none;">&nbsp;</div></div></div></div></div>
-<div id="fontSizeSelect" className="docs-font-size-inc-dec-combobox goog-toolbar-combo-button goog-inline-block" style="user-select: none;" role="combobox" aria-disabled="false" aria-hidden="false" aria-expanded="false" aria-haspopup="true" aria-activedescendant=":2b" data-tooltip="Tamanho da fonte" aria-label="Tamanho da fonte"><div className="goog-toolbar-combo-button-outer-box goog-inline-block" style="user-select: none;"><div className="goog-toolbar-combo-button-inner-box goog-inline-block" style="user-select: none;"><div className="goog-inline-block goog-toolbar-combo-button-caption" id=":2b" role="option" aria-selected="true" aria-setsize="16" aria-posinset="0" style="user-select: none;" aria-label="Lista Tamanho da fonte. 43 selecionado."><input className="goog-toolbar-combo-button-input jfk-textinput" autocomplete="off" type="text" aria-autocomplete="both" tabindex="-1" aria-label="Tamanho da fonte" style="user-select: none;"></div></div></div></div>
-<div id="fontSizeIncrement" className="docs-font-size-inc-dec-action-button goog-toolbar-button goog-inline-block" style="user-select: none;" role="button" aria-disabled="false" aria-hidden="false" data-tooltip="Aumentar tamanho da fonte (Ctrl+Shift+.)" aria-label="Aumentar tamanho da fonte (Ctrl+Shift+ponto final)"><div className="goog-toolbar-button-outer-box goog-inline-block" aria-hidden="true" style="user-select: none;"><div className="goog-toolbar-button-inner-box goog-inline-block" style="user-select: none;"><div className="docs-icon goog-inline-block " style="user-select: none;"><div className="docs-icon-img-container docs-icon-img docs-icon-increase-22" aria-hidden="true" style="user-select: none;">&nbsp;</div></div></div></div></div>
-https://docs.google.com/presentation/d/1PdUh4z1GbMol1i1YQC98LH5Qq_51crWn64QmxMj1ULQ/edit#slide=id.p
-*/
-
-
-
-/*
-
-<div ref={this.main}>
-        <div className="menu" >
-          <img className="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}}/>
-          <div className="panel" id="panel" >
-            <Menu ref={this.Menu} parent={this}/>
-          </div>
-        </div>
-        <div className="lateral" >
-          <img className="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}}/>
-          <div className="panel" id="panel"  ref={this.lateralRef}>
-            <div className="holder-tabs">
-                <button className="js -trigger-tabs tab__link is-active" onClick={(e)=>this.lateralClick(0)}>Details</button>
-                <button className="js-trigger-tabs tab__link" onClick={(e)=>this.lateralClick(1)}>Objects</button>
-            </div>
-            <div className="tab-content" >
-                <div id="conteudo-1" className="content scroll show">
-                  <ObjDetails ref={this.ObjDetails} parent={this}/>
-                </div>
-                <div id="conteudo-2" className="content scroll">
-                  <TreeData ref={this.Tree} parent={this}/>
-                </div>
-            </div>
-          </div>
-        </div>
-        <div className="inferior" >
-          <img className="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}} />
-          <div className="panel" id="panel"  ref={this.inferiorRef}>
-            <div className="holder-tabs">
-                <button className="js-trigger-tabs tab__link is-active" onClick={(e)=>this.inferiorClick(0)}>Functions</button>
-                <button className="js-trigger-tabs tab__link" onClick={(e)=>this.inferiorClick(1)}>Log</button>
-            </div>
-            <div className="tab-content">
-              <div id="conteudo-1" className="content scroll show">
-                <OPFFunctions ref={this.OPFFunctions} parent={this}/>
-              </div>
-              <div id="conteudo-2" className="content scroll">
-                {this.logOut}
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="graph-menu clicked">
-          <img className="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}} />
-          <div className="panel scroll" id="panel"  ref={this.graphMenu}>
-            <GraphMenu ref={this.GraphMenu} parent={this} customSigma={this.CSigma}/>
-          </div>
-        </div>
-        <Sigma ref={this.Sigma} renderer="canvas" container= 'container' settings={this.LoadedCookies.SigmaSettings} style={{width:"100%", height:"100%", position: "absolute", outline: "none"}}> 
-          <CustomSigma ref={this.CSigma} parent={this} graphMenu={this.GraphMenu}/>
-        </Sigma>
-      </div>
-
-*/

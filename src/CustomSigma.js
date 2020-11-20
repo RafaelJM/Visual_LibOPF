@@ -18,79 +18,104 @@ export default class CustomSigma extends React.Component {
       this.selectedNode = null
       this.state = {loadedGraph: {}, X: 0, Y: 1}
     }
-
-    someMethod() {
-      return 'bar';
-    }
     
     refresh(){
       this.props.sigma.refresh();
     }
 
     loadX(X = 0){
-      this.setState({X})
-      var nodes = this.props.sigma.graph.nodes();
-      for(var i in nodes){
-        nodes[i].x = nodes[i].feat[X];
-      }
-      this.props.sigma.refresh();
+      this.setState({X:parseInt(X)}, () => {
+        var nodes = this.props.sigma.graph.nodes();
+        for(var i in nodes){
+          nodes[i].x = nodes[i].feat[X];
+        }
+        this.refresh()
+      })
     }
 
     loadY(Y = 1){
-      this.setState({Y})
-      var nodes = this.props.sigma.graph.nodes();
-      for(var i in nodes){
-        nodes[i].y = nodes[i].feat[Y];
-      }
-      this.props.sigma.refresh();
+      this.setState({Y:parseInt(Y)}, () => {
+        var nodes = this.props.sigma.graph.nodes();
+        for(var i in nodes){
+          nodes[i].y = nodes[i].feat[Y];
+        }
+        this.refresh()
+      })
+    }
+
+    updateColors(){
+      this.props.sigma.graph.nodes().forEach(node => {
+        node.color = this.props.parent.LoadedCookies.SigmaSettings.colors[node.truelabel-1]
+      })
+      this.refresh()      
     }
 
     clearObject(){
-      this.setState({loadedGraph: {}, X:0, Y:1},()=>{
+      this.setState({loadedGraph: {}},()=>{
         this.props.sigma.graph.clear();
         this.props.sigma.refresh();
       })
     }
 
     loadSugGraph(Graph){
+      console.log(this.props.parent)
       if(!Graph) return;
-      if(Graph.hasOwnProperty("nodes")){
-        this.setState({loadedGraph: Graph, X:0, Y:1},()=>{
-          try{
-            if(Graph.hasOwnProperty("distances"))
-              this.props.parent.addText("This is a distance viewer graph, click on two nodes to get the distance","textOut")
-            this.selectedNode = null
-            this.props.parent.ObjDetails.current.loadDetails(Graph);
-            this.props.sigma.graph.clear();
-            this.props.sigma.graph.read(Graph);
-            this.props.sigma.refresh();
-            this.props.graphMenu.current.updateInfo();
-            this.props.parent.Tree.current.setState({});
-          }
-          catch(e){
-            var i;
-            this.props.parent.addText("Error! "+e,"textErr")
-            if(e.includes("exists")){
-              if(e.includes("node")){
-                if (window.confirm("Error! "+e + " You need to change the position (ID) of the nodes to see this graph, ok?")){
-                  for(i in Graph.nodes){
-                    Graph.nodes[i].id = i
-                  }
-                  this.loadSugGraph(Graph)
-                }
-              }
-              if(e.includes("edge")){
-                for(i in Graph.nodes){
-                  Graph.edges[i].id = i
-                }
-                this.loadSugGraph(Graph)
-              }
+      if(!Graph.hasOwnProperty("nodes")){
+        this.props.parent.addText("Error! Graph don't have nodes to show","textErr")
+        return;
+      }
+      this.setState({loadedGraph: Graph,
+                     X: (Graph.nodes[0].feat.length > this.state.X? this.state.X : 0),
+                     Y: (Graph.nodes[0].feat.length > this.state.Y? this.state.Y : 1)},() => 
+      {
+        console.log(this.state)
+        Graph.nodes.forEach(node => {
+          node.x = node.feat[this.state.X]
+          node.y = node.feat[this.state.Y]
+          node.color = this.props.parent.LoadedCookies.SigmaSettings.colors[node.truelabel-1]
+          if(node.hasOwnProperty("modelFile")){
+            node.borderColor = "#000000"
+            node.type = "circle"
+            if(node.pred === -1){
+              node.type = "star"
             }
           }
         })
+        this.finishLoad(Graph)
+      })
+    }
+
+    finishLoad(Graph){
+      try{
+        if(Graph.hasOwnProperty("distances"))
+          this.props.parent.addText("This is a distance viewer graph, click on two nodes to get the distance","textOut")
+        this.selectedNode = null
+        this.props.parent.ObjDetails.current.loadDetails(Graph);
+        this.props.sigma.graph.clear();
+        this.props.sigma.graph.read(Graph);
+        this.props.sigma.refresh();
+        this.props.graphMenu.current.updateInfo();
+        this.props.parent.Tree.current.setState({});
       }
-      else{
-        this.props.parent.addText("Error! Graph don't have nodes to show","textErr")
+      catch(e){
+        var i;
+        this.props.parent.addText("Error! "+e,"textErr")
+        if(e.includes("exists")){
+          if(e.includes("node")){
+            if (window.confirm("Error! "+e + " You need to change the position (ID) of the nodes to see this graph, ok?")){
+              for(i in Graph.nodes){
+                Graph.nodes[i].id = i
+              }
+              this.loadSugGraph(Graph)
+            }
+          }
+          if(e.includes("edge")){
+            for(i in Graph.nodes){
+              Graph.edges[i].id = i
+            }
+            this.loadSugGraph(Graph)
+          }
+        }
       }
     }
 
