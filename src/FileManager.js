@@ -169,7 +169,7 @@ export default class FileManager{
     return(newData);
   }
 
-  cloneNodes(newData, obj, convertToSubGraphNode = false){ //arrumar
+  cloneNodes(newData, obj, convertToSubGraphNode = false, blockEdition = false){ //arrumar
     var nodes = []
     if(convertToSubGraphNode){
       for(var i = 0; i < obj.nodes.length; i++){
@@ -184,6 +184,7 @@ export default class FileManager{
         }
 
         nodes[i].self = nodes[i];
+        node.blockEdition = blockEdition;
         nodes[i].getDetails = "detailsGraphNode"
       }
     } else {
@@ -191,6 +192,7 @@ export default class FileManager{
         var node = Object.assign({}, obj.nodes[i])
         node.graph = newData
         node.self = node
+        node.blockEdition = blockEdition;
         nodes = nodes.concat(node)
       }
     }
@@ -440,7 +442,7 @@ export default class FileManager{
       var classification = {isClassification: true, classification: this.FS.readFile(file,{encoding: 'utf8'}).split("\n"), title: title, description:description, subGraph: subGraph, modelFileClassificator: modelFileClassificator, data}
       classification.getDetails = "detailsClassification"
       classification.saveInFile = "writeClassification"
-      classification.nodes = this.cloneNodes(classification,subGraph) 
+      classification.nodes = this.cloneNodes(classification,subGraph,false,true) 
       classification.edges = []
 
       for(var i in classification.nodes){
@@ -467,7 +469,7 @@ export default class FileManager{
         }
       }
       classification.edges = classification.edges.concat(classification.modelFileClassificator.edges)
-      classification.nodes = classification.nodes.concat(this.cloneNodes(classification,modelFileClassificator))
+      classification.nodes = classification.nodes.concat(this.cloneNodes(classification,modelFileClassificator,false,true))
       return(classification)
     }
     else

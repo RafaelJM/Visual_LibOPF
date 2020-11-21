@@ -25,24 +25,22 @@ export default class GraphMenu extends React.Component {
                         <p className="graph-text">___________________________________________</p>
                         {this.props.customSigma.current.state.loadedGraph.nodes ?
                         <div className="featChose">
-                            <InputGroup.Prepend>
-                            <InputGroup.Text>X</InputGroup.Text>
-                            </InputGroup.Prepend>
+                            <p className="graph-info-text">Feat at X axis</p>
                             <FormControl as="select" defaultValue={this.props.customSigma.current.state.X} onChange={(e) => {this.props.customSigma.current.loadX(e.target.value)}}>
                                 {this.props.customSigma.current.state.loadedGraph.nodes[0].feat.map((feat,index) => {
                                     return(<option value={index} key={index}>Feat {index+1}</option>)
                                 })}
                             </FormControl>
-                            <InputGroup.Prepend>
-                            <InputGroup.Text>Y</InputGroup.Text>
-                            </InputGroup.Prepend>
+                            <p className="graph-info-text">Feat at Y axis</p>
                             <FormControl as="select" defaultValue={this.props.customSigma.current.state.Y} onChange={(e) => {this.props.customSigma.current.loadY(e.target.value)}}>
                                 {this.props.customSigma.current.state.loadedGraph.nodes[0].feat.map((feat,index) => {
                                     return(<option value={index} key={index}>Feat {index+1}</option>)
                                 })}
                             </FormControl>   
+                            <p className="graph-text">___________________________________________</p>
                         </div>
                         : ""}
+                        <img alt="node types" className="graph-menu-image" src="node types.png"/>
                     </div>
                 })
             })

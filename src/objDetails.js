@@ -159,9 +159,6 @@ export default class ObjDetails extends React.Component {
                             for(var j = 0; j < obj.nfeats; j++){
                                 node.feat[j] = 0;
                             }                    
-                            node.x = node.feat[0];
-                            node.y = node.feat[1];
-                            node.color = this.props.parent.FM.colors[node.truelabel]
                             node.title = "Node "+node.id.toString();
                             node.label = node.title;
                             node.self = node;
@@ -274,9 +271,9 @@ export default class ObjDetails extends React.Component {
                 </InputGroup.Prepend>
                 <FormControl as="select" defaultValue={obj.truelabel} onChange={(e) => {
                      obj.truelabel = e.target.value; 
-                     obj.color = this.props.parent.FM.colors[e.target.value];
+                     obj.color = this.props.parent.LoadedCookies.SigmaSettings.colors[e.target.value-1];
                      this.props.parent.CSigma.current.updateNode(obj);
-                }}>
+                }} disabled={obj.blockEdition ? "disabled": ""}>
 
                     {[...Array(obj.graph.nlabels).keys()].map((num,index) => {
                         return(<option value={num+1} key={index}>{num+1}</option>)
@@ -290,15 +287,9 @@ export default class ObjDetails extends React.Component {
                         </InputGroup.Prepend>
                         <FormControl defaultValue={feat} onChange={(e) => {
                             obj.feat[indexFeat] = e.target.value; 
-                            this.props.parent.CSigma.current.updateNode(obj);}}/>
+                            this.props.parent.CSigma.current.updateNode(obj);}} disabled={obj.blockEdition ? "disabled": ""}/>
                     </div>
                 ))}
-
-                <p className="details-division">Delete this object</p>
-
-                <Button variant="danger" onClick={() => {}}>
-                Delete
-                </Button>
             </div>
         )
     }
@@ -321,6 +312,11 @@ export default class ObjDetails extends React.Component {
                     <InputGroup.Text>Number of nodes</InputGroup.Text>
                 </InputGroup.Prepend>
                 <FormControl defaultValue={obj.nodes.length} disabled/>
+
+                <InputGroup.Prepend>
+                    <InputGroup.Text>Number of edges</InputGroup.Text>
+                </InputGroup.Prepend>
+                <FormControl defaultValue={obj.edges.length} disabled/>
 
                 <InputGroup.Prepend>
                     <InputGroup.Text>Number of labels (classes)</InputGroup.Text>
@@ -489,6 +485,11 @@ export default class ObjDetails extends React.Component {
                 <FormControl defaultValue={obj.description} onChange={(e) => {obj.description = e.target.value;}}/>
 
                 <InputGroup.Prepend>
+                    <InputGroup.Text>Number of nodes</InputGroup.Text>
+                </InputGroup.Prepend>
+                <FormControl defaultValue={obj.nodes.length} disabled/>
+
+                <InputGroup.Prepend>
                     <InputGroup.Text>Position range</InputGroup.Text>
                 </InputGroup.Prepend>
                 <FormControl defaultValue={"0 - "+obj.distances.length} disabled/>
@@ -529,6 +530,16 @@ export default class ObjDetails extends React.Component {
                     <InputGroup.Text>Description</InputGroup.Text>
                 </InputGroup.Prepend>
                 <FormControl defaultValue={obj.description} onChange={(e) => {obj.description = e.target.value;}}/>
+
+                <InputGroup.Prepend>
+                    <InputGroup.Text>Number of nodes</InputGroup.Text>
+                </InputGroup.Prepend>
+                <FormControl defaultValue={obj.nodes.length} disabled/>
+
+                <InputGroup.Prepend>
+                    <InputGroup.Text>Number of edges</InputGroup.Text>
+                </InputGroup.Prepend>
+                <FormControl defaultValue={obj.edges.length} disabled/>
 
                 {obj.time?
                 <div>

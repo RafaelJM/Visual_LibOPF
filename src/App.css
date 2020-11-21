@@ -367,6 +367,7 @@ button.list{
   margin-bottom: 2px;
   font-size: 15px;
   font-weight: bold;
+  text-align:center;
 }
 
 .graph-info-group .form-control {
@@ -401,4 +402,8 @@ button.list{
 .function-form-option{
   position: absolute;
   margin-top: 5px;
+}
+
+.graph-menu-image{
+  width: 200px;
 }

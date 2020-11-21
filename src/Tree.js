@@ -1,7 +1,7 @@
 import Tree from 'react-animated-tree'
 import React from 'react';
 import {parse, stringify} from 'flatted';
-import {Button} from 'react-bootstrap';
+import {FormControl, Form, OverlayTrigger, Tooltip, Button,InputGroup} from 'react-bootstrap';
 
 export default class TreeData extends React.Component {
     constructor(props) {
@@ -219,29 +219,37 @@ export default class TreeData extends React.Component {
         return (
             <div className="tree">
                 <span className="tree-buttons">
-                    <Button variant="secondary" onClick={() => this.readData("Graph Data", "Loaded by the user")}>
-                    Read
-                    </Button>
-                    <Button variant="secondary"
-                    onClick={() => {
-                        var element = document.createElement('a');
-                        
-                        element.setAttribute('href', URL.createObjectURL(new Blob([stringify(this.state)])))
-                        element.setAttribute('download', "state at " + this.props.parent.today.getHours() + ":" + this.props.parent.today.getMinutes() + ".txt");
-                        element.setAttribute('target', "blank");
+                    <OverlayTrigger placement="bottom" overlay={<Tooltip id="tooltip-disabled" placement="bottom">Read a Data, Graph or SubGraph file and add it as a new Data</Tooltip>}>
+                        <Button variant="secondary" onClick={() => this.readData("Graph Data", "Loaded by the user")}>
+                            Read
+                        </Button>
+                    </OverlayTrigger>
+                    
+                    <OverlayTrigger placement="bottom" overlay={<Tooltip id="tooltip-disabled" placement="bottom">Export the actual state, all datas, to a file</Tooltip>}>
+                        <Button variant="secondary"
+                        onClick={() => {
+                            var element = document.createElement('a');
+                            
+                            element.setAttribute('href', URL.createObjectURL(new Blob([stringify(this.state)])))
+                            element.setAttribute('download', "state at " + this.props.parent.today.getHours() + ":" + this.props.parent.today.getMinutes() + ".txt");
+                            element.setAttribute('target', "blank");
 
-                        element.style.display = 'none';
-                        document.body.appendChild(element);
+                            element.style.display = 'none';
+                            document.body.appendChild(element);
 
-                        element.click();
+                            element.click();
 
-                        document.body.removeChild(element);
-                    }} disabled={this.state.treeData.length?"":"disabled"}>
-                    Export
-                    </Button>
-                    <Button variant="secondary" onClick={() => this.readJSON()}>
-                    Inport
-                    </Button>
+                            document.body.removeChild(element);
+                        }} disabled={this.state.treeData.length?"":"disabled"}>
+                        Export
+                        </Button>
+                    </OverlayTrigger>
+
+                    <OverlayTrigger placement="bottom" overlay={<Tooltip id="tooltip-disabled" placement="bottom">Inport a state file</Tooltip>}>
+                        <Button variant="secondary" onClick={() => this.readJSON()}>
+                        Inport
+                        </Button>
+                    </OverlayTrigger>
                 </span>
                 <span className="tree-contant">
                     {html}
