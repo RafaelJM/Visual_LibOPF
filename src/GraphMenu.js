@@ -1,5 +1,5 @@
 import React from 'react';
-import {InputGroup, FormControl} from 'react-bootstrap';
+import {FormControl} from 'react-bootstrap';
 
 export default class GraphMenu extends React.Component {  
     constructor(props){

@@ -5,7 +5,7 @@ import Cookies from 'universal-cookie';
 
 import './App.css';
 import OPFFunctions from './OPFFunctions.js';
-import ObjDetails from './ObjDetails.js';
+import ObjDetails from './objDetails.js';
 import FileManager from './FileManager.js';
 import TreeData from './Tree.js';
 import CustomSigma from './CustomSigma.js';

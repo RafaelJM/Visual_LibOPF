@@ -400,8 +400,7 @@ button.list{
 
 
 .function-form-option{
-  position: absolute;
-  margin-top: 5px;
+  margin-top: -5px;
 }
 
 .graph-menu-image{

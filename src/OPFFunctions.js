@@ -177,7 +177,7 @@ export default class FunctionManager extends React.Component {
           <OverlayTrigger key={this.getKey()} getvalue={() => {return((ref.current.value === "" ? {title:"none", value:""} : dict[ref.current.value]))}} overlay={<Tooltip id="tooltip-disabled">{description}</Tooltip>}>
             <span className="d-inline-block">
                 <Form.Control
-                classNmae="function-form-option"
+                style={{marginTop: -5}}
                 as="select"
                 description = {description}
                 custom
@@ -211,7 +211,7 @@ export default class FunctionManager extends React.Component {
       this.setState({return: []}, () => {this.setState({return: [
         <span key={0} className="d-inline-block">
           {this.props.parent.Tree.current.state.treeData.length > 1 ? [
-            <span key={0} className="function text">Active data: </span>,
+            <span key={0} className="function text">Running in Data: </span>,
             <span key={1} className="d-inline-block">
                 <FormControl as="select" custom title="Select a function" defaultValue={this.props.parent.Tree.current.state.treeData.findIndex(o => Object.is(o,this.props.parent.Tree.current.state.activeData))}
                 onChange={(e) => this.props.parent.Tree.current.setState({activeData: this.props.parent.Tree.current.state.treeData[e.target.value]},()=>this.loadFunctions())}>
@@ -224,6 +224,7 @@ export default class FunctionManager extends React.Component {
           <span className="function text"> Run function: </span>
           <span className="d-inline-block">
             <Form.Control
+            style={{marginTop: -5}}
               as="select" defaultValue="default"
               disabled={this.props.parent.Tree.current.state.treeData.length ? "" : "disabled"}
               custom title="Select a function" onChange={(e) => {
@@ -273,7 +274,7 @@ export default class FunctionManager extends React.Component {
               [<b key={index}>{((index !== 0) ? (" , ") : (""))}</b>,entrace]
             ))}
             <span className="function text"> )  </span>
-            <Button variant="secondary" onClick={() => {
+            <Button variant="secondary" style={{marginTop: -5}} onClick={() => {
               var functionInfo = {opfFunction: this.functionDetails[key], objs:[]};
               for(var i in entrances){
                 functionInfo.objs.push(entrances[i].props.getvalue())

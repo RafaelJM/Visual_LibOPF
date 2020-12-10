@@ -184,7 +184,7 @@ export default class FileManager{
         }
 
         nodes[i].self = nodes[i];
-        node.blockEdition = blockEdition;
+        nodes[i].blockEdition = blockEdition;
         nodes[i].getDetails = "detailsGraphNode"
       }
     } else {
@@ -282,7 +282,7 @@ export default class FileManager{
 
     for(var i = 0; i < nnodes; i++){
       let id = dv.getInt32(cont=cont+4,true);
-      var node = this.parent.Tree.current.state.activeData.graph.nodes.find(element => element.id === id);
+      var node = graphOrigin.nodes.find(element => element.id === id);
       if(node !== undefined)
         subGraph.nodes.push(node)
       cont += 4 + nfeats * 4

@@ -4,7 +4,7 @@ import {InputGroup, FormControl, Button} from 'react-bootstrap';
 export default class ObjDetails extends React.Component {  
     constructor(props){
         super(props)
-        this.state = {details: []}
+        this.state = {details: [], showing:{}}
     }
 
     loadDetails(obj){
@@ -64,6 +64,7 @@ export default class ObjDetails extends React.Component {
     }
     
     detailsGraph(obj){ //arrumar, work with nlabels nfeats details
+        this.setState({showing:obj},()=>this.props.parent.Tree.current.setState({}))
         return(
             <div>
                 <p className="details-division">Object properties</p>
@@ -217,7 +218,7 @@ export default class ObjDetails extends React.Component {
                             } else {
                                 if(window.confirm('Do you want to delete the node '+node.title+" from the Graph AND from all SubGraphs?")){
                                     obj.data.graph.nodes = obj.data.graph.nodes.filter(n => {return(!Object.is(n,node))})
-                                    obj.data.SubGraphs = obj.data.SubGraphs.children.forEach(subGraph => {
+                                    obj.data.SubGraphs.children.forEach(subGraph => {
                                         var changed = false;
                                         subGraph.nodes = subGraph.nodes.filter(n => {if(!Object.is(n,node)) return(true); else {changed = true;return(false)}})
                                         if(changed)
@@ -253,6 +254,7 @@ export default class ObjDetails extends React.Component {
     }
 
     detailsGraphNode(obj){
+        //this.setState({showing:obj.graph},()=>this.props.parent.Tree.current.setState({}))
         return(
             <div>
                 <p className="details-division">Object properties</p>
@@ -295,6 +297,7 @@ export default class ObjDetails extends React.Component {
     }
 
     detailsModelFile(obj){ //arrumar: ask to learn again
+        this.setState({showing:obj},()=>this.props.parent.Tree.current.setState({}))
         return(
             <div>
                 <p className="details-division">Object properties</p>
@@ -415,6 +418,7 @@ export default class ObjDetails extends React.Component {
     }
 
     detailsModelFileNode(obj){
+        //this.setState({showing:obj.modelFile},()=>this.props.parent.Tree.current.setState({}))
         return(
             <div>
                 <p className="details-division">Object properties</p>
@@ -471,6 +475,7 @@ export default class ObjDetails extends React.Component {
     }
 
     detailsDistances(obj){
+        this.setState({showing:obj},()=>this.props.parent.Tree.current.setState({}))
         return(
             <div>
                 <p className="details-division">Object properties</p>
@@ -517,6 +522,7 @@ export default class ObjDetails extends React.Component {
     }
 
     detailsClassification(obj){
+        this.setState({showing:obj},()=>this.props.parent.Tree.current.setState({}))
         return(
             <div>
                 <p className="details-division">Object properties</p>

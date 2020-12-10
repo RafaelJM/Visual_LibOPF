@@ -90,7 +90,6 @@ export default class CustomSigma extends React.Component {
         if(Graph.hasOwnProperty("distances"))
           this.props.parent.addText("This is a distance viewer graph, click on two nodes to get the distance","textOut")
         this.selectedNode = null
-        this.props.parent.ObjDetails.current.loadDetails(Graph);
         this.props.sigma.graph.clear();
         this.props.sigma.graph.read(Graph);
         this.props.sigma.refresh();

@@ -1,7 +1,7 @@
 import Tree from 'react-animated-tree'
 import React from 'react';
 import {parse, stringify} from 'flatted';
-import {FormControl, Form, OverlayTrigger, Tooltip, Button,InputGroup} from 'react-bootstrap';
+import {OverlayTrigger, Tooltip, Button} from 'react-bootstrap';
 
 export default class TreeData extends React.Component {
     constructor(props) {
@@ -126,14 +126,14 @@ export default class TreeData extends React.Component {
     generateSpamData(c){
         return(
             <span style={this.typeStyles}>
-                <img alt="Object info" className="tree-image" src="information.png"  onClick={() => {this.props.parent.ObjDetails.current.loadDetails(c.graph);}}/>
+                <img alt="Object info" className="tree-image" src={(Object.is(this.props.parent.ObjDetails.current.state.showing,c.graph)?"information2.png":"information.png")}  onClick={() => {this.props.parent.ObjDetails.current.loadDetails(c.graph);}}/>
                 <img alt="See object" className="tree-image" src={Object.is(this.props.parent.CSigma.current.state.loadedGraph,c.graph)?"eye2.png":"eye1.png"} onClick={() => {this.props.parent.CSigma.current.loadSugGraph(c.graph)}}/> 
             </span>)        
     }
 
     generateSpamChildren(c){
         return(<span style={this.typeStyles}>
-            <img alt="Object info" className="tree-image" src="information.png"  onClick={() => {this.props.parent.ObjDetails.current.loadDetails(c);}}/>
+            <img alt="Object info" className="tree-image" src={(Object.is(this.props.parent.ObjDetails.current.state.showing,c)?"information2.png":"information.png")}  onClick={() => {this.props.parent.ObjDetails.current.loadDetails(c);}}/>
             <img alt="See object" className="tree-image" src={Object.is(this.props.parent.CSigma.current.state.loadedGraph,c)?"eye2.png":"eye1.png"} onClick={() => {this.props.parent.CSigma.current.loadSugGraph(c)}}/>
             {c.hasOwnProperty("distances") && Math.max.apply(Math, c.data.graph.nodes.map(function(o) { return o.id; })) >= c.distances[0].length?
                 <img alt="Distance positions and data are diferent" className="tree-image" src="alert.png" onClick={() => {}}/>
