@@ -47,14 +47,14 @@ export default class GraphInfo extends React.Component {
           {this.props.parent.Sigma.current.sigma.settings("labelThreshold")?"Show":"Hide"} all Labels
         </Button>
                     
-        <p className="graph-info-text">Feat colors</p>
+        <p className="graph-info-text">Classes colors</p>
         <span>
           <FormControl as="select" defaultValue="0"
                 custom title="Select colors" onChange={(e) => {
                   this.setState({feat:e.target.value}, () => this.loadMenu())
                 }}>
             {this.props.parent.LoadedCookies.SigmaSettings.colors.map((color,index) => {
-                return(<option value={index} key={index} style={{color: color}}>Feat {index+1}</option>)
+                return(<option value={index} key={index} style={{color: color}}>Class {index+1}</option>)
             })}
           </FormControl>   
           

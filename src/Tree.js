@@ -245,9 +245,9 @@ export default class TreeData extends React.Component {
                         </Button>
                     </OverlayTrigger>
 
-                    <OverlayTrigger placement="bottom" overlay={<Tooltip id="tooltip-disabled" placement="bottom">Inport a state file</Tooltip>}>
+                    <OverlayTrigger placement="bottom" overlay={<Tooltip id="tooltip-disabled" placement="bottom">Import a state file</Tooltip>}>
                         <Button variant="secondary" onClick={() => this.readJSON()}>
-                        Inport
+                        Import
                         </Button>
                     </OverlayTrigger>
                 </span>

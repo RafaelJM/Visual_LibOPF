@@ -12,6 +12,7 @@ import CustomSigma from './CustomSigma.js';
 import GraphMenu from './GraphMenu.js'
 import GraphInfo from './GraphInfo.js';
 function App() {
+  document.title = 'Visual OPF'
   return (
     <div className="App">
       <MyFirstGrid/>
