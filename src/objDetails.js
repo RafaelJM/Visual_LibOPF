@@ -67,7 +67,7 @@ export default class ObjDetails extends React.Component {
         this.setState({showing:obj},()=>this.props.parent.Tree.current.setState({}))
         return(
             <div>
-                <p className="details-division">Object properties</p>
+                <p className="details-division">Sample properties</p>
                 <InputGroup.Prepend>
                     <InputGroup.Text>Title</InputGroup.Text>
                 </InputGroup.Prepend>
@@ -89,7 +89,7 @@ export default class ObjDetails extends React.Component {
                 <FormControl defaultValue={obj.nodes.length} disabled/>
 
                 <InputGroup.Prepend>
-                    <InputGroup.Text>Number of labels (classes)</InputGroup.Text>
+                    <InputGroup.Text>Number of labels</InputGroup.Text>
                 </InputGroup.Prepend>
                 <InputGroup.Prepend>
                     <FormControl defaultValue={obj.isSubGraph?obj.graphOrigin.nlabels:obj.nlabels} disabled={obj.isSubGraph?"disabled":""}/>
@@ -101,7 +101,7 @@ export default class ObjDetails extends React.Component {
                 </InputGroup.Prepend>
 
                 <InputGroup.Prepend>
-                    <InputGroup.Text>Number of feats (features)</InputGroup.Text>
+                    <InputGroup.Text>Number of features</InputGroup.Text>
                 </InputGroup.Prepend>
                 <InputGroup.Prepend>
                     <FormControl defaultValue={obj.isSubGraph?obj.graphOrigin.nfeats:obj.nfeats} disabled={obj.isSubGraph?"disabled":""}/>
@@ -121,7 +121,7 @@ export default class ObjDetails extends React.Component {
                 </div>
                 :""}
 
-                <p className="details-division">Object options</p>
+                <p className="details-division">Sample options</p>
                 <Button variant="secondary" onClick={() => this.downloadOPFFFile(obj,obj.title+".dat")}>
                 Download graph as OPF file
                 </Button>
@@ -131,7 +131,7 @@ export default class ObjDetails extends React.Component {
                     </Button>
                     :
                     <span>
-                        <p className="details-division">Add objects</p>
+                        <p className="details-division">Add samples</p>
                         <Button variant="secondary" onClick={() => {this.addSubGraph(obj)}}>
                         Add SubGraph
                         </Button>
@@ -236,7 +236,7 @@ export default class ObjDetails extends React.Component {
                         </Button>
                     </div>
                 </div>
-                <p className="details-division">Delete this object</p>
+                <p className="details-division">Delete this sample</p>
                 <Button variant="danger" onClick={() => {
                     if (window.confirm('Do you want to delete '+obj.title+" ?" )) {
                         if(obj.isSubGraph)
@@ -257,7 +257,7 @@ export default class ObjDetails extends React.Component {
         //this.setState({showing:obj.graph},()=>this.props.parent.Tree.current.setState({}))
         return(
             <div>
-                <p className="details-division">Object properties</p>
+                <p className="details-division">Node properties</p>
                 <InputGroup.Prepend>
                     <InputGroup.Text>Title</InputGroup.Text>
                 </InputGroup.Prepend>
@@ -300,7 +300,7 @@ export default class ObjDetails extends React.Component {
         this.setState({showing:obj},()=>this.props.parent.Tree.current.setState({}))
         return(
             <div>
-                <p className="details-division">Object properties</p>
+                <p className="details-division">Sample properties</p>
                 <InputGroup.Prepend>
                     <InputGroup.Text>Title</InputGroup.Text>
                 </InputGroup.Prepend>
@@ -322,12 +322,12 @@ export default class ObjDetails extends React.Component {
                 <FormControl defaultValue={obj.edges.length} disabled/>
 
                 <InputGroup.Prepend>
-                    <InputGroup.Text>Number of labels (classes)</InputGroup.Text>
+                    <InputGroup.Text>Number of labels</InputGroup.Text>
                 </InputGroup.Prepend>
                 <FormControl defaultValue={obj.nlabels} disabled/>
 
                 <InputGroup.Prepend>
-                    <InputGroup.Text>Number of feats (features)</InputGroup.Text>
+                    <InputGroup.Text>Number of features</InputGroup.Text>
                 </InputGroup.Prepend>
                 <FormControl defaultValue={obj.nfeats} disabled/>
 
@@ -379,7 +379,7 @@ export default class ObjDetails extends React.Component {
                 </div>
                 :""}
 
-                <p className="details-division">Object options</p>
+                <p className="details-division">Sample options</p>
                 <Button variant="secondary" onClick={() => this.props.parent.Tree.current.addNewEmptyData(this.props.parent.FM.cloneToNewGraph(obj,true),"Clone of " + obj.title)}> 
                 Clone to Data
                 </Button>
@@ -406,7 +406,7 @@ export default class ObjDetails extends React.Component {
                 <Button variant="secondary" onClick={() => this.downloadOPFFFile(obj,obj.title+".opf")}>
                 Download ModelFile as OPF file
                 </Button>
-                <p className="details-division">Delete this object</p>
+                <p className="details-division">Delete this sample</p>
                 <Button variant="danger" onClick={() => {
                     if (window.confirm('Do you want to delete '+obj.title+" ?" ))
                         this.props.parent.Tree.current.deleteObject(obj,"ModelFiles");
@@ -421,7 +421,7 @@ export default class ObjDetails extends React.Component {
         //this.setState({showing:obj.modelFile},()=>this.props.parent.Tree.current.setState({}))
         return(
             <div>
-                <p className="details-division">Object properties</p>
+                <p className="details-division">Node properties</p>
                 <InputGroup.Prepend>
                     <InputGroup.Text>Title</InputGroup.Text>
                 </InputGroup.Prepend>
@@ -478,7 +478,7 @@ export default class ObjDetails extends React.Component {
         this.setState({showing:obj},()=>this.props.parent.Tree.current.setState({}))
         return(
             <div>
-                <p className="details-division">Object properties</p>
+                <p className="details-division">Sample properties</p>
                 <InputGroup.Prepend>
                     <InputGroup.Text>Title</InputGroup.Text>
                 </InputGroup.Prepend>
@@ -506,11 +506,11 @@ export default class ObjDetails extends React.Component {
                     <FormControl defaultValue={obj.time} disabled/>
                 </div>
                 :""}
-                <p className="details-division">Object options</p>
+                <p className="details-division">Sample options</p>
                 <Button variant="secondary" onClick={() => this.downloadOPFFFile(obj,obj.title+".dis")}>
                 Download as OPF file
                 </Button>
-                <p className="details-division">Delete this object</p>
+                <p className="details-division">Delete this sample</p>
                 <Button variant="danger" onClick={() => {
                     if (window.confirm('Do you want to delete '+obj.title+" ?" ))
                         this.props.parent.Tree.current.deleteObject(obj,"Distances");
@@ -525,7 +525,7 @@ export default class ObjDetails extends React.Component {
         this.setState({showing:obj},()=>this.props.parent.Tree.current.setState({}))
         return(
             <div>
-                <p className="details-division">Object properties</p>
+                <p className="details-division">Sample properties</p>
 
                 <InputGroup.Prepend>
                     <InputGroup.Text>Title</InputGroup.Text>
@@ -582,7 +582,7 @@ export default class ObjDetails extends React.Component {
                     :
                     ""
                 }
-                <p className="details-division">Object options</p>
+                <p className="details-division">Sample options</p>
                 <Button variant="secondary" onClick={() => {
                     var functionInfo = {opfFunction: this.props.parent.OPFFunctions.current.functionDetails["opf_accuracy"], objs: [obj.subGraph,obj]}
                     this.props.parent.FM.runCFunction(functionInfo)
@@ -602,7 +602,7 @@ export default class ObjDetails extends React.Component {
                 <Button variant="secondary" onClick={() => this.downloadOPFFFile(obj,obj.title+".txt")}>
                 Download as OPF file
                 </Button>
-                <p className="details-division">Delete this object</p>
+                <p className="details-division">Delete this sample</p>
                 <Button variant="danger" onClick={() => {
                     if (window.confirm('Do you want to delete '+obj.title+" ?" ))
                         this.props.parent.Tree.current.deleteObject(obj,"Classifications");

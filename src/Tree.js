@@ -41,7 +41,7 @@ export default class TreeData extends React.Component {
 
     addNewEmptyData(data, title = ""){
         if(!data) return;
-        data.title = (title ? title :"Data " + (this.state.treeData.length + 1));
+        data.title = (title ? title :"Dataset " + (this.state.treeData.length + 1));
 
         var auxData = {
             open: true,
@@ -213,6 +213,10 @@ export default class TreeData extends React.Component {
         }
     }
 
+    loadExampleData(){
+        
+    }
+
     render() {         
         var html = []
         this.state.treeData.forEach((data,index) => html = html.concat(this.generateTree(data,index)))
@@ -221,10 +225,15 @@ export default class TreeData extends React.Component {
                 <span className="tree-buttons">
                     <OverlayTrigger placement="bottom" overlay={<Tooltip id="tooltip-disabled" placement="bottom">Read a Data, Graph or SubGraph file and add it as a new Data</Tooltip>}>
                         <Button variant="secondary" onClick={() => this.readData("Graph Data", "Loaded by the user")}>
-                            Read
+                            Load
                         </Button>
                     </OverlayTrigger>
-                    
+                    <OverlayTrigger placement="bottom" overlay={<Tooltip id="tooltip-disabled" placement="bottom">Load a example dataset</Tooltip>}>
+                        <Button variant="secondary" onClick={() => this.loadExampleData()}>
+                            Load example
+                        </Button>
+                    </OverlayTrigger>
+                    <br></br>
                     <OverlayTrigger placement="bottom" overlay={<Tooltip id="tooltip-disabled" placement="bottom">Export the actual state, all datas, to a file</Tooltip>}>
                         <Button variant="secondary"
                         onClick={() => {

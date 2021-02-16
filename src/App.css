@@ -137,24 +137,9 @@ button.list{
   font-weight: bold;
 }
 
-.tree-buttons{
-  position: absolute;
-  margin-left: 7px;
-  width: 500px;
-  
-}
-
-.tree-contant{
-  overflow-y: none;
-  overflow-x: none;
-  width: 100%;
-  margin-top: 38px;
-  position: absolute;
-}
-
 .objects-menu {
   width: 238px;
-  height: calc(100vh - 15px);
+  height: calc(100% - 15px);
   min-height: 100px;
   right: 5px;
   top: 5px;
@@ -178,14 +163,30 @@ button.list{
   transform: rotate(180deg);
 }
 
+
+.tree-buttons{
+  position: absolute;
+  text-align: center;
+  margin-left: 7px;
+  width: 210px;
+}
+
 .objects-menu .tree-content {
   overflow-y: scroll;
   overflow-x: hidden;
   position: relative;
   height: 40%;
-  margin-left: 10px;
+  margin-left: 7px;
   margin-top: 10px;
   margin-bottom: -25px;
+}
+
+.tree-contant{
+  overflow-y: none;
+  overflow-x: none;
+  width: 100%;
+  margin-top: 85px;
+  position: absolute;
 }
 
 .objects-menu .datails-content {
@@ -200,7 +201,7 @@ button.list{
 
 
 .functions-menu {
-  width: calc(100vw - 30px - 245px);
+  width: calc(100% - 30px - 245px);
   height: 230px;
   min-width: 360px;
   bottom: 10px;
@@ -249,8 +250,6 @@ button.list{
   margin-bottom: 5px;
 }
 
-
-
 .graph-text{
   font-size: 24px;
   text-align: center;
@@ -258,7 +257,7 @@ button.list{
 
 .graph-menu {
   width: 210px;
-  height: calc(100vh - 245px - 30px);
+  height: calc(100% - 245px - 30px);
   min-height: 100px;
   left: 5px;
   top: 5px;

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 import {Sigma} from 'react-sigma';
 import Cookies from 'universal-cookie';
@@ -71,7 +71,30 @@ class MyFirstGrid extends React.Component {
     this.state = {
       
     }
+
+    this.handleResize = this.handleResize.bind(this);
+    this.handleResize();
   }
+
+  componentDidMount() {
+    window.addEventListener('resize', this.handleResize)
+  }
+
+  componentWillUnmount() {
+    window.addEventListener('resize', null)
+  }
+
+  getZoomScreen(){
+    return(Math.max(1 - (1920 - window.innerWidth)/2500,0.5))
+  }
+
+  handleResize(WindowSize, event) {
+    if(this.main.current)
+      this.main.current.style.zoom = this.getZoomScreen();
+    if(this.CSigma.current)
+      this.CSigma.current.refresh();
+  }
+
   graphMenuClick(num){
     this.GraphInfo.current.loadMenu()
     this.graphMenu.current.childNodes[1].childNodes[num].classList.add('show')
@@ -110,8 +133,9 @@ class MyFirstGrid extends React.Component {
 
   render() {  
     return (
-      <div ref={this.main}>
-        <div className="graph-menu" >
+    <div>
+      <div ref={this.main} style={{zoom:this.getZoomScreen()}}>
+        <div className="graph-menu">
           <img className="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}}/>
           <div className="panel" id="panel"  ref={this.graphMenu}>
             <div className="holder-tabs">
@@ -128,7 +152,7 @@ class MyFirstGrid extends React.Component {
             </div>
           </div>
         </div>
-        <div className="objects-menu" >
+        <div className="objects-menu">
           <img className="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}}/>
           <div className="panel" id="panel"  ref={this.lateralRef}>
             <div id="tree" className="tree-content scroll show">
@@ -140,7 +164,7 @@ class MyFirstGrid extends React.Component {
             </div>
           </div>
         </div>
-        <div className="functions-menu" >
+        <div className="functions-menu">
           <img className="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}} />
           <div className="panel" id="panel"  ref={this.inferiorRef}>
             <div className="functions-content scroll">      
@@ -151,11 +175,11 @@ class MyFirstGrid extends React.Component {
             </div>
           </div>
         </div>
-        <Sigma ref={this.Sigma} renderer="canvas" container= 'container' settings={this.LoadedCookies.SigmaSettings} style={{width:"100%", height:"100%", position: "absolute", outline: "none"}}> 
-          <CustomSigma ref={this.CSigma} parent={this} graphMenu={this.GraphMenu}/>
-        </Sigma>
       </div>
-
+      <Sigma ref={this.Sigma} renderer="canvas" container= 'container' settings={this.LoadedCookies.SigmaSettings} style={{width:"100%", height:"100%", position: "absolute", outline: "none"}}> 
+        <CustomSigma ref={this.CSigma} parent={this} graphMenu={this.GraphMenu}/>
+      </Sigma>
+    </div>
     )
   }
 }
