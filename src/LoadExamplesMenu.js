@@ -47,7 +47,7 @@ export default class LoadExamplesMenu extends React.Component {
                   .then(buffer => {
                     console.log();
                     var loadedFile = this.props.parent.FM.readGraph(new DataView(buffer),null,this.dataset.title,this.dataset.description);
-                    this.props.parent.Tree.current.addNewEmptyData(loadedFile);
+                    this.props.parent.Tree.current.addNewEmptyData(loadedFile,this.dataset.title,this.dataset.description);
                     this.props.parent.OPFFunctions.current.loadFunctions()
                   })
                 }

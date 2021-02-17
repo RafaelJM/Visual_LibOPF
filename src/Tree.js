@@ -39,10 +39,10 @@ export default class TreeData extends React.Component {
         this.setState({},() => this.resetAllLoadedInfo())
     }
 
-    addNewEmptyData(data, title = ""){
+    addNewEmptyData(data, title = "", description = ""){
         if(!data) return;
         data.title = (title ? title :"Dataset " + (this.state.treeData.length + 1));
-
+        data.description = description
         var auxData = {
             open: true,
             graph: data,
