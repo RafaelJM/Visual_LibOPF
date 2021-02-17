@@ -405,3 +405,40 @@ button.list{
 .graph-menu-image{
   width: 200px;
 }
+
+.loadDatasetMenu{
+  z-index: 991;
+  width: 250px;
+  height: 300px;
+  left: 50%;
+  top: 25%;
+  margin-top: -125px;
+  margin-left: -125px;
+  position: absolute;
+}
+
+.loadDatasetMenu .Xbutton{
+  position: absolute;
+  width: 25px;
+  height: 25px;
+  left: calc(100% - 25px - 10px);
+  margin-top: 10px;
+}
+
+.loadDatasetMenu .description{
+  margin: auto;
+  font-size: 20px;
+  margin-top: 10px;
+  text-align: center;
+  padding-bottom: 10px;
+  width: 95%;
+  height: 100%;
+}
+
+.loadDatasetMenu .description .txt{
+  height: 150px;
+  margin-top: 30px;
+}
+
+.loadDatasetMenu .description .buttons{
+}

@@ -3,6 +3,7 @@ import React from "react";
 import {Sigma} from 'react-sigma';
 import Cookies from 'universal-cookie';
 
+
 import './App.css';
 import OPFFunctions from './OPFFunctions.js';
 import ObjDetails from './objDetails.js';
@@ -11,6 +12,8 @@ import TreeData from './Tree.js';
 import CustomSigma from './CustomSigma.js';
 import GraphMenu from './GraphMenu.js'
 import GraphInfo from './GraphInfo.js';
+import LoadExamplesMenu from './LoadExamplesMenu.js'
+
 function App() {
   document.title = 'Visual OPF'
   return (
@@ -54,6 +57,8 @@ class MyFirstGrid extends React.Component {
     this.OPFFunctions = React.createRef()
     this.GraphMenu = React.createRef()
     this.GraphInfo = React.createRef()
+    this.LoadExamplesMenu = React.createRef()
+    
     this.FM = new FileManager(this, (stateUpdate) => this.setState(stateUpdate))
     
     this.graphMenu = React.createRef()
@@ -135,6 +140,7 @@ class MyFirstGrid extends React.Component {
     return (
     <div>
       <div ref={this.main} style={{zoom:this.getZoomScreen()}}>
+        <LoadExamplesMenu ref={this.LoadExamplesMenu} parent={this}/>
         <div className="graph-menu">
           <img className="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}}/>
           <div className="panel" id="panel"  ref={this.graphMenu}>

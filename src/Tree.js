@@ -229,7 +229,7 @@ export default class TreeData extends React.Component {
                         </Button>
                     </OverlayTrigger>
                     <OverlayTrigger placement="bottom" overlay={<Tooltip id="tooltip-disabled" placement="bottom">Load a example dataset</Tooltip>}>
-                        <Button variant="secondary" onClick={() => this.loadExampleData()}>
+                        <Button variant="secondary" onClick={() => this.props.parent.LoadExamplesMenu.current.loadExampleData()}>
                             Load example
                         </Button>
                     </OverlayTrigger>
