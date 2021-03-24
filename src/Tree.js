@@ -18,6 +18,7 @@ export default class TreeData extends React.Component {
         this.props.parent.OPFFunctions.current.loadFunctions();
         this.props.parent.ObjDetails.current.setState({details:[]})
         this.props.parent.CSigma.current.clearObject()
+        this.props.parent.GraphMenu.current.updateEmptyMenu()
     }
 
     addCompleteState(state){

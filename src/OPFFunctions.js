@@ -141,7 +141,7 @@ export default class FunctionManager extends React.Component {
             out: ["cla"], extraOutInfo: ["out","tim"]}
         }
 
-        this.state = {return: []}
+        this.state = {return: this.genMenu()}
     }
 
     getKey(){
@@ -208,9 +208,13 @@ export default class FunctionManager extends React.Component {
     }
 
     loadFunctions(){
-      this.setState({return: []}, () => {this.setState({return: [
+      this.setState({return: []}, () => {this.setState({return: this.genMenu()})})
+    }
+
+    genMenu(){
+      return(
         <span key={0} className="d-inline-block">
-          {this.props.parent.Tree.current.state.treeData.length > 1 ? [
+          {this.props.parent.Tree.current && this.props.parent.Tree.current.state.treeData.length > 1 ? [
             <span key={0} className="function text">Running in Data: </span>,
             <span key={1} className="d-inline-block">
                 <FormControl as="select" custom title="Select a function" defaultValue={this.props.parent.Tree.current.state.treeData.findIndex(o => Object.is(o,this.props.parent.Tree.current.state.activeData))}
@@ -226,7 +230,7 @@ export default class FunctionManager extends React.Component {
             <Form.Control
             style={{marginTop: -5}}
               as="select" defaultValue="default"
-              disabled={this.props.parent.Tree.current.state.treeData.length ? "" : "disabled"}
+              disabled={!this.props.parent.Tree.current || this.props.parent.Tree.current.state.treeData.length ? "" : "disabled"}
               custom title="Select a function" onChange={(e) => {
               if(this.props.parent.Tree.current.state.treeData.length){
                 e.persist()
@@ -254,13 +258,15 @@ export default class FunctionManager extends React.Component {
                 <option value="opfknn_train" title={this.functionDetails["opfknn_train"].description}>opfknn_train</option>
               </optgroup>
               <optgroup label="Classifing phase"> 
-                <option value="opf_classify" title={this.functionDetails["opf_classify"].description} disabled={this.props.parent.Tree.current.state.activeData && this.props.parent.Tree.current.state.activeData.ModelFiles.children.length? "" : "disabled"}>opf_classify</option>
-                <option value="opfknn_classify" title={this.functionDetails["opfknn_classify"].description} disabled={this.props.parent.Tree.current.state.activeData && this.props.parent.Tree.current.state.activeData.ModelFiles.children.length? "" : "disabled"}>opfknn_classify</option>
+                <option value="opf_classify" title={this.functionDetails["opf_classify"].description} disabled={
+                  this.props.parent.Tree.current && (this.props.parent.Tree.current.state.activeData && this.props.parent.Tree.current.state.activeData.ModelFiles.children.length)? "" : "disabled"}>opf_classify</option>
+                <option value="opfknn_classify" title={this.functionDetails["opfknn_classify"].description} disabled={
+                  this.props.parent.Tree.current && this.props.parent.Tree.current.state.activeData && this.props.parent.Tree.current.state.activeData.ModelFiles.children.length? "" : "disabled"}>opfknn_classify</option>
               </optgroup>
             </Form.Control>   
           </span>  
         </span>
-      ]})});
+      )
     }
 
     loadFunctionEntrance(key){

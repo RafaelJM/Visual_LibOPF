@@ -78,8 +78,8 @@ button.list{
   display: block;
   background: #fff;
   border-color: rgba(0,0,0,.2);
-  border-radius:20px;
   border: 1px solid #ccc;
+  border-radius: 20px;
   color: #000;
   box-shadow: 0 2px 20px rgba(0,0,0,.2);
   opacity: 1;
@@ -90,6 +90,7 @@ button.list{
   margin: 0;
   position: absolute;
   transition: transform 2s;
+  background-color: rgb(230, 230, 230);
 }
 
 .clicked .panel {
@@ -137,8 +138,21 @@ button.list{
   font-weight: bold;
 }
 
+.button-text {
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.vertical-writing
+{
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+}
+
+/* ----------------------- MENU DE OBJETOS ----------------------- */
+
 .objects-menu {
-  width: 238px;
+  width: 220px;
   height: calc(100% - 15px);
   min-height: 100px;
   right: 5px;
@@ -148,26 +162,35 @@ button.list{
   transition: width 2s;
 }
 
+.objects-menu .button-text {
+  margin-top: 15px;
+  margin-left: 0px;
+}
+
+.objects-menu .button {
+  z-index: 999;
+  width: 20px;
+  height: 100%;
+  left: -19px;
+  border-radius: 20px 0px 0px 20px;
+}
+
+.objects-menu.clicked .button {
+  left: -15px;
+}
+
+.objects-menu .panel {
+  border-radius: 00px 20px 20px 0px;
+}
+
 .objects-menu.clicked {
   width: 0;
 }
 
-.objects-menu .button {
-  width: 20px;
-  height: 70px;
-  left: -28px;
-  top: calc(50% - 35px);
-}
-
-.objects-menu.clicked .button {
-  transform: rotate(180deg);
-}
-
-
 .tree-buttons{
   position: absolute;
   text-align: center;
-  margin-left: 7px;
+  margin-left: -10px;
   width: 210px;
 }
 
@@ -198,11 +221,11 @@ button.list{
   margin-top: -15px;
 }
 
-
+/* ----------------------- MENU DE FUNÇÕES ----------------------- */
 
 .functions-menu {
   width: calc(100% - 30px - 245px);
-  height: 230px;
+  height: 210px;
   min-width: 360px;
   bottom: 10px;
   left: 10px;
@@ -211,20 +234,30 @@ button.list{
   transition: height 2s;
 }
 
+.functions-menu .button-text {
+  margin-top: -1px;
+  margin-left: 20px;
+  letter-spacing: 8px;
+}
+
+.functions-menu .panel {
+  border-radius: 0px 0px 20px 20px;
+}
+
 .functions-menu.clicked {
   height: 0;
 }
 
 .functions-menu .button {
-  width: 20px;
-  height: 70px;
-  top: -50px;
-  left: calc(50% - 20px);
-  transform: rotate(90deg);
+  z-index: 999;
+  width: 100%;
+  height: 20px;
+  top: -19px;
+  border-radius: 20px 20px 0px 0px;
 }
 
 .functions-menu.clicked .button {
-  transform: rotate(-90deg);
+  top: -10px;
 }
 
 .functions-menu .panel {
@@ -250,6 +283,8 @@ button.list{
   margin-bottom: 5px;
 }
 
+/* ----------------------- MENU DO GRAFO ----------------------- */
+
 .graph-text{
   font-size: 24px;
   text-align: center;
@@ -270,17 +305,33 @@ button.list{
   width: 0;
 }
 
+.graph-menu .button-text {
+  margin-top: 15px;
+  margin-left: -1px;
+}
+
 .graph-menu .button {
+  z-index: 999;
   width: 20px;
-  height: 70px;
-  right: -28px;
-  top: calc(50% - 35px);
-  transform: rotate(180deg);
+  height: 100%;
+  right: -19px;
+  border-radius: 00px 20px 20px 0px;
 }
 
 .graph-menu.clicked .button {
-  transform: rotate(0deg);
+  right: -15px;
 }
+
+.graph-menu .panel {
+  border-radius: 20px 0px 0px 20px;
+}
+
+.graph-menu.clicked {
+  width: 0;
+}
+
+
+
 
 .details{
   text-align:center;
@@ -322,7 +373,20 @@ button.list{
   height: 100%;
 }
 
+.graph-options {
+  position: absolute;
+  margin-top: 5px;
+  margin-left: calc(50% - 20px - 10px - 40px);
+  z-index: 999;
+}
 
+.graph-options .button {
+  position: relative;
+  margin-left: 20px;
+  width: 40px;
+  height: 40px;
+  background-color: rgba(0, 0, 0, 0);
+}
 
 
 .tree-image{
@@ -408,21 +472,13 @@ button.list{
 
 .loadDatasetMenu{
   z-index: 991;
-  width: 250px;
   height: 300px;
+  width: 250px;
   left: 50%;
   top: 25%;
-  margin-top: -125px;
+  margin-top: -150px;
   margin-left: -125px;
   position: absolute;
-}
-
-.loadDatasetMenu .Xbutton{
-  position: absolute;
-  width: 25px;
-  height: 25px;
-  left: calc(100% - 25px - 10px);
-  margin-top: 10px;
 }
 
 .loadDatasetMenu .description{
@@ -440,5 +496,19 @@ button.list{
   margin-top: 30px;
 }
 
-.loadDatasetMenu .description .buttons{
+.HelpMenu{
+  z-index: 999;
+  height: 70%;
+  width: 70%;
+  left: 15%;
+  top: 15%;
+  position: absolute;
+}
+
+.HelpMenu .Xbutton{
+  position: absolute;
+  width: 25px;
+  height: 25px;
+  left: calc(100% - 25px - 10px);
+  margin-top: 10px;
 }

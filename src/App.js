@@ -13,6 +13,7 @@ import CustomSigma from './CustomSigma.js';
 import GraphMenu from './GraphMenu.js'
 import GraphInfo from './GraphInfo.js';
 import LoadExamplesMenu from './LoadExamplesMenu.js'
+import HelpMenu from './HelpMenu.js'
 
 function App() {
   document.title = 'Visual OPF'
@@ -58,6 +59,7 @@ class MyFirstGrid extends React.Component {
     this.GraphMenu = React.createRef()
     this.GraphInfo = React.createRef()
     this.LoadExamplesMenu = React.createRef()
+    this.HelpMenu = React.createRef()
     
     this.FM = new FileManager(this, (stateUpdate) => this.setState(stateUpdate))
     
@@ -141,8 +143,11 @@ class MyFirstGrid extends React.Component {
     <div>
       <div ref={this.main} style={{zoom:this.getZoomScreen()}}>
         <LoadExamplesMenu ref={this.LoadExamplesMenu} parent={this}/>
+        <HelpMenu ref={this.HelpMenu} parent={this}/>
         <div className="graph-menu">
-          <img className="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}}/>
+          <div className="button" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}}>
+            <p className="button-text vertical-writing" onClick={(e)=>{e.target.parentElement.parentElement.classList.toggle('clicked')}}>Graph Menu</p>
+          </div>
           <div className="panel" id="panel"  ref={this.graphMenu}>
             <div className="holder-tabs">
                 <button className="js -trigger-tabs tab__link is-active" onClick={(e)=>this.graphMenuClick(0)}>Info</button>
@@ -159,7 +164,9 @@ class MyFirstGrid extends React.Component {
           </div>
         </div>
         <div className="objects-menu">
-          <img className="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}}/>
+          <div className="button" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}}>
+            <p className="button-text vertical-writing" onClick={(e)=>{e.target.parentElement.parentElement.classList.toggle('clicked')}}>Objects Menu</p>
+          </div>
           <div className="panel" id="panel"  ref={this.lateralRef}>
             <div id="tree" className="tree-content scroll show">
               <TreeData ref={this.Tree} parent={this}/>
@@ -171,7 +178,9 @@ class MyFirstGrid extends React.Component {
           </div>
         </div>
         <div className="functions-menu">
-          <img className="button" src="arrow.png" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}} />
+          <div className="button" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}}>
+            <p className="button-text" onClick={(e)=>{e.target.parentElement.parentElement.classList.toggle('clicked')}}>Functions Menu</p>
+          </div>
           <div className="panel" id="panel"  ref={this.inferiorRef}>
             <div className="functions-content scroll">      
               <OPFFunctions ref={this.OPFFunctions} parent={this}/>
@@ -180,6 +189,10 @@ class MyFirstGrid extends React.Component {
               {this.logOut}
             </div>
           </div>
+        </div>
+        <div className="graph-options">
+          <img className="button" src="view.png" alt="" onClick={(e)=>{this.CSigma.current.viewerMode()}} />
+          <img className="button" src="edit.png" alt="" onClick={(e)=>{this.CSigma.current.editMode()}} />
         </div>
       </div>
       <Sigma ref={this.Sigma} renderer="canvas" container= 'container' settings={this.LoadedCookies.SigmaSettings} style={{width:"100%", height:"100%", position: "absolute", outline: "none"}}> 

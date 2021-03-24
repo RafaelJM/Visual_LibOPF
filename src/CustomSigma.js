@@ -3,7 +3,14 @@ import React from 'react';
 export default class CustomSigma extends React.Component {  
     constructor(props){
       super(props)
-      props.sigma.bind('clickNode',(e) => {
+      this.viewerMode()
+      this.selectedNode = null
+      this.state = {loadedGraph: {}, X: 0, Y: 1}
+    }
+
+    viewerMode(){
+      this.props.sigma.unbind('clickNode')
+      this.props.sigma.bind('clickNode',(e) => {
         if(this.state.loadedGraph.hasOwnProperty("distances")){
           if(this.selectedNode == null){
             this.selectedNode = e.data.node;
@@ -12,11 +19,32 @@ export default class CustomSigma extends React.Component {
             this.selectedNode = null
           }
         }else{
-          props.parent.ObjDetails.current.loadDetails(e.data.node.self)
+          this.props.parent.ObjDetails.current.loadDetails(e.data.node.self)
         }
       })
-      this.selectedNode = null
-      this.state = {loadedGraph: {}, X: 0, Y: 1}
+      this.props.sigma.settings('doubleClickEnabled', true);
+      this.props.sigma.settings('enableCamera', true);
+    }
+
+    //https://github.com/jacomyal/sigma.js/wiki/Events-API
+
+    editMode(){
+      this.props.sigma.bind('clickNode',(e) => {
+        if (e.data.node.isSelected) {
+          e.data.node.color = this.props.parent.LoadedCookies.SigmaSettings.colors[e.data.node.truelabel-1];
+          e.data.node.isSelected = false;
+        } else {
+          e.data.node.color = "#666";
+          e.data.node.isSelected = true;
+        }
+        this.props.sigma.refresh();
+      })
+      //this.props.sigma.settings('zoomingRatio', 1);
+      this.props.sigma.settings('doubleClickEnabled', false);
+      this.props.sigma.bind('doubleClickStage', (e)=> {
+        this.props.sigma.settings('enableCamera', false);
+        console.log(e)
+      })
     }
     
     refresh(){

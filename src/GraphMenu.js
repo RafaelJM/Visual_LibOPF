@@ -4,7 +4,34 @@ import {FormControl} from 'react-bootstrap';
 export default class GraphMenu extends React.Component {  
     constructor(props){
         super(props)
-        this.state = ({menu: []});
+        this.state = ({menu: this.emptyMenu()});
+    }
+
+    updateEmptyMenu(){
+        this.setState({menu: this.emptyMenu()})
+    }
+
+    emptyMenu(){
+        return(
+            <div>
+                <p className="graph-text">No Graph loaded</p>
+                <p className="graph-info-text">Find Node</p>
+                <FormControl as="select" defaultValue="default" disabled="true" style={{width:"99%"}}>
+                    <option value="default" disabled hidden >No Graph loaded</option>
+                </FormControl>
+                <p className="graph-text">___________________________________________</p>
+                <div className="featChose">
+                    <p className="graph-info-text">Feat at X axis</p>
+                    <FormControl as="select" defaultValue="default" disabled="true" style={{width:"99%"}}>
+                    </FormControl>
+                    <p className="graph-info-text">Feat at Y axis</p>
+                    <FormControl as="select" defaultValue="default" disabled="true" style={{width:"99%"}}>
+                    </FormControl>
+                    <p className="graph-text">___________________________________________</p>
+                </div>
+                <img alt="node types" className="graph-menu-image" src="node types.png"/>
+            </div>
+        )
     }
 
     updateInfo(){
@@ -13,6 +40,7 @@ export default class GraphMenu extends React.Component {
                 this.setState({menu: 
                     <div>
                         <p className="graph-text">{this.props.customSigma.current.state.loadedGraph.title ? "Showing graph "+this.props.customSigma.current.state.loadedGraph.title : ""}</p>
+                        <p className="graph-info-text">Find Node</p>
                         <FormControl as="select" defaultValue="default" onChange={(e) => {
                             this.props.parent.ObjDetails.current.loadDetails(this.props.customSigma.current.state.loadedGraph.nodes[e.target.value])
                             this.props.parent.CSigma.current.focousInXY(this.props.customSigma.current.state.loadedGraph.nodes[e.target.value])
