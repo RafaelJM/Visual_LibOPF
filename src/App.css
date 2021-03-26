@@ -90,7 +90,7 @@ button.list{
   margin: 0;
   position: absolute;
   transition: transform 2s;
-  background-color: rgb(230, 230, 230);
+  background-color: rgb(241, 241, 241);
 }
 
 .clicked .panel {
@@ -190,7 +190,7 @@ button.list{
 .tree-buttons{
   position: absolute;
   text-align: center;
-  margin-left: -10px;
+  margin-left: -5px;
   width: 210px;
 }
 
@@ -202,6 +202,11 @@ button.list{
   margin-left: 7px;
   margin-top: 10px;
   margin-bottom: -25px;
+}
+
+.objects-menu .btn{
+  margin-top: 2px;
+  margin-left: 2px;
 }
 
 .tree-contant{
@@ -299,6 +304,16 @@ button.list{
   z-index: 991;
   position: absolute;
   transition: width 2s;
+  text-align: center;
+}
+
+.graph-menu .btn{
+  margin-left: 1px;
+  margin-bottom: 5px;
+}
+
+.graph-menu .form-control{
+  margin-bottom: 5px;
 }
 
 .graph-menu.clicked {
@@ -372,22 +387,6 @@ button.list{
   width: 100%;
   height: 100%;
 }
-
-.graph-options {
-  position: absolute;
-  margin-top: 5px;
-  margin-left: calc(50% - 20px - 10px - 40px);
-  z-index: 999;
-}
-
-.graph-options .button {
-  position: relative;
-  margin-left: 20px;
-  width: 40px;
-  height: 40px;
-  background-color: rgba(0, 0, 0, 0);
-}
-
 
 .tree-image{
   outline:0;

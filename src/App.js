@@ -190,10 +190,6 @@ class MyFirstGrid extends React.Component {
             </div>
           </div>
         </div>
-        <div className="graph-options">
-          <img className="button" src="view.png" alt="" onClick={(e)=>{this.CSigma.current.viewerMode()}} />
-          <img className="button" src="edit.png" alt="" onClick={(e)=>{this.CSigma.current.editMode()}} />
-        </div>
       </div>
       <Sigma ref={this.Sigma} renderer="canvas" container= 'container' settings={this.LoadedCookies.SigmaSettings} style={{width:"100%", height:"100%", position: "absolute", outline: "none"}}> 
         <CustomSigma ref={this.CSigma} parent={this} graphMenu={this.GraphMenu}/>
@@ -202,5 +198,14 @@ class MyFirstGrid extends React.Component {
     )
   }
 }
+
+/* <img className="button" src="window.png" alt="" onClick={(e)=>{
+            if(this.main.current.childNodes[0].classList.contains("clicked") ||
+              this.main.current.childNodes[1].classList.contains("clicked") ||
+              this.main.current.childNodes[2].classList.contains("clicked"))
+              this.openMenu([0,1,2])
+            else
+              this.closeMenu([0,1,2])
+          }} />*/
 
 export default App;

@@ -5,10 +5,11 @@ export default class CustomSigma extends React.Component {
       super(props)
       this.viewerMode()
       this.selectedNode = null
-      this.state = {loadedGraph: {}, X: 0, Y: 1}
+      this.state = {loadedGraph: {}, X: 0, Y: 1, mode:"view"}
     }
 
     viewerMode(){
+      this.setState({mode:"view"})
       this.props.sigma.unbind('clickNode')
       this.props.sigma.bind('clickNode',(e) => {
         if(this.state.loadedGraph.hasOwnProperty("distances")){
@@ -29,22 +30,20 @@ export default class CustomSigma extends React.Component {
     //https://github.com/jacomyal/sigma.js/wiki/Events-API
 
     editMode(){
+      this.setState({mode:"edit"})
       this.props.sigma.bind('clickNode',(e) => {
         if (e.data.node.isSelected) {
           e.data.node.color = this.props.parent.LoadedCookies.SigmaSettings.colors[e.data.node.truelabel-1];
           e.data.node.isSelected = false;
         } else {
-          e.data.node.color = "#666";
+          //e.data.node.color = "#666";
           e.data.node.isSelected = true;
         }
         this.props.sigma.refresh();
       })
       //this.props.sigma.settings('zoomingRatio', 1);
       this.props.sigma.settings('doubleClickEnabled', false);
-      this.props.sigma.bind('doubleClickStage', (e)=> {
-        this.props.sigma.settings('enableCamera', false);
-        console.log(e)
-      })
+      this.props.sigma.settings('enableCamera', false);
     }
     
     refresh(){
