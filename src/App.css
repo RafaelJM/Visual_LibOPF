@@ -159,7 +159,7 @@ button.list{
   top: 5px;
   z-index: 991;
   position: absolute;
-  transition: width 2s;
+  transition: width 0.5s;
 }
 
 .objects-menu .button-text {
@@ -236,13 +236,13 @@ button.list{
   left: 10px;
   z-index: 991;
   position: absolute;
-  transition: height 2s;
+  transition: height 0.5s;
 }
 
 .functions-menu .button-text {
   margin-top: -1px;
   margin-left: 20px;
-  letter-spacing: 8px;
+  font-size: 20px;
 }
 
 .functions-menu .panel {
@@ -303,7 +303,7 @@ button.list{
   top: 5px;
   z-index: 991;
   position: absolute;
-  transition: width 2s;
+  transition: width 0.5s;
   text-align: center;
 }
 

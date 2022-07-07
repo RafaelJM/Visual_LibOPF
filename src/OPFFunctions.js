@@ -235,7 +235,8 @@ export default class FunctionManager extends React.Component {
               if(this.props.parent.Tree.current.state.treeData.length){
                 e.persist()
                 this.setState( prevState => {
-                  prevState.return[1] = this.loadFunctionEntrance(e.target.value);
+                  console.log(prevState); 
+                  prevState.return = this.loadFunctionEntrance(e.target.value);
                   return {
                       prevState
                   }
