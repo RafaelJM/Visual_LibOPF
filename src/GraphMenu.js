@@ -30,7 +30,7 @@ export default class GraphMenu extends React.Component {
                 <FormControl as="select" defaultValue="default" disabled="true" style={{width:"99%"}}>
                     <option value="default" disabled hidden >No Graph loaded</option>
                 </FormControl>
-                <p className="graph-text">___________________________________________</p>
+                <div className='divider'></div>
                 <div className="featChose">
                     <p className="graph-info-text">Feat at X axis</p>
                     <FormControl as="select" defaultValue="default" disabled="true" style={{width:"99%"}}>
@@ -38,7 +38,7 @@ export default class GraphMenu extends React.Component {
                     <p className="graph-info-text">Feat at Y axis</p>
                     <FormControl as="select" defaultValue="default" disabled="true" style={{width:"99%"}}>
                     </FormControl>
-                    <p className="graph-text">___________________________________________</p>
+                    <div className='divider'></div>
                 </div>
                 <img alt="node types" className="graph-menu-image" src="node types.png"/>
             </div>
@@ -65,7 +65,7 @@ export default class GraphMenu extends React.Component {
                                 return(<option value={index} key={index}>{node.title}</option>)
                             })}
                         </FormControl>
-                        <p className="graph-text">___________________________________________</p>
+                        <div className='divider'></div>
                         {this.props.customSigma.current.state.loadedGraph.nodes ?
                         <div className="featChose">
                             <p className="graph-info-text">Feat at X axis</p>
@@ -80,7 +80,7 @@ export default class GraphMenu extends React.Component {
                                     return(<option value={index} key={index}>Feat {index+1}</option>)
                                 })}
                             </FormControl>   
-                            <p className="graph-text">___________________________________________</p>
+                            <div className='divider'></div>
                         </div>
                         : ""}
                         <img alt="node types" className="graph-menu-image" src="node types.png"/>

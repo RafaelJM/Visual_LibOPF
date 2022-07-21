@@ -48,7 +48,7 @@ export default class GraphInfo extends React.Component {
         </Button>
                     
         <p className="graph-info-text">Classes colors</p>
-        <span>
+        <span className="color-picker">
           <FormControl as="select" defaultValue="0"
                 custom title="Select colors" onChange={(e) => {
                   this.setState({feat:e.target.value}, () => this.loadMenu())
@@ -59,7 +59,7 @@ export default class GraphInfo extends React.Component {
           </FormControl>   
           
           <SketchPicker
-            disableAlpha={true} presetColors={[]} width={155}
+            disableAlpha={true} presetColors={[]} width={200}
             color={ this.props.parent.Sigma.current.sigma.settings("colors")[this.state.feat] }
             onChange={ (color) => {
               this.props.parent.Sigma.current.sigma.settings("colors")[this.state.feat] = color.hex

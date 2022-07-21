@@ -171,7 +171,7 @@ class MyFirstGrid extends React.Component {
             <div id="tree" className="tree-content scroll show">
               <TreeData ref={this.Tree} parent={this}/>
             </div>
-            <p className="graph-text">___________________________________________</p>
+            <div className='divider'></div>
             <div id="datails" className="datails-content scroll">
               <ObjDetails ref={this.ObjDetails} parent={this}/>
             </div>
