@@ -146,7 +146,7 @@ class MyFirstGrid extends React.Component {
         <HelpMenu ref={this.HelpMenu} parent={this}/>
         <div className="graph-menu">
           <div className="button" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}}>
-            <p className="button-text vertical-writing" onClick={(e)=>{e.target.parentElement.parentElement.classList.toggle('clicked')}}>Graph Menu</p>
+            <p className="button-text" onClick={(e)=>{e.target.parentElement.parentElement.classList.toggle('clicked')}}><img src="menu.svg"></img>Graph Menu</p>
           </div>
           <div className="panel" id="panel"  ref={this.graphMenu}>
             <div className="holder-tabs">
@@ -165,7 +165,7 @@ class MyFirstGrid extends React.Component {
         </div>
         <div className="objects-menu">
           <div className="button" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}}>
-            <p className="button-text vertical-writing" onClick={(e)=>{e.target.parentElement.parentElement.classList.toggle('clicked')}}>Objects Menu</p>
+            <p className="button-text" onClick={(e)=>{e.target.parentElement.parentElement.classList.toggle('clicked')}}>Objects Menu<img src="menu.svg"></img></p>
           </div>
           <div className="panel" id="panel"  ref={this.lateralRef}>
             <div id="tree" className="tree-content scroll show">
@@ -179,7 +179,7 @@ class MyFirstGrid extends React.Component {
         </div>
         <div className="functions-menu">
           <div className="button" alt="" onClick={(e)=>{e.target.parentElement.classList.toggle('clicked')}}>
-            <p className="button-text" onClick={(e)=>{e.target.parentElement.parentElement.classList.toggle('clicked')}}>Functions Menu</p>
+            <p className="button-text" onClick={(e)=>{e.target.parentElement.parentElement.classList.toggle('clicked')}}><img src="menu.svg"></img>Functions Menu</p>
           </div>
           <div className="panel" id="panel"  ref={this.inferiorRef}>
             <div className="functions-content scroll">      
