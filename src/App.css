@@ -220,7 +220,7 @@ button.list{
 }
 
 .objects-menu .panel {
-  border-radius: 00px 20px 20px 0px;
+  border-radius: 00px 20px 20px 20px;
 }
 
 .objects-menu.clicked {
@@ -271,7 +271,7 @@ button.list{
 /* ----------------------- MENU DE FUNÇÕES ----------------------- */
 
 .functions-menu {
-  width: calc(100% - 30px - 245px);
+  width: calc(100% - 245px);
   height: 210px;
   min-width: 360px;
   bottom: 10px;
@@ -287,7 +287,7 @@ button.list{
 }
 
 .functions-menu .panel {
-  border-radius: 0px 0px 20px 20px;
+  border-radius: 0px 20px 20px 20px;
 }
 
 .functions-menu.clicked {
@@ -380,7 +380,7 @@ top: calc(-4rem + 10px);
 }
 
 .graph-menu .panel {
-  border-radius: 20px 0px 0px 20px;
+  border-radius: 20px 0px 20px 20px;
 }
 
 .graph-menu.clicked {
@@ -464,7 +464,6 @@ top: calc(-4rem + 10px);
 
 .graph-info-group{
   text-align:center;
-  margin-left: 12px;
 }
 
 .graph-info-group .minus{
@@ -496,14 +495,14 @@ top: calc(-4rem + 10px);
 
 
 .sketch-picker{
-  margin-top: 5px;
+  margin-top: 1rem;
+  margin-left: 1rem;
 }
 
 .color-picker{
   width: 100%;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+  gap: 1rem;
+
 }
 
 .function-form-text{
