@@ -275,7 +275,7 @@ button.list{
   height: 210px;
   min-width: 360px;
   bottom: 10px;
-  left: 10px;
+  left: 5px;
   z-index: 991;
   position: absolute;
   transition: height 0.5s;
