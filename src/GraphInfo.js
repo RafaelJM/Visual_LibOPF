@@ -47,7 +47,6 @@ export default class GraphInfo extends React.Component {
           {this.props.parent.Sigma.current.sigma.settings("labelThreshold")?"Show":"Hide"} all Labels
         </Button>
         <div className='divider'></div>
-        <p className="graph-info-text">Custumize options</p>
         <p className="graph-info-text">Classes colors</p>
         <span className="color-picker">
           <FormControl as="select" defaultValue="0"

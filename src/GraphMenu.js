@@ -20,23 +20,23 @@ export default class GraphMenu extends React.Component {
 
     emptyMenu(){
         return(
-            <div>
+            <div className='graph-info-content'>
                 <p className="graph-text">No Graph loaded</p>
                 <div className="graph-options">
                     <Button variant="secondary" disabled="true">View Mode</Button>
                     <Button variant="secondary" disabled="true">Edit Mode</Button>
                 </div>
                 <p className="graph-info-text">Find Node</p>
-                <FormControl as="select" defaultValue="default" disabled="true" style={{width:"99%"}}>
+                <FormControl as="select" defaultValue="default" disabled="true">
                     <option value="default" disabled hidden >No Graph loaded</option>
                 </FormControl>
                 <div className='divider'></div>
                 <div className="featChose">
                     <p className="graph-info-text">Feat at X axis</p>
-                    <FormControl as="select" defaultValue="default" disabled="true" style={{width:"99%"}}>
+                    <FormControl as="select" defaultValue="default" disabled="true">
                     </FormControl>
                     <p className="graph-info-text">Feat at Y axis</p>
-                    <FormControl as="select" defaultValue="default" disabled="true" style={{width:"99%"}}>
+                    <FormControl as="select" defaultValue="default" disabled="true">
                     </FormControl>
                     <div className='divider'></div>
                 </div>
@@ -49,7 +49,7 @@ export default class GraphMenu extends React.Component {
         if(this.props.parent.Tree.current){
             this.setState({menu: []},()=>{
                 this.setState({menu: 
-                    <div>
+                    <div className='graph-info-content'>
                         <p className="graph-text">{this.props.customSigma.current.state.loadedGraph.title ? "Showing graph "+this.props.customSigma.current.state.loadedGraph.title : ""}</p>
                         <div className="graph-options">
                             <Button variant={this.props.parent.CSigma.current.state.mode == "view"? "light" : "secondary"} onClick={(e)=>{this.props.parent.CSigma.current.viewerMode();this.changeBTN(e.target,e.target.parentElement.childNodes[1])}}>View Mode</Button>
