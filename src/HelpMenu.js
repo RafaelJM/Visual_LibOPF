@@ -6,20 +6,32 @@ export default class HelpMenu extends React.Component {
   constructor(props){
     super(props)
     this.state = {
-      menu: []//this.loadExampleData()
+      menu: this.helpButton(),
     }
     
   }
 
+  helpButton(){
+    return(
+      <button className='help-button' onClick={(e)=>{this.setState({menu: this.loadExampleData()})}}>
+        <img src='circle-question-regular.svg'></img>
+      </button>
+    )
+  }
+
   loadExampleData(){
     return(
-      <div className="HelpMenu">
-        <div className="panel">
-          <img className="Xbutton" src="x.png" alt="" onClick={(e)=>{this.setState({menu:[]})}}/>
-          <p>Help Menu</p>          
-          <img src="help/menu.png" alt=""/>
-        </div>
-      </div>
+      <div className='overlay'>
+        <div className="HelpMenu">
+          <div className="panel">
+            <div className='help-header'>
+              <p>Welcome to Visual OPF!</p>       
+              <img className="Xbutton" src="x.png" alt="" onClick={(e)=>{this.setState({menu:this.helpButton()})}}/>
+            </div>
+            <div className='divider'/>
+          </div>
+       </div>
+     </div>
     )
   }
 
