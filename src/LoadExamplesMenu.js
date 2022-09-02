@@ -27,35 +27,37 @@ export default class LoadExamplesMenu extends React.Component {
   loadExampleData(){
     this.dataset = this.Datasets[0]
     this.setState({loadMenu:
-      <div className="loadDatasetMenu">
-        <div className="panel">
-          <div className="description">
-            <FormControl as="select" defaultValue={0} onChange={(e) => {
-              this.dataset = this.Datasets[e.target.value]
-              this.descriptionPart.current.innerHTML =this.dataset.description
-            }}>
-              {this.Datasets.map((data,index) => {
-                return(<option value={index} key={index}>{data.title}</option>)
-              })}
-            </FormControl>
-            <p ref={this.descriptionPart} className="txt">{this.Datasets[0].description}</p>
-            <div className="buttons">
-              <Button variant="secondary" classNmae ="button" onClick={
-                () => {
-                  fetch("./examples/"+this.dataset.file)
-                  .then(response => {return response.arrayBuffer()})
-                  .then(buffer => {
-                    var loadedFile = this.props.parent.FM.readGraph(new DataView(buffer),null,this.dataset.title,this.dataset.description);
-                    this.props.parent.Tree.current.addNewEmptyData(loadedFile,this.dataset.title,this.dataset.description);
-                    this.props.parent.OPFFunctions.current.loadFunctions()
-                  })
-                }
-              }>
-                Load
-              </Button>
-              <Button variant="secondary" classNmae ="button" onClick={() => this.setState({loadMenu:[]})}>
-                Close
-              </Button>
+      <div className='overlay'>
+        <div className="loadDatasetMenu">
+          <div className="panel">
+            <div className="description">
+              <FormControl as="select" defaultValue={0} onChange={(e) => {
+                this.dataset = this.Datasets[e.target.value]
+                this.descriptionPart.current.innerHTML =this.dataset.description
+              }}>
+                {this.Datasets.map((data,index) => {
+                  return(<option value={index} key={index}>{data.title}</option>)
+                })}
+              </FormControl>
+              <p ref={this.descriptionPart} className="txt">{this.Datasets[0].description}</p>
+              <div className="buttons">
+                <Button variant="secondary" classNmae ="button" onClick={
+                  () => {
+                    fetch("./examples/"+this.dataset.file)
+                    .then(response => {return response.arrayBuffer()})
+                    .then(buffer => {
+                      var loadedFile = this.props.parent.FM.readGraph(new DataView(buffer),null,this.dataset.title,this.dataset.description);
+                      this.props.parent.Tree.current.addNewEmptyData(loadedFile,this.dataset.title,this.dataset.description);
+                      this.props.parent.OPFFunctions.current.loadFunctions()
+                    })
+                  }
+                }>
+                  Load
+                </Button>
+                <Button variant="secondary" classNmae ="button" onClick={() => this.setState({loadMenu:[]})}>
+                  Close
+                </Button>
+              </div>
             </div>
           </div>
         </div>
