@@ -151,10 +151,6 @@ button.list{
   border-radius: 8px;
 }
 
-.textOut{
-  
-}
-
 .textErr{
   color:red;
 }
@@ -341,7 +337,7 @@ top: calc(-4rem + 10px);
 .graph-text{
   font-size: 24px;
   text-align: center;
-  margin-top: 5px;
+  margin: 16px 0;  
 }
 
 .graph-menu {
@@ -400,7 +396,7 @@ top: calc(-4rem + 10px);
 .details{
   text-align: center;
   gap: 1rem;
-
+  margin: 2px;
 }
 
 
@@ -414,13 +410,17 @@ top: calc(-4rem + 10px);
   gap: 0.1rem;
 }
 
+.input-group-text {
+  width: 100%;
+}
+
 .details .input-group-prepend .btn{
   margin-top: 0px;
   margin-bottom: 5px;
 }
 
 .details .form-control{
-  margin-bottom: 5px;
+  margin-bottom: 10px;
 }
 
 .graph-menu .tab-content .content {
@@ -533,7 +533,8 @@ top: calc(-4rem + 10px);
 }
 
 .graph-menu-image{
-  width: 250px;
+  max-width: 240px;
+  margin: 3px;
 }
 
 .loadDatasetMenu{
@@ -596,6 +597,8 @@ top: calc(-4rem + 10px);
 }
 
 .help-content {
+  display: flex;
+  flex-direction: column;
   font-size: 20px;
   margin: 15px;
   align-items: center;
@@ -622,30 +625,38 @@ top: calc(-4rem + 10px);
   opacity: 0.5;
 }
 
-.help-button:hover{
+.help-button:hover {
   opacity: 0.7;
 }
 
-.help-content img{
-  margin: 0.5rem 8rem;
+.help-text {
+  width: 100%;
 }
 
 .mainscreen-screenshot {
-  max-height: 40vh;
+  margin: 0.5rem 2rem;
+  max-height: 50vh;
   box-shadow: 0 0 15px -5px black;
   border-radius: 10px;
 }
 
-.help-content .objectsmenu-screenshot {
-  margin: 0.5rem 16rem;
+.objectsmenu-screenshot {
+  margin: 0.5rem 2rem;
   width: 35%;
   box-shadow: 0 0 15px -5px black;
   border-radius: 10px;
 }
 
+.properties-screenshot {
+  margin: 0.5rem 2rem;
+  max-height: 80vh;
+  box-shadow: 0 0 15px -5px black;
+  border-radius: 10px;
+}
+
 #firstStep {
-  left: 23.7%;
-  top: 3%;
+  left: 27vw;
+  top: 3vh;
 }
 
 #secondStep {
@@ -655,7 +666,7 @@ top: calc(-4rem + 10px);
 }
 
 #thirdStep {
-  left: 15%;
+  right: 18vw;
   top: 3%;
 }
 

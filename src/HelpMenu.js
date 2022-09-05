@@ -30,10 +30,10 @@ export default class HelpMenu extends React.Component {
             </div>
             <div className='divider'/>
             <div className='help-content'>
-              <p>LibOPF is a library of functions and programs for free usage in the design of optimum-path forest classifiers.</p>
-              <p>And this is a useful web tool as a visual aid for demonstrating and creating OPF classifiers</p>
-              <p>Let's get started!</p>
-              <p>This is the main screen where you may find whatever you need to build, train and test your OPF classifier</p>
+              <p className='help-text'>LibOPF is a library of functions and programs for free usage in the design of optimum-path forest classifiers.</p>
+              <p className='help-text'>And this is a useful web tool as a visual aid for demonstrating and creating OPF classifiers</p>
+              <p className='help-text'>Let's get started!</p>
+              <p className='help-text'>This is the main screen where you may find whatever you need to build, train and test your OPF classifier</p>
               <img src='mainscreen.png' className='mainscreen-screenshot'></img>
             </div>
             <div className='help-footer'>
@@ -56,8 +56,8 @@ export default class HelpMenu extends React.Component {
             </div>
             <div className='divider'/>
             <div className='help-content'>
-              <p>Here is where you will load the data that you will manage</p>
-              <p> By using this buttons you can <b>load</b> your local data, use some of the <b>data examples</b>, <b>export</b> all datas to a state file and <b>import</b> a state file.</p>
+              <p className='help-text'>Here is where you will load the data that you will manage</p>
+              <p className='help-text'> By using this buttons you can <b>load</b> your local data, use some of the <b>data examples</b>, <b>export</b> all datas to a state file and <b>import</b> a state file.</p>
               <img src='objectsmenuscreen.png' className='objectsmenu-screenshot'/>
             </div>
             <div className='help-footer'>
@@ -76,12 +76,13 @@ export default class HelpMenu extends React.Component {
         <div className="HelpMenu" id='thirdStep'>
           <div className="panel">
             <div className='help-header'>
-              <p>Graph Menu</p>       
+              <p>Objects Menu</p>       
               <img className="Xbutton" src="x.png" alt="" onClick={(e)=>{this.setState({menu:this.helpButton()})}}/>
             </div>
             <div className='divider'/>
             <div className='help-content'>
-              <p>Here is where you will load the data</p>
+              <p className='help-text'>After you load any data, you can vizualize the <b>sample properties</b> or the <b>node properties</b> <br></br> by clicking in any node.</p>
+              <img className='properties-screenshot' src='properties.png'></img>
             </div>
             <div className='help-footer'>
               <button className='btn btn-secondary' type='button' onClick={(e)=>{this.setState({menu:this.secondStep()})}}> Previous </button>
@@ -100,12 +101,12 @@ export default class HelpMenu extends React.Component {
         <div className="HelpMenu" id='fourthStep'>
           <div className="panel">
             <div className='help-header'>
-              <p>Functions Menu</p>       
+              <p>Graph Menu</p>       
               <img className="Xbutton" src="x.png" alt="" onClick={(e)=>{this.setState({menu:this.helpButton()})}}/>
             </div>
             <div className='divider'/>
             <div className='help-content'>
-              <p>Here is where you will load the data</p>
+              <p className='help-text'>In this site you can select any node by the id and <br></br>rearrange the feats in the axis X and Y </p>
             </div>
             <div className='help-footer'>
               <button className='btn btn-secondary' type='button' onClick={(e)=>{this.setState({menu:this.thirdStep()})}}> Previous </button>
