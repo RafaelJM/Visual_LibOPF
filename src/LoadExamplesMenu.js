@@ -13,14 +13,14 @@ export default class LoadExamplesMenu extends React.Component {
 
     this.Datasets = [
       {file: "boat.dat", title: "Boat", description: "A dataset that looks like a boat with two people (three classes and two features)"},
-      {file: "cone-torus.dat", title: "Cone-Torus", description: ""},
-      {file: "data1.dat", title: "Data1", description: "A dataset that has a S format, (two classes and two features)"},
-      {file: "data2.dat", title: "Data2", description: ""},
-      {file: "data3.dat", title: "Data3", description: ""},
-      {file: "data4.dat", title: "Data4", description: ""},
-      {file: "data5.dat", title: "Data5", description: ""},
-      {file: "petals.dat", title: "Petals", description: ""},
-      {file: "saturn.dat", title: "Saturn", description: ""},
+      {file: "cone-torus.dat", title: "Cone-Torus", description: "A dataset that reminds the format of a cone-torus (three classes and two features)"},
+      {file: "data1.dat", title: "Data1", description: "A dataset that has a S format (two classes and two features)"},
+      {file: "data2.dat", title: "Data2", description: "Just two close groups of nodes (two classes and two features) "},
+      {file: "data3.dat", title: "Data3", description: "Five small groups of nodes (five classes and two features)"},
+      {file: "data4.dat", title: "Data4", description: "A dataset that reminds a ugly face '-' (three classes and two features)"},
+      {file: "data5.dat", title: "Data5", description: "A dataset that looks ike a target (two classes and two features)"},
+      {file: "petals.dat", title: "Petals", description: "A dataset that lookslike 4 petals (four classes and two features)"},
+      {file: "saturn.dat", title: "Saturn", description: "A dataset that resembles a planet with a ring (two classes and two features)"},
     ]
   }
 
