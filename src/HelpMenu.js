@@ -58,7 +58,7 @@ export default class HelpMenu extends React.Component {
             <div className='help-content'>
               <p className='help-text'>Here is where you will load the data that you will manage</p>
               <p className='help-text'> By using these buttons you can <b>load</b> your local data, use some of the <b>data examples</b>, <b>export</b> all datas to a state file and <b>import</b> a state file.</p>
-              <img src='objectsmenuscreen.png' className='objectsmenu-screenshot'/>
+              <img src='objectsmenuscreenshot.png' className='objectsmenu-screenshot'/>
             </div>
             <div className='help-footer'>
               <button className='btn btn-secondary' type='button' onClick={(e)=>{this.setState({menu:this.firstStep()})}}> Previous </button>
