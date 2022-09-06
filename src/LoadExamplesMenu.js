@@ -12,9 +12,9 @@ export default class LoadExamplesMenu extends React.Component {
     this.descriptionPart = React.createRef();
 
     this.Datasets = [
-      {file: "boat.dat", title: "Boat", description: "A dataset that looks like a boat with two people, have three classes and two features"},
+      {file: "boat.dat", title: "Boat", description: "A dataset that looks like a boat with two people (three classes and two features)"},
       {file: "cone-torus.dat", title: "Cone-Torus", description: ""},
-      {file: "data1.dat", title: "Data1", description: "A dataset that have a S format, have two classes and two features"},
+      {file: "data1.dat", title: "Data1", description: "A dataset that has a S format, (two classes and two features)"},
       {file: "data2.dat", title: "Data2", description: ""},
       {file: "data3.dat", title: "Data3", description: ""},
       {file: "data4.dat", title: "Data4", description: ""},
