@@ -258,7 +258,7 @@ export default class FunctionManager extends React.Component {
                 <option value="opf_pruning" title={this.functionDetails["opf_pruning"].description}>opf_pruning</option>
                 <option value="opfknn_train" title={this.functionDetails["opfknn_train"].description}>opfknn_train</option>
               </optgroup>
-              <optgroup label="Classifing phase"> 
+              <optgroup label="Classifying phase"> 
                 <option value="opf_classify" title={this.functionDetails["opf_classify"].description} disabled={
                   this.props.parent.Tree.current && (this.props.parent.Tree.current.state.activeData && this.props.parent.Tree.current.state.activeData.ModelFiles.children.length)? "" : "disabled"}>opf_classify</option>
                 <option value="opfknn_classify" title={this.functionDetails["opfknn_classify"].description} disabled={
@@ -276,7 +276,7 @@ export default class FunctionManager extends React.Component {
       if(entrances.length){
         return(
           <span key={1}>
-            <span className="function text">  Paramters: ( </span>
+            <span className="function text">  Parameters: ( </span>
               {entrances.map((entrace, index) => (
               [<b key={index}>{((index !== 0) ? (" , ") : (""))}</b>,entrace]
             ))}
