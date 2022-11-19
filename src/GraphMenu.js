@@ -20,25 +20,25 @@ export default class GraphMenu extends React.Component {
 
     emptyMenu(){
         return(
-            <div>
+            <div className='graph-info-content'>
                 <p className="graph-text">No Graph loaded</p>
-                <div className="graph-options">
+                {/* <div className="graph-options">
                     <Button variant="secondary" disabled="true">View Mode</Button>
                     <Button variant="secondary" disabled="true">Edit Mode</Button>
-                </div>
+                </div> */}
                 <p className="graph-info-text">Find Node</p>
-                <FormControl as="select" defaultValue="default" disabled="true" style={{width:"99%"}}>
+                <FormControl as="select" defaultValue="default" disabled="true">
                     <option value="default" disabled hidden >No Graph loaded</option>
                 </FormControl>
-                <p className="graph-text">___________________________________________</p>
+                <div className='divider'></div>
                 <div className="featChose">
                     <p className="graph-info-text">Feat at X axis</p>
-                    <FormControl as="select" defaultValue="default" disabled="true" style={{width:"99%"}}>
+                    <FormControl as="select" defaultValue="default" disabled="true">
                     </FormControl>
                     <p className="graph-info-text">Feat at Y axis</p>
-                    <FormControl as="select" defaultValue="default" disabled="true" style={{width:"99%"}}>
+                    <FormControl as="select" defaultValue="default" disabled="true">
                     </FormControl>
-                    <p className="graph-text">___________________________________________</p>
+                    <div className='divider'></div>
                 </div>
                 <img alt="node types" className="graph-menu-image" src="node types.png"/>
             </div>
@@ -49,12 +49,12 @@ export default class GraphMenu extends React.Component {
         if(this.props.parent.Tree.current){
             this.setState({menu: []},()=>{
                 this.setState({menu: 
-                    <div>
+                    <div className='graph-info-content'>
                         <p className="graph-text">{this.props.customSigma.current.state.loadedGraph.title ? "Showing graph "+this.props.customSigma.current.state.loadedGraph.title : ""}</p>
-                        <div className="graph-options">
+                        {/* <div className="graph-options">
                             <Button variant={this.props.parent.CSigma.current.state.mode == "view"? "light" : "secondary"} onClick={(e)=>{this.props.parent.CSigma.current.viewerMode();this.changeBTN(e.target,e.target.parentElement.childNodes[1])}}>View Mode</Button>
                             <Button variant={this.props.parent.CSigma.current.state.mode == "view"? "secondary" : "light"} onClick={(e)=>{this.props.parent.CSigma.current.editMode();this.changeBTN(e.target,e.target.parentElement.childNodes[0])}}>Edit Mode</Button>
-                        </div>
+                        </div> */}
                         <p className="graph-info-text">Find Node</p>
                         <FormControl as="select" defaultValue="default" onChange={(e) => {
                             this.props.parent.ObjDetails.current.loadDetails(this.props.customSigma.current.state.loadedGraph.nodes[e.target.value])
@@ -65,7 +65,7 @@ export default class GraphMenu extends React.Component {
                                 return(<option value={index} key={index}>{node.title}</option>)
                             })}
                         </FormControl>
-                        <p className="graph-text">___________________________________________</p>
+                        <div className='divider'></div>
                         {this.props.customSigma.current.state.loadedGraph.nodes ?
                         <div className="featChose">
                             <p className="graph-info-text">Feat at X axis</p>
@@ -80,7 +80,7 @@ export default class GraphMenu extends React.Component {
                                     return(<option value={index} key={index}>Feat {index+1}</option>)
                                 })}
                             </FormControl>   
-                            <p className="graph-text">___________________________________________</p>
+                            <div className='divider'></div>
                         </div>
                         : ""}
                         <img alt="node types" className="graph-menu-image" src="node types.png"/>

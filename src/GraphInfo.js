@@ -46,9 +46,9 @@ export default class GraphInfo extends React.Component {
         <Button variant="secondary" className="general-btn" onClick={() => this.update("labelThreshold",999999999 - this.props.parent.Sigma.current.sigma.settings("labelThreshold"))}>
           {this.props.parent.Sigma.current.sigma.settings("labelThreshold")?"Show":"Hide"} all Labels
         </Button>
-                    
+        <div className='divider'></div>
         <p className="graph-info-text">Classes colors</p>
-        <span>
+        <span className="color-picker">
           <FormControl as="select" defaultValue="0"
                 custom title="Select colors" onChange={(e) => {
                   this.setState({feat:e.target.value}, () => this.loadMenu())
@@ -59,7 +59,7 @@ export default class GraphInfo extends React.Component {
           </FormControl>   
           
           <SketchPicker
-            disableAlpha={true} presetColors={[]} width={155}
+            disableAlpha={true} presetColors={[]} width={200}
             color={ this.props.parent.Sigma.current.sigma.settings("colors")[this.state.feat] }
             onChange={ (color) => {
               this.props.parent.Sigma.current.sigma.settings("colors")[this.state.feat] = color.hex
