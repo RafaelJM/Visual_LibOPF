@@ -14,7 +14,7 @@
     "react-color": "^2.19.3",
     "react-csv": "^2.0.3",
     "react-dom": "^16.13.0",
-    "react-scripts": "^3.4.3",
+    "react-scripts": "^5.0.1",
     "react-sigma": "^1.2.35",
     "react-split-pane": "^0.1.92",
     "universal-cookie": "^4.0.4"
